@@ -2,13 +2,13 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.middleware.gzip import GZipMiddleware
+
 from django.shortcuts import get_object_or_404
 
 from worf.views.base import AbstractBaseAPI
 from worf.exceptions import HTTP420
 
-gzip_middleware = GZipMiddleware()
+
 
 
 class ChoicesFieldOptionsAPI(AbstractBaseAPI):

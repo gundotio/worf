@@ -4,7 +4,10 @@ import warnings
 
 from urllib.parse import parse_qs
 
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.http import JsonResponse
+from django.middleware.gzip import GZipMiddleware
 from django.views import View
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
@@ -12,6 +15,8 @@ from django.utils.decorators import method_decorator
 from worf.casing import camel_to_snake, whitespace_to_camel
 from worf.exceptions import HTTP_EXCEPTIONS, PermissionsException
 from worf.validators import ValidationMixin
+
+gzip_middleware = GZipMiddleware()
 
 
 @method_decorator(never_cache, name="dispatch")

@@ -19,7 +19,7 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False):
     @param patch: Optionally test patch
     """
 
-    bundle = bundle_factory(instance, worf.api_update_field_method_name())
+    bundle = bundle_factory(instance, API.api_update_field_method_name())
     response = TestCase.client.get(uri)
     TestCase.assertEqual(response.status_code, 200)
 

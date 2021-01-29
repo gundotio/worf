@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd "$(dirname "$0")/../"
+
+if [ -f .clocignore ]; then 
+  cloc --exclude-dir=$(tr '\n' ',' < .clocignore) . -q
+else 
+  cloc .
+fi

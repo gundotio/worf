@@ -46,5 +46,5 @@ class PermissionsException(Exception):
     pass
 
 
-class NotImplementedYetInCoreAPI(NotImplementedError):
+class NotImplementedInWorfYet(NotImplementedError):
     pass
