@@ -6,7 +6,7 @@ from string import ascii_uppercase
 
 from django.utils import timezone
 
-from api.core.casing import camel_to_snake, snake_to_camel
+from worf.core.casing import camel_to_snake, snake_to_camel
 
 
 def generate_endpoint_tests(TestCase, API, instance, uri, patch=False):
@@ -19,7 +19,7 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False):
     @param patch: Optionally test patch
     """
 
-    bundle = bundle_factory(instance, API.api_update_field_method_name())
+    bundle = bundle_factory(instance, worf.api_update_field_method_name())
     response = TestCase.client.get(uri)
     TestCase.assertEqual(response.status_code, 200)
 

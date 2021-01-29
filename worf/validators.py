@@ -6,8 +6,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.html import strip_tags
 
-from api.core.exceptions import HTTP400, HTTP422, NotImplementedYetInCoreAPI
-from api.core.casing import snake_to_camel
+from worf.core.exceptions import HTTP400, HTTP422, NotImplementedYetInCoreAPI
+from worf.core.casing import snake_to_camel
 
 
 class ValidationMixin:

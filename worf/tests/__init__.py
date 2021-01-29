@@ -1,7 +1,7 @@
 import unittest
 
-from api.core.casing import camel_to_snake, snake_to_camel
-from api.core.exceptions import NamingThingsError
+from worf.core.casing import camel_to_snake, snake_to_camel
+from worf.core.exceptions import NamingThingsError
 
 
 class TestSnakeAndCamel(unittest.TestCase):
@@ -34,7 +34,7 @@ class TestSnakeAndCamel(unittest.TestCase):
 
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, RequestFactory
-from api.core.views import AbstractBaseAPI
+from worf.core.views import AbstractBaseAPI
 
 
 class AbstractBaseAPITests(TestCase):
@@ -57,8 +57,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.test import TestCase
 
-from api.core.validators import ValidationMixin
-from api.core.exceptions import HTTP422
+from worf.core.validators import ValidationMixin
+from worf.core.exceptions import HTTP422
 
 
 class ValidationTests(TestCase):
