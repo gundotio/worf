@@ -10,7 +10,4 @@ WORKDIR /app
 #COPY Pipfile.lock Pipfile.lock
 RUN pip3 install pipenv
 
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
- 
 #RUN pipenv install --dev --deploy --python 3.8.7

@@ -9,8 +9,6 @@ from worf.views.base import AbstractBaseAPI
 from worf.exceptions import HTTP420
 
 
-
-
 class ChoicesFieldOptionsAPI(AbstractBaseAPI):
     def serialize(self):
         return getattr(self.model, self.api_method)()
