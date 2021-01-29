@@ -1,4 +1,4 @@
-from worf.core.exceptions import NamingThingsError
+from worf.exceptions import NamingThingsError
 
 
 def snake_to_camel(snake):

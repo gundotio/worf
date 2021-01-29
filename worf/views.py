@@ -15,9 +15,9 @@ from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 
-from worf.core.casing import camel_to_snake, whitespace_to_camel
-from worf.core.exceptions import HTTP_EXCEPTIONS, PermissionsException, HTTP420
-from worf.core.validators import ValidationMixin
+from worf.casing import camel_to_snake, whitespace_to_camel
+from worf.exceptions import HTTP_EXCEPTIONS, PermissionsException, HTTP420
+from worf.validators import ValidationMixin
 
 gzip_middleware = GZipMiddleware()
 

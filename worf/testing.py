@@ -6,7 +6,7 @@ from string import ascii_uppercase
 
 from django.utils import timezone
 
-from worf.core.casing import camel_to_snake, snake_to_camel
+from worf.casing import camel_to_snake, snake_to_camel
 
 
 def generate_endpoint_tests(TestCase, API, instance, uri, patch=False):

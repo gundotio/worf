@@ -1,4 +1,4 @@
-from worf.core.exceptions import HTTP401, HTTP404
+from worf.exceptions import HTTP401, HTTP404
 
 
 def Authenticated(self, request):
