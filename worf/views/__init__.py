@@ -5,7 +5,7 @@ from worf.views.api import (
     ListAPI,
     ListCreateAPI,
 )
-from worf.base import (
+from worf.views.base import (
     APIResponse,
     AbstractBaseAPI,
 )
