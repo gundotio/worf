@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.html import strip_tags
 
-from worf.exceptions import HTTP400, HTTP422, NotImplementedYetInCoreAPI
+from worf.exceptions import HTTP400, HTTP422, NotImplementedInWorfYet
 from worf.casing import snake_to_camel
 
 
@@ -185,7 +185,7 @@ class ValidationMixin:
             err_msg = f"{field_type} has no validation method for {key}"
             if settings.DEBUG:
                 err_msg += f":: Received {self.bundle[key]}"
-            raise NotImplementedYetInCoreAPI(err_msg)
+            raise NotImplementedInWorfYet(err_msg)
             # TODO
             # FileField
             # UUIDField
