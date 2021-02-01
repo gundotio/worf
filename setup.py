@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="worf",
-    version="0.1.0",
+    version="0.1.1",
     description="Wade's Own Rest Framework: A more djangonic approach",
     long_description="",
     keywords="django, rest, framework",
