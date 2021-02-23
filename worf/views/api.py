@@ -61,12 +61,15 @@ class DetailAPI(AbstractBaseAPI):
         Step 1: Validate
         Step 2: Update
         """
-        for key in self.bundle.keys():
-            self.validate_bundle(key)
-            setattr(self.get_instance(), key, self.bundle[key])
+        instance = self.get_instance()
+        fields = self.bundle.keys()
 
-        self.get_instance().save(update_fields=self.bundle.keys())
-        self.get_instance().refresh_from_db()
+        for field in fields:
+            self.validate_bundle(field)
+            setattr(instance, field, self.bundle[field])
+
+        instance.save(update_fields=fields)
+        instance.refresh_from_db()
 
 
 class DetailUpdateAPI(DetailAPI):
