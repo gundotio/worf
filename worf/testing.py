@@ -9,7 +9,7 @@ from django.utils import timezone
 from worf.casing import camel_to_snake, snake_to_camel
 
 
-def generate_endpoint_tests(TestCase, API, instance, uri, patch=False):
+def generate_endpoint_tests(TestCase, API, instance, uri, patch=False, overrides={}):
     """
     Generate tests against an API, instance and uri.
 
@@ -17,9 +17,13 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False):
     @param instance: the model instance (usually created in test setup)
     @param uri: the path to the endpoint
     @param patch: Optionally test patch
+    @param overrides: Optionally override values in the bundle factory
     """
 
-    bundle = bundle_factory(instance, API.api_update_field_method_name())
+    bundle = {
+        **bundle_factory(instance, API.api_update_field_method_name()),
+        **overrides,
+    }
     response = TestCase.client.get(uri)
     TestCase.assertEqual(response.status_code, 200)
 
@@ -27,7 +31,11 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False):
         return
 
     response = TestCase.client.patch(uri, bundle, content_type="application/json")
-    TestCase.assertEqual(str(response.status_code)[0:2], "20")  # assert 200-ish
+    TestCase.assertEqual(
+        "20",  # assert 200-ish
+        str(response.status_code)[0:2],
+        response.content.decode("UTF-8"),
+    )
     assertion_factory(TestCase, instance, bundle)
 
 
