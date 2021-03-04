@@ -21,5 +21,5 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Framework :: Django",
         "Environment :: Web Environment",
-    ]
+    ],
 )

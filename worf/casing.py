@@ -42,5 +42,5 @@ def whitespace_to_camel(string):
     if pos == -1:
         return string
 
-    new_string = string[:pos] + string[pos + 1:].capitalize()
+    new_string = string[:pos] + string[pos + 1 :].capitalize()
     return whitespace_to_camel(new_string)
