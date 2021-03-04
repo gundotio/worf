@@ -1,2 +1,0 @@
-worf @ git+https://github.com/flowcanon/worf
-black==20.8b1
