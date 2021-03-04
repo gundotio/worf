@@ -74,7 +74,7 @@ class ValidationMixin:
         return integer
 
     def _validate_bundle_positive_int(self, key):
-        integer = self.validate_bundle_int(key)
+        integer = self._validate_bundle_int_or_none(key)
 
         if integer < 0:
             raise ValidationError(
@@ -162,7 +162,7 @@ class ValidationMixin:
             # TODO check size of SmallIntegerField
             self.bundle[key] = self._validate_bundle_int_or_none(key)
 
-        elif field_type == "PositiveIntergerField":
+        elif field_type == "PositiveIntegerField":
             self.bundle[key] = self._validate_bundle_positive_int(key)
 
         elif field_type == "ManyToManyField":
