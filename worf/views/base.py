@@ -5,7 +5,11 @@ import warnings
 from urllib.parse import parse_qs
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import (
+    ImproperlyConfigured,
+    ObjectDoesNotExist,
+    ValidationError,
+)
 from django.http import JsonResponse
 from django.middleware.gzip import GZipMiddleware
 from django.views import View
@@ -13,7 +17,7 @@ from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 
 from worf.casing import camel_to_snake, whitespace_to_camel
-from worf.exceptions import HTTP_EXCEPTIONS, PermissionsException
+from worf.exceptions import HTTP_EXCEPTIONS, HTTP404, HTTP422, PermissionsException
 from worf.validators import ValidationMixin
 
 gzip_middleware = GZipMiddleware()
@@ -198,20 +202,22 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             self.bundle[field] = raw[key]
 
     def dispatch(self, request, *args, **kwargs):
-        if request.method.lower() in self.http_method_names:
-            handler = getattr(
-                self, request.method.lower(), self.http_method_not_allowed
-            )
-        else:
-            handler = self.http_method_not_allowed
+        method = request.method.lower()
+        handler = self.http_method_not_allowed
+
+        if method in self.http_method_names:
+            handler = getattr(self, method, self.http_method_not_allowed)
 
         try:
             self._check_permissions()
             self._assemble_bundle_from_request_body()
             return handler(request, *args, **kwargs)
         except HTTP_EXCEPTIONS as e:
-            message = e.message
-            return self.render_to_response(dict(message=message), e.status)
+            return self.render_to_response(dict(message=e.message), e.status)
+        except ObjectDoesNotExist as e:
+            return self.render_to_response(dict(message=HTTP404.message), HTTP404.code)
+        except ValidationError as e:
+            return self.render_to_response(dict(message=e.message), HTTP422.message)
 
     def get(self, request, *args, **kwargs):
         """Get is always implicitly available on every endpoint."""

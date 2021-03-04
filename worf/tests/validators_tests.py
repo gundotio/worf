@@ -1,9 +1,9 @@
 import pytest
 from uuid import UUID
 
+from django.core.exceptions import ValidationError
 from django.test import RequestFactory
 
-from worf.exceptions import HTTP422
 from worf.validators import ValidationMixin
 from worf.views import AbstractBaseAPI
 from django.db import models
@@ -22,7 +22,7 @@ class DummyAPI(ValidationMixin):
         try:
             assert value == "(555) 555-5555"
         except AssertionError:
-            raise HTTP422("{value} is not a valid phone number")
+            raise ValidationError("{value} is not a valid phone number")
         return "+5555555555"
 
 
@@ -50,9 +50,9 @@ def test_validate_uuid_passes(view):
     assert result == UUID(string)
 
 
-def test_validate_uuid_raises_http422(view):
+def test_validate_uuid_raises_error(view):
     string = "not-a-uuid"
-    with pytest.raises(HTTP422):
+    with pytest.raises(ValidationError):
         view.validate_uuid(string)
 
 
@@ -62,9 +62,9 @@ def test_validate_email_passes(view):
     assert email == result
 
 
-def test_validate_email_raises_http422(view):
+def test_validate_email_raises_error(view):
     email = "fake.example@com"
-    with pytest.raises(HTTP422):
+    with pytest.raises(ValidationError):
         view.validate_email(email)
 
 
@@ -73,9 +73,9 @@ def test_validate_custom_field_passes(view):
     assert view.validate_phone(phone) == "+5555555555"
 
 
-def test_validate_custom_field_raises_http422(view):
+def test_validate_custom_field_raises_error(view):
     phone = "invalid number"
-    with pytest.raises(HTTP422):
+    with pytest.raises(ValidationError):
         view.validate_phone(phone)
 
 

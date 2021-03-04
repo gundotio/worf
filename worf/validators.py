@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.html import strip_tags
 
-from worf.exceptions import HTTP400, HTTP422, NotImplementedInWorfYet
+from worf.exceptions import HTTP400, NotImplementedInWorfYet
 from worf.casing import snake_to_camel
 
 
@@ -53,7 +53,7 @@ class ValidationMixin:
 
     def _validate_bundle_str(self, key, max_len):
         if not isinstance(self.bundle[key], str):
-            raise HTTP422(f"Field {snake_to_camel(key)} accepts string")
+            raise ValidationError(f"Field {snake_to_camel(key)} accepts string")
 
         if max_len is not None and len(self.bundle[key]) > max_len:
             raise HTTP400(
@@ -69,7 +69,7 @@ class ValidationMixin:
         try:
             integer = int(self.bundle[key])
         except (TypeError, ValueError):
-            raise HTTP422(f"Field {snake_to_camel(key)} accepts an integer")
+            raise ValidationError(f"Field {snake_to_camel(key)} accepts an integer")
 
         return integer
 
@@ -77,7 +77,9 @@ class ValidationMixin:
         integer = self.validate_bundle_int(key)
 
         if integer < 0:
-            raise HTTP422(f"Field {snake_to_camel(key)} accepts a positive integer")
+            raise ValidationError(
+                f"Field {snake_to_camel(key)} accepts a positive integer"
+            )
 
         return integer
 
@@ -88,30 +90,29 @@ class ValidationMixin:
             self.bundle[key] = [int(id) for id in self.bundle[key]]
         except ValueError:
             msg = f"Field {snake_to_camel(key)} accepts an array of integers. Got {self.bundle[key]} instead."
-            raise HTTP422(msg + " I couldn't coerce the values.")
+            raise ValidationError(msg + " I couldn't coerce the values.")
 
     def get_field_type(self, key):
         return self.model._meta.get_field(key).get_internal_type()
 
     def validate_int(self, value):
         if not isinstance(value, int):
-            raise HTTP422(f"Expected integer, got {value}")
+            raise ValidationError(f"Expected integer, got {value}")
 
     def validate_uuid(self, value):
         if value is None:
-            raise HTTP422(f"Expected UUID, got {value}")
+            raise ValidationError(f"Expected UUID, got {value}")
         try:
             return UUID(value)
         except (TypeError, ValueError):
-            raise HTTP422(f"Expected UUID, got {value}")
+            raise ValidationError(f"Expected UUID, got {value}")
 
     def validate_email(self, value):
         email = value.strip().lower()
-
         try:
             validate_email(email)
         except ValidationError:
-            raise HTTP422("{value} is not a valid email address")
+            raise ValidationError("{value} is not a valid email address")
         return email
 
     def validate_bundle(self, key):
@@ -122,7 +123,7 @@ class ValidationMixin:
         @return value:
             - If the HTTP method is not PATCH and `key` does not exist in the
         model api_update_fields method, return False.
-            - If an error is detected, HTTP400 or HTTP422 will be raised
+            - If an error is detected, HTTP400 or ValidationError will be raised
             - If all checks pass, True is returned
 
         Side Effects:
@@ -140,10 +141,10 @@ class ValidationMixin:
             if settings.DEBUG:
                 err_msg += f":: {self.codepath}.{self.api_update_field_method_name()}"
                 err_msg += f":: {self.api_update_fields()}"
-            raise HTTP422(err_msg)
+            raise ValidationError(err_msg)
 
         if not hasattr(self.model, key):
-            raise HTTP422(f"{snake_to_camel(key)} does not exist")
+            raise ValidationError(f"{snake_to_camel(key)} does not exist")
 
         field_type = self.get_field_type(key)
 
@@ -182,7 +183,7 @@ class ValidationMixin:
             # try:
             #     json.loads(self.bundle[key])
             # except ValueError:
-            #     raise HTTP422(f"Field {snake_to_camel(key)} requires valid JSON")
+            #     raise ValidationError(f"Field {snake_to_camel(key)} requires valid JSON")
 
         else:
             err_msg = f"{field_type} has no validation method for {key}"
