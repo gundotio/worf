@@ -217,7 +217,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
         except ObjectDoesNotExist as e:
             return self.render_to_response(dict(message=HTTP404.message), HTTP404.code)
         except ValidationError as e:
-            return self.render_to_response(dict(message=e.message), HTTP422.message)
+            return self.render_to_response(dict(message=e.message), HTTP422.code)
 
     def get(self, request, *args, **kwargs):
         """Get is always implicitly available on every endpoint."""
