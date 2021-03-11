@@ -235,6 +235,7 @@ class ListAPI(AbstractBaseAPI):
             payload.update(
                 {
                     "debug": {
+                        "api_method": self.api_method,
                         "bundle": self.bundle,
                         "lookup_kwargs": self.lookup_kwargs,
                         "query": self.query,
