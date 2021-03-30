@@ -38,10 +38,10 @@ def view():
     return view
 
 
-# def test_validate_bundle(view):
-#     assert view.validate_bundle("id") == UUID("ce6a5b4f-599d-4442-8a74-d7a8d2b54854")
-#     assert view.validate_bundle("email") == "something@example.com"
-#     assert view.validate_bundle("phone") == "+5555555555"
+def test_validate_bundle(view):
+    assert view.validate_bundle("id") == UUID("ce6a5b4f-599d-4442-8a74-d7a8d2b54854")
+    assert view.validate_bundle("email") == "something@example.com"
+    assert view.validate_bundle("phone") == "+5555555555"
 
 
 def test_validate_uuid_passes(view):
