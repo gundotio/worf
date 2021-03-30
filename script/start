@@ -1,4 +1,5 @@
 #!/bin/bash
 
+set -eou pipefail
 cd "$(dirname "$0")/.."
 docker run --rm -v ${PWD}:/app -d --name worf worf tail -f /dev/null
