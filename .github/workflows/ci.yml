@@ -13,5 +13,4 @@ jobs:
           python-version: 3.8.8
       - run: pip install pipenv
       - run: pipenv install --dev --python 3.8.8
-      - run: pipenv install "django<3.2"
       - run: pipenv run pytest
