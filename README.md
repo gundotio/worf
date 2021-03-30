@@ -1,6 +1,8 @@
 Wade's own REST Framework
 =========================
 
+![CI](https://github.com/gundotio/worf/workflows/CI/badge.svg)
+
 **A more Djangonic approach to Django REST APIs.**
 
 [![WoRF](https://i.kym-cdn.com/photos/images/newsfeed/001/231/196/e18.jpg)][worf-docs]
