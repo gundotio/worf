@@ -6,11 +6,24 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{matrix.python-version}}
+      - run: pip install pipenv
+      - run: pipenv install --dev --python ${{matrix.python-version}}
+      - run: pipenv run pytest
+
+  lint:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8.8
-      - run: pip install pipenv
-      - run: pipenv install --dev --python 3.8.8
-      - run: pipenv run pytest
+      - run: pip install black
+      - run: black worf --check
