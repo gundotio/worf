@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -eoux pipefail
+cd "$(dirname "$0")/.."
+
+CURRENT_VERSION="$(git tag --sort=v:refname | tail -1)"
+git tag -d $CURRENT_VERSION
+vim CHANGELOG.md
+git add CHANGELOG.md
+git commit --amend --no-edit --no-verify
+git tag $CURRENT_VERSION
+
+# todo update version in setup.py
