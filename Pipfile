@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+django = "<3.2"
 
 [dev-packages]
 autopep8 = "*"
@@ -12,7 +13,6 @@ coverage = "*"
 factory-boy = "*"
 flake8 = "*"
 flake8-quotes = "*"
-prospector = {extras = ["with_bandit"], version = "*"}
 pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
