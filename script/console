@@ -3,4 +3,4 @@
 set -eou pipefail
 cd "$(dirname "$0")/.."
 
-docker build -t worf .
+docker exec -it worf bash

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eoux pipefail
+set -eou pipefail
 cd "$(dirname "$0")/.."
 
 CURRENT_VERSION="$(git tag --sort=v:refname | tail -1)"

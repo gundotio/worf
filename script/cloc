@@ -1,9 +1,10 @@
 #!/bin/bash
 
+set -eou pipefail
 cd "$(dirname "$0")/../"
 
-if [ -f .clocignore ]; then 
+if [ -f .clocignore ]; then
   cloc --exclude-dir=$(tr '\n' ',' < .clocignore) . -q
-else 
+else
   cloc .
 fi
