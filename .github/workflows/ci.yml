@@ -8,14 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python: [3.8, 3.9]
+        django: ["3.0", 3.1]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{matrix.python-version}}
+          python-version: ${{matrix.python}}
       - run: pip install pipenv
-      - run: pipenv install --dev --python ${{matrix.python-version}}
+      - run: pipenv install --dev --python ${{matrix.python}}
+      - run: pipenv install django~=${{matrix.django}}
       - run: pipenv run pytest
 
   lint:
