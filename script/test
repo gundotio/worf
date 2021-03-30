@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -eou pipefail
+cd "$(dirname "$0")/.."
+
+play_success() {
+  case $OSTYPE in
+  darwin*)
+    say -v yuri -r 10 "Tests have passed"
+  ;;
+  esac
+  echo "==> Tests Passed ⛵️"
+}
+play_fail() {
+  case $OSTYPE in
+  darwin*)
+    for i in {1..5}; do afplay /System/Library/Sounds/Pop.aiff; done
+  ;;
+  esac
+  echo "==> Tests Failed 💥"
+  exit 1
+}
+
+bin/pytest \
+  --cov \
+  --cov-report html \
+  --cov-report term:skip-covered \
+  && play_success || play_fail
