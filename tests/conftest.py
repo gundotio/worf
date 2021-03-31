@@ -1,12 +1,9 @@
-import pytest
-
 import django
 from django.conf import settings
 
 
 def pytest_configure():
     """Initialize Django settings."""
-
     settings.configure(
         SECRET_KEY="secret",
         DEBUG=True,
