@@ -11,6 +11,7 @@ test_uuid = "ce6a5b4f-599d-4442-8a74-d7a8d2b54854"
 test_email = "something@example.com"
 test_phone = "(555) 555-5555"
 
+
 @pytest.fixture
 @pytest.mark.django_db
 def view():
@@ -21,7 +22,7 @@ def view():
         "phone": test_phone,
     }
     DummyModel.objects.create(id=UUID(test_uuid), email=test_email, phone=test_phone)
-    view.request = RequestFactory().patch(f"/api/v1/{test_uuid}/")
+    view.request = RequestFactory().patch(f"/{test_uuid}/")
     view.kwargs = dict(id=test_uuid)
     return view
 
