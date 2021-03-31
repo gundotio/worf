@@ -87,8 +87,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
     def name(self):
         if isinstance(self.payload_key, str):
             return self.payload_key
-        name = whitespace_to_camel(self.model._meta.verbose_name_plural)
-        return name[:1].lower() + name[1:]
+        return whitespace_to_camel(self.model._meta.verbose_name_plural)
 
     def _check_permissions(self):
         """Return a permissions exception when in debug mode instead of 404."""
