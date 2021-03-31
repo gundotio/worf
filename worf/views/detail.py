@@ -1,7 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import get_object_or_404
 
+from worf.exceptions import HTTP404
 from worf.views.base import AbstractBaseAPI
+from worf.shortcuts import get_instance_or_http404
 
 
 class ChoicesFieldOptionsAPI(AbstractBaseAPI):
@@ -22,7 +23,7 @@ class DetailAPI(AbstractBaseAPI):
         """Return the model api_update_fields, used for update."""
         return getattr(self.get_instance(), self.api_update_field_method_name())()
 
-    def api_response_serializer(self):
+    def serialize(self):
         """Return the model api, used for responses."""
         payload = getattr(self.get_instance(), self.api_method)()
         if not isinstance(payload, dict):
@@ -32,10 +33,6 @@ class DetailAPI(AbstractBaseAPI):
             raise ImproperlyConfigured(msg)
         return payload
 
-    def serialize(self):
-        """Wrap the response serializer, for clarity."""
-        return self.api_response_serializer()
-
     def get_instance(self):
         # TODO support multiple lookup_fields
         self.lookup_kwargs = {self.lookup_field: self.kwargs[self.lookup_url_kwarg]}
@@ -43,9 +40,7 @@ class DetailAPI(AbstractBaseAPI):
         self.validate_lookup_field_values()
 
         if self.instance is None:
-            # TODO use a custom get_object_or_404 that raises a 404 response,
-            # instead of using django's default 404 page
-            self.instance = get_object_or_404(self.model, **self.lookup_kwargs)
+            self.instance = get_instance_or_http404(self.model, **self.lookup_kwargs)
 
         return self.instance
 
