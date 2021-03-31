@@ -208,12 +208,12 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             handler = getattr(self, method, self.http_method_not_allowed)
 
         try:
-            self._check_permissions()
-            self._assemble_bundle_from_request_body()
-            return handler(request, *args, **kwargs)
+            self._check_permissions()  # only returns 200 or HTTP_EXCEPTIONS
+            self._assemble_bundle_from_request_body()  # sets self.bundle
+            return handler(request, *args, **kwargs)  # calls self.serialize()
         except HTTP_EXCEPTIONS as e:
             return self.render_to_response(dict(message=e.message), e.status)
-        except ObjectDoesNotExist as e:
+        except ObjectDoesNotExist:
             return self.render_to_response(
                 dict(message=HTTP404.message), HTTP404.status
             )
