@@ -1,7 +1,9 @@
-from worf.views.api import (
+from worf.views.detail import (
     ChoicesFieldOptionsAPI,
     DetailAPI,
     DetailUpdateAPI,
+)
+from worf.views.list import (
     ListAPI,
     ListCreateAPI,
 )
