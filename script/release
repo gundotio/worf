@@ -10,4 +10,4 @@ git add CHANGELOG.md
 git commit --amend --no-edit --no-verify
 git tag $CURRENT_VERSION
 
-# todo update version in setup.py
+echo "__version__ = \"${CURRENT_VERSION}\""

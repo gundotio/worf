@@ -19,6 +19,7 @@ pytest-django = "*"
 pytest-factoryboy = "*"
 pytest-xdist = {extras = ["psutil"], version = "*"}
 pytest-watch = "*"
+build = "*"
 
 [requires]
 python_version = "3.8"
