@@ -7,7 +7,12 @@ CURRENT_VERSION="$(git tag --sort=v:refname | tail -1)"
 git tag -d $CURRENT_VERSION
 vim CHANGELOG.md
 git add CHANGELOG.md
+
+echo "__version__ = \"${CURRENT_VERSION}\"" > worf/__init__.py
+git add worf/__init__.py
+
 git commit --amend --no-edit --no-verify
 git tag $CURRENT_VERSION
 
-echo "__version__ = \"${CURRENT_VERSION}\""
+./bin/pipenv run python3 -m build
+./bin/pipenv run python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p $TWINE_PASSWORD

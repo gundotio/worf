@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/gundotio/worf/compare/v0.1.3...v0.1.4) (2021-04-01)
+
+- Improves setup for pypi
+- Improves tetst coverage
+- Adds get_instance_or_http404 to replace djago's get_object_or_404, 
+to return javascript error instead of 404 page
+
 ### [0.1.3](https://github.com/gundotio/worf/compare/v0.1.2...v0.1.3) (2021-03-30)
 
 - Adds docker container, scripts to rule them all, binstubs, gitignore

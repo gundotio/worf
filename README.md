@@ -1,11 +1,11 @@
-Wade's own REST Framework
+Worf
 =========================
 
 ![CI](https://github.com/gundotio/worf/workflows/CI/badge.svg)
 
 **A more Djangonic approach to Django REST APIs.**
 
-[![WoRF](https://i.kym-cdn.com/photos/images/newsfeed/001/231/196/e18.jpg)][worf-docs]
+[![Worf](https://i.kym-cdn.com/photos/images/newsfeed/001/231/196/e18.jpg)][worf-docs]
 
 Full documentation for the project is available at [https://memory-alpha.fandom.com/wiki/Worf][worf-docs].
 
@@ -14,8 +14,19 @@ Full documentation for the project is available at [https://memory-alpha.fandom.
 
 ### Overview
 
-Worf is a small django API framework that lets you quickly build out an api using
+Worf is a small Django API framework that lets you quickly build out an api using
 simple model methods. Contributions welcome.
+
+This project is stable but will change drastically.
+
+### Roadmap
+
+- Abstracting serializers away from model methods
+- More support for different HTTP methods
+- Support for user-generated validators
+- Better file upload support
+- Better test coverage
+- Browsable API docs
 
 #### API Method
 

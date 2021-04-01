@@ -47,6 +47,7 @@ setup(
     keywords="django, rest, framework, api",
     license="MIT",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     name="worf",
     packages=find_packages(),
     python_requires=">=3.8",
