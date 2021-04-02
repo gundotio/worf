@@ -130,7 +130,11 @@ class ListAPI(AbstractBaseAPI):
             return queryset
 
         paginator = Paginator(queryset, self.results_per_page)
-        self.page_num = int(self.request.GET.get("p", 1))
+
+        self.page_num = self.request.GET.get("p", 1)
+        if not isinstance(self.page_num, int) or self.page_num < 1:
+            self.page_num = 1
+
         self.num_pages = paginator.num_pages
         self.count = paginator.count
 
