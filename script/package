@@ -6,16 +6,18 @@ cd "$(dirname "$0")/.."
 CURRENT_VERSION="$(git tag --sort=v:refname | tail -1)"
 
 build() {
+  # If old versions are present in dist it will die on upload
+  echo "building"
   if [ -d dist ]; then
     rm dist/* || rmdir dist
   fi
   ./bin/pipenv run python3 -m build
 }
 
-if [ -z "dist/worf-${CURRENT_VERSION}-py3-none-any.whl" ] || [ -z "dist/worf-${CURRENT_VERSION}-.tar.gz" ]; then
+if [ "$(ls -l dist/ | wc -l)" -ne 3 ]; then
   build
 elif [ ! -z ${1+x} ] && [ $1 == "--build" ]; then
-  build
+  build  # Build on explict build command
 fi
 
 
