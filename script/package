@@ -1,9 +1,26 @@
 #!/bin/bash
 
-set -eou pipefail
+set -euxo pipefail
 cd "$(dirname "$0")/.."
 
 CURRENT_VERSION="$(git tag --sort=v:refname | tail -1)"
 
-./bin/pipenv run python3 -m build
-./bin/pipenv run python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p $TWINE_PASSWORD
+build() {
+  if [ -d dist ]; then
+    rm dist/* || rmdir dist
+  fi
+  ./bin/pipenv run python3 -m build
+}
+
+if [ -z "dist/worf-${CURRENT_VERSION}-py3-none-any.whl" ] || [ -z "dist/worf-${CURRENT_VERSION}-.tar.gz" ]; then
+  build
+elif [ ! -z ${1+x} ] && [ $1 == "--build" ]; then
+  build
+fi
+
+
+if [ ! -z ${1+x} ] && [ $1 == "--force" ]; then
+  ./bin/pipenv run python3 -m twine upload dist/* -u __token__ -p $TWINE_PASSWORD
+else
+  ./bin/pipenv run python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p $TWINE_PASSWORD
+fi

@@ -68,7 +68,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
                 f"{self.codepath}.permissions must be type: list"
             )
 
-        for method in ["post", "patch", "delete"]:
+        for method in ["post", "patch", "put", "delete"]:
             if method in dir(self) and not len(self.permissions):
                 warnings.warn(
                     "\n{} method allowed on {} without permissions.".format(
