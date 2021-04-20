@@ -21,8 +21,8 @@ elif [ ! -z ${1+x} ] && [ $1 == "--build" ]; then
 fi
 
 
-if [ ! -z ${1+x} ] && [ $1 == "--force" ]; then
+if [ ! -z ${1+x} ] && [ $1 == "--release" ]; then
   ./bin/pipenv run python3 -m twine upload dist/* -u __token__ -p $TWINE_PASSWORD
-else
+elif [ ! -z ${1+x} ] && [ $1 == "--dry-run" ]; then
   ./bin/pipenv run python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p $TWINE_PASSWORD
 fi
