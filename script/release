@@ -13,6 +13,3 @@ git add worf/__init__.py
 
 git commit --amend --no-edit --no-verify
 git tag $CURRENT_VERSION
-
-./bin/pipenv run python3 -m build
-./bin/pipenv run python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p $TWINE_PASSWORD
