@@ -145,12 +145,20 @@ class ListAPI(AbstractBaseAPI):
 
     def serialize(self):
 
-        payload = {
-            str(self.name): [
-                getattr(instance, self.api_method)()
-                for instance in self.paginated_results()
-            ],
-        }
+        if self.serializer is None:
+            payload = {
+                str(self.name): [
+                    getattr(instance, self.api_method)()
+                    for instance in self.paginated_results()
+                ],
+            }
+        else:
+            payload = {
+                str(self.name): [
+                    self.serializer(instance).read()
+                    for instance in self.paginated_results
+                ]
+            }
 
         if self.results_per_page:
             payload.update(
@@ -163,22 +171,25 @@ class ListAPI(AbstractBaseAPI):
                 }
             )
 
+        if not settings.DEBUG:
+            return payload
+
         if not hasattr(self, "lookup_kwargs"):
             # Debug throws an error in the event there are no lookup_kwargs
             self.lookup_kwargs = {}
 
-        if settings.DEBUG:
-            payload.update(
-                {
-                    "debug": {
-                        "api_method": self.api_method,
-                        "bundle": self.bundle,
-                        "lookup_kwargs": self.lookup_kwargs,
-                        "query": self.query,
-                        "q_objs": str(self.q_objects),
-                    }
+        payload.update(
+            {
+                "debug": {
+                    "api_method": self.api_method,
+                    "bundle": self.bundle,
+                    "lookup_kwargs": self.lookup_kwargs,
+                    "query": self.query,
+                    "q_objs": str(self.q_objects),
                 }
-            )
+            }
+        )
+
         return payload
 
 

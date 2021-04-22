@@ -55,6 +55,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
     model = None
     permissions = []
     api_method = "api"
+    serializer = None
     payload_key = None
 
     def __init__(self, *args, **kwargs):

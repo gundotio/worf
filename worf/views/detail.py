@@ -1,6 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
 
-from worf.exceptions import HTTP404
 from worf.views.base import AbstractBaseAPI
 from worf.shortcuts import get_instance_or_http404
 
@@ -25,11 +24,16 @@ class DetailAPI(AbstractBaseAPI):
 
     def serialize(self):
         """Return the model api, used for responses."""
-        payload = getattr(self.get_instance(), self.api_method)()
-        if not isinstance(payload, dict):
-            msg = (
-                f"{self.model.__name__}.{self.api_method}() did not return a dictionary"
+        if self.serializer is not None:
+            payload = self.serializer(self.get_instance()).read()
+            msg = "{} did not return a dictionary".format(self.serializer)
+        else:
+            payload = getattr(self.get_instance(), self.api_method)()
+            msg = "{}.{}() did not return a dictionary".format(
+                self.model.__name__, self.api_method
             )
+
+        if not isinstance(payload, dict):
             raise ImproperlyConfigured(msg)
         return payload
 

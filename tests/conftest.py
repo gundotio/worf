@@ -23,7 +23,7 @@ def pytest_configure():
             "django.contrib.auth.middleware.AuthenticationMiddleware",
             "django.contrib.messages.middleware.MessageMiddleware",
         ],
-        ROOT_URLCONF="test.urls",
+        ROOT_URLCONF="tests.urls",
         DATABASES={
             "default": {
                 "ENGINE": "django.db.backends.sqlite3",
