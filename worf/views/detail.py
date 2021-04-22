@@ -26,6 +26,8 @@ class DetailAPI(AbstractBaseAPI):
 
     def api_update_fields(self):
         """Return the model api_update_fields, used for update."""
+        if self.serializer is not None:
+            return self.serializer.write()
         return getattr(self.get_instance(), self.api_update_field_method_name())()
 
     def serialize(self):

@@ -8,7 +8,8 @@ class Serializer:
     def read(self):
         return dict()
 
-    def write(self):
+    @classmethod
+    def write(cls):
         return []
 
     @classmethod
