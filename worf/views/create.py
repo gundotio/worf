@@ -5,6 +5,9 @@ from worf.views.base import AbstractBaseAPI
 
 
 class CreateAPI(AbstractBaseAPI):
+    def serialize(self):
+        return {}
+
     def post(self, request, *args, **kwargs):
 
         # Deprecate ------------------------------------------------------------
@@ -20,6 +23,7 @@ class CreateAPI(AbstractBaseAPI):
 
         for key in self.bundle.keys():
             self.validate_bundle(key)
+            # this should be moved into validate bundle
             if key not in self.serializer.create():
                 raise ValidationError(
                     "{} not allowed when creating {}".format(
@@ -27,9 +31,5 @@ class CreateAPI(AbstractBaseAPI):
                     )
                 )
 
-        if set(self.bundle.keys()) != set(self.serializer.create()):
-            raise ValidationError(
-                "{} are required to create {}".format(
-                    [snake_to_camel(key) for key in self.serializer.create()], self.name
-                )
-            )
+        new_instance = self.model.objects.create(**self.bundle)
+        return self.render_to_response(self.serializer(new_instance).read(), 201)

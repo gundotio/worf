@@ -200,5 +200,5 @@ class ListAPI(AbstractBaseAPI):
         return payload
 
 
-class ListCreateAPI(CreateAPI, ListAPI):
+class ListCreateAPI(ListAPI, CreateAPI):
     pass
