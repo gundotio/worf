@@ -122,7 +122,7 @@ class ValidationMixin:
         @param key _str_ the model attribute to check against.
         @return value:
             - If the HTTP method is not PATCH and `key` does not exist in the
-        model api_update_fields method, return False.
+        model serializer method, return False.
             - If an error is detected, HTTP400 or ValidationError will be raised
             - If all checks pass, True is returned
 
@@ -136,11 +136,11 @@ class ValidationMixin:
         # self.request.method == 'POST' or
         if (
             self.request.method == "PATCH" or self.request.method == "PUT"
-        ) and key not in self.api_update_fields():
+        ) and key not in self.get_serializer():
             err_msg = f"{snake_to_camel(key)} is not editable"
             if settings.DEBUG:
                 err_msg += f":: {self.codepath}.{self.api_update_field_method_name()}"
-                err_msg += f":: {self.api_update_fields()}"
+                err_msg += f":: {self.get_serializer()}"
             raise ValidationError(err_msg)
 
         if not hasattr(self.model, key):

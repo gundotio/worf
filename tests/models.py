@@ -7,11 +7,7 @@ class DummyModel(models.Model):
     phone = models.CharField(max_length=64)
 
     def api(self):
-        return dict(
-            id=self.id,
-            email=self.email,
-            phone=self.phone
-        )
+        return dict(id=self.id, email=self.email, phone=self.phone)
 
     def api_update_fields(self):
         return [
