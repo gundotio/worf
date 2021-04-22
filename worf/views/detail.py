@@ -5,6 +5,9 @@ from worf.shortcuts import get_instance_or_http404
 
 
 class ChoicesFieldOptionsAPI(AbstractBaseAPI):
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response()
+
     def serialize(self):
         return getattr(self.model, self.api_method)()
 
@@ -13,6 +16,9 @@ class DetailAPI(AbstractBaseAPI):
     lookup_field = "id"
     lookup_url_kwarg = "id"
     instance = None
+
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response()
 
     @classmethod
     def api_update_field_method_name(cls):

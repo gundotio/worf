@@ -5,7 +5,6 @@ from worf.views.base import AbstractBaseAPI
 
 
 class CreateAPI(AbstractBaseAPI):
-
     def post(self, request, *args, **kwargs):
 
         # Deprecate ------------------------------------------------------------
