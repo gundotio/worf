@@ -3,11 +3,14 @@ class Serializer:
         self.model = model
         super().__init__()
 
+    # todo add validation that fields in these methods are actually on the model
+
     def read(self):
         return dict()
 
     def write(self):
         return []
 
-    def create(self):
+    @classmethod
+    def create(cls):
         return []
