@@ -22,7 +22,8 @@ class DummyAPI(DetailUpdateAPI):
 
 class UserSerializer(Serializer):
 
-    def write(self):
+    @classmethod
+    def write(cls):
         return [
             "username",
             "email",
