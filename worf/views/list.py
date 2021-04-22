@@ -19,6 +19,9 @@ class ListAPI(AbstractBaseAPI):
     page_num = 1
     num_pages = 1
 
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not isinstance(self.filters, dict):
