@@ -4,6 +4,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 
 from worf.views.base import AbstractBaseAPI
+from worf.views.create import CreateAPI
 from worf.exceptions import HTTP420
 
 
@@ -145,6 +146,7 @@ class ListAPI(AbstractBaseAPI):
 
     def serialize(self):
 
+        # Deprecate ------------------------------------------------------------
         if self.serializer is None:
             payload = {
                 str(self.name): [
@@ -152,6 +154,7 @@ class ListAPI(AbstractBaseAPI):
                     for instance in self.paginated_results()
                 ],
             }
+        # ------------------------------------------------------------ Deprecate
         else:
             payload = {
                 str(self.name): [
@@ -186,6 +189,7 @@ class ListAPI(AbstractBaseAPI):
                     "lookup_kwargs": self.lookup_kwargs,
                     "query": self.query,
                     "q_objs": str(self.q_objects),
+                    "serializer": self.serializer,
                 }
             }
         )
@@ -193,11 +197,5 @@ class ListAPI(AbstractBaseAPI):
         return payload
 
 
-class ListCreateAPI(ListAPI):
-    def post(self, request, *args, **kwargs):
-        for key in self.bundle.keys():
-            self.validate_bundle(key)
-
-        new_instance = self.model.objects.create(**self.bundle)
-        # TODO except certain errors
-        return self.render_to_response(getattr(new_instance, self.api_method)(), 201)
+class ListCreateAPI(CreateAPI, ListAPI):
+    pass

@@ -24,14 +24,17 @@ class DetailAPI(AbstractBaseAPI):
 
     def serialize(self):
         """Return the model api, used for responses."""
-        if self.serializer is not None:
-            payload = self.serializer(self.get_instance()).read()
-            msg = "{} did not return a dictionary".format(self.serializer)
-        else:
+
+        # Deprecate ------------------------------------------------------------
+        if self.serializer is None:
             payload = getattr(self.get_instance(), self.api_method)()
             msg = "{}.{}() did not return a dictionary".format(
                 self.model.__name__, self.api_method
             )
+        # ------------------------------------------------------------ Deprecate
+        else:
+            payload = self.serializer(self.get_instance()).read()
+            msg = "{} did not return a dictionary".format(self.serializer)
 
         if not isinstance(payload, dict):
             raise ImproperlyConfigured(msg)
