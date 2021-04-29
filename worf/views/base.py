@@ -155,6 +155,9 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
         return self.model._meta.get_field(field).get_internal_type()
 
+    def get_serializer(self):
+        return self.serializer
+
     def validate_lookup_field_values(self):
         # todo check for each lookup kwarg
         for field, url_kwarg in self.lookup_kwargs.items():

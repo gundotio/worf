@@ -148,9 +148,10 @@ class ListAPI(AbstractBaseAPI):
             return []
 
     def serialize(self):
+        serializer = self.get_serializer()
 
         # Deprecate ------------------------------------------------------------
-        if self.serializer is None:
+        if serializer is None:
             payload = {
                 str(self.name): [
                     getattr(instance, self.api_method)()
@@ -161,8 +162,7 @@ class ListAPI(AbstractBaseAPI):
         else:
             payload = {
                 str(self.name): [
-                    self.serializer(instance).read()
-                    for instance in self.paginated_results
+                    serializer(instance).read() for instance in self.paginated_results
                 ]
             }
 
@@ -192,7 +192,7 @@ class ListAPI(AbstractBaseAPI):
                     "lookup_kwargs": self.lookup_kwargs,
                     "query": self.query,
                     "q_objs": str(self.q_objects),
-                    "serializer": self.serializer,
+                    "serializer": serializer,
                 }
             }
         )

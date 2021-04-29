@@ -9,9 +9,10 @@ class CreateAPI(AbstractBaseAPI):
         return {}
 
     def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer()
 
         # Deprecate ------------------------------------------------------------
-        if self.serializer is None:
+        if serializer is None:
             for key in self.bundle.keys():
                 self.validate_bundle(key)
 
@@ -24,7 +25,7 @@ class CreateAPI(AbstractBaseAPI):
         for key in self.bundle.keys():
             self.validate_bundle(key)
             # this should be moved into validate bundle
-            if key not in self.serializer.create():
+            if key not in serializer.create():
                 raise ValidationError(
                     "{} not allowed when creating {}".format(
                         snake_to_camel(key), self.name
@@ -32,4 +33,4 @@ class CreateAPI(AbstractBaseAPI):
                 )
 
         new_instance = self.model.objects.create(**self.bundle)
-        return self.render_to_response(self.serializer(new_instance).read(), 201)
+        return self.render_to_response(serializer(new_instance).read(), 201)
