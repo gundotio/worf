@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/gundotio/worf/compare/v0.2.0...v0.2.1) (2021-04-29)
+
+- Makes Serializers model-agnostic
+- Adds LegacySerializer for backwards compatibility 
+- Adds official support for python 3.7
+
 ## [0.2.0](https://github.com/gundotio/worf/compare/v0.1.6...v0.2.0) (2021-04-26)
 
 - Removes implicit `GET` method from all APIViews
