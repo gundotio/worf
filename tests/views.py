@@ -21,20 +21,19 @@ class DummyAPI(DetailUpdateAPI):
 
 
 class UserSerializer(Serializer):
-    @classmethod
-    def write(cls):
+    def read(self, model):
+        return dict(
+            username=model.username,
+            lastLogin=model.last_login,
+            dateJoined=model.date_joined,
+            email=model.email,
+        )
+
+    def write(self):
         return [
             "username",
             "email",
         ]
-
-    def read(self):
-        return dict(
-            username=self.model.username,
-            lastLogin=self.model.last_login,
-            dateJoined=self.model.date_joined,
-            email=self.model.email,
-        )
 
 
 class UserAPI(DetailUpdateAPI):

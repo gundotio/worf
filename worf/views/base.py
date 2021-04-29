@@ -18,6 +18,7 @@ from django.utils.decorators import method_decorator
 
 from worf.casing import camel_to_snake, whitespace_to_camel
 from worf.exceptions import HTTP_EXCEPTIONS, HTTP404, HTTP422, PermissionsException
+from worf.serializers import LegacySerializer
 from worf.validators import ValidationMixin
 
 gzip_middleware = GZipMiddleware()
@@ -33,7 +34,6 @@ class APIResponse(View):
         raise NotImplementedError
 
     def render_to_response(self, data=None, status_code=None):
-
         payload = data if data is not None else self.serialize()
 
         if payload is None:
@@ -156,7 +156,12 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
         return self.model._meta.get_field(field).get_internal_type()
 
     def get_serializer(self):
-        return self.serializer
+        if self.serializer:
+            return self.serializer()
+        if self.api_method:
+            return LegacySerializer(self.model, self.api_method)
+        msg = f"{self.__name__}.get_serializer() did not return a serializer"
+        raise ImproperlyConfigured(msg)
 
     def validate_lookup_field_values(self):
         # todo check for each lookup kwarg

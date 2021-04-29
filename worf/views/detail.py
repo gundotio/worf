@@ -20,34 +20,12 @@ class DetailAPI(AbstractBaseAPI):
     def get(self, request, *args, **kwargs):
         return self.render_to_response()
 
-    @classmethod
-    def api_update_field_method_name(cls):
-        return f"{cls.api_method}_update_fields"
-
-    def get_serializer(self):
-        """Return the model api_update_fields, used for update."""
-        serializer = super().get_serializer()
-        if serializer is not None:
-            return serializer.write()
-        return getattr(self.get_instance(), self.api_update_field_method_name())()
-
     def serialize(self):
         """Return the model api, used for responses."""
         serializer = self.get_serializer()
-
-        # Deprecate ------------------------------------------------------------
-        if serializer is None:
-            payload = getattr(self.get_instance(), self.api_method)()
-            msg = "{}.{}() did not return a dictionary".format(
-                self.model.__name__, self.api_method
-            )
-        # ------------------------------------------------------------ Deprecate
-        else:
-            payload = serializer(self.get_instance()).read()
-            msg = "{} did not return a dictionary".format(serializer)
-
+        payload = serializer.read(self.get_instance())
         if not isinstance(payload, dict):
-            raise ImproperlyConfigured(msg)
+            raise ImproperlyConfigured(f"{serializer} did not return a dictionary")
         return payload
 
     def get_instance(self):

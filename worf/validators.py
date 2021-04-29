@@ -134,13 +134,11 @@ class ValidationMixin:
         """
         # POST cannot validate b/c it allows fields not in api_update_fields
         # self.request.method == 'POST' or
-        if (
-            self.request.method == "PATCH" or self.request.method == "PUT"
-        ) and key not in self.get_serializer():
+        serializer = self.get_serializer()
+        if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
             err_msg = f"{snake_to_camel(key)} is not editable"
             if settings.DEBUG:
-                err_msg += f":: {self.codepath}.{self.api_update_field_method_name()}"
-                err_msg += f":: {self.get_serializer()}"
+                err_msg += f":: {serializer}"
             raise ValidationError(err_msg)
 
         if not hasattr(self.model, key):

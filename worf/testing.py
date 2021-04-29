@@ -21,7 +21,7 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False, overrides
     """
 
     bundle = {
-        **bundle_factory(instance, API.api_update_field_method_name()),
+        **bundle_factory(instance, f"{API.api_method}_update_fields"),
         **overrides,
     }
     response = TestCase.client.get(uri)
