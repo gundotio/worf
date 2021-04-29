@@ -150,21 +150,11 @@ class ListAPI(AbstractBaseAPI):
     def serialize(self):
         serializer = self.get_serializer()
 
-        # Deprecate ------------------------------------------------------------
-        if serializer is None:
-            payload = {
-                str(self.name): [
-                    getattr(instance, self.api_method)()
-                    for instance in self.paginated_results()
-                ],
-            }
-        # ------------------------------------------------------------ Deprecate
-        else:
-            payload = {
-                str(self.name): [
-                    serializer(instance).read() for instance in self.paginated_results
-                ]
-            }
+        payload = {
+            str(self.name): [
+                serializer.read(instance) for instance in self.paginated_results()
+            ]
+        }
 
         if self.results_per_page:
             payload.update(
@@ -192,7 +182,7 @@ class ListAPI(AbstractBaseAPI):
                     "lookup_kwargs": self.lookup_kwargs,
                     "query": self.query,
                     "q_objs": str(self.q_objects),
-                    "serializer": serializer,
+                    "serializer": str(serializer),
                 }
             }
         )
