@@ -24,4 +24,8 @@ class CreateAPI(AbstractBaseAPI):
                 )
 
         new_instance = self.model.objects.create(**self.bundle)
+
+        if kwargs.get("return_instance", False):
+            return new_instance
+
         return self.render_to_response(serializer.read(new_instance), 201)
