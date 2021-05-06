@@ -59,9 +59,10 @@ class ListAPI(AbstractBaseAPI):
             return
 
         self.set_bundle_from_querystring()
-        # Whatever is not q or p as a querystring param will
-        # be used for key-value search."""
+        # Whatever is not q or page as a querystring param will
+        # be used for key-value search.
         search_string = self.bundle.get("q", False)
+        self.bundle.pop("page", None)
         self.bundle.pop("p", None)
         self.bundle.pop("q", None)
 
@@ -126,6 +127,7 @@ class ListAPI(AbstractBaseAPI):
     def paginated_results(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PAGINATION
         queryset = self.get_queryset()
+        request = self.request
 
         if settings.DEBUG:
             self.query = str(queryset.query)
@@ -135,7 +137,7 @@ class ListAPI(AbstractBaseAPI):
 
         paginator = Paginator(queryset, self.results_per_page)
 
-        self.page_num = int(self.request.GET.get("p", 1))
+        self.page_num = int(request.GET.get("page") or request.GET.get("p") or 1)
         if self.page_num < 1:
             self.page_num = 1
 
