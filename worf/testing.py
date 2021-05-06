@@ -137,8 +137,7 @@ def verify_model_interface(instance, api="api"):
     Right now it's just dumb luck that they match, there's no way to test this
     until now.
 
-    TODO build out api serializers for each model.
-    TODO use this method in the profiles app to test all models' interaces.
+    TODO adapt this to work with Serializer
     """
     if not hasattr(instance, f"{api}_update_fields"):
         warnings.warn(

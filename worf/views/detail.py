@@ -53,7 +53,7 @@ class DetailAPI(AbstractBaseAPI):
             self.validate_bundle(field)
             setattr(instance, field, self.bundle[field])
 
-        instance.save(update_fields=fields)
+        instance.save()
         instance.refresh_from_db()
 
 
