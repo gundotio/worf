@@ -20,6 +20,9 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False, overrides
     @param overrides: Optionally override values in the bundle factory
     """
 
+    # TODO - This only works wih the model method serialization.
+    # if API.serializer is not None:
+
     bundle = {
         **bundle_factory(instance, f"{API.api_method}_update_fields"),
         **overrides,
