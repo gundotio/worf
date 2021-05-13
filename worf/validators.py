@@ -108,11 +108,14 @@ class ValidationMixin:
             raise ValidationError(f"Expected UUID, got {value}")
 
     def validate_email(self, value):
+        if not isinstance(value, str):
+            raise ValidationError(f"{value} is not a valid email address")
+
         email = value.strip().lower()
         try:
             validate_email(email)
         except ValidationError:
-            raise ValidationError("{value} is not a valid email address")
+            raise ValidationError(f"{value} is not a valid email address")
         return email
 
     def validate_bundle(self, key):
