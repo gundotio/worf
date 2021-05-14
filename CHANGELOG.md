@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.4](https://github.com/gundotio/worf/compare/v0.2.1...v0.2.4) (2021-05-14)
+
+- Raises validation error on email = None
+
 ### [0.2.3](https://github.com/gundotio/worf/compare/v0.2.2...v0.2.3) (2021-05-07)
 
 - Allows either `p` or `page` as param for pagination
