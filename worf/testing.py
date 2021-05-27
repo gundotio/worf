@@ -24,7 +24,7 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False, overrides
     # if API.serializer is not None:
 
     bundle = {
-        **bundle_factory(instance, f"{API.api_method}_update_fields"),
+        **bundle_factory(instance, f"{API.api_method}_update_fields", overrides),
         **overrides,
     }
     response = TestCase.client.get(uri)
@@ -39,10 +39,10 @@ def generate_endpoint_tests(TestCase, API, instance, uri, patch=False, overrides
         str(response.status_code)[0:2],
         response.content.decode("UTF-8"),
     )
-    assertion_factory(TestCase, instance, bundle)
+    assertion_factory(TestCase, instance, bundle, overrides)
 
 
-def assertion_factory(TestCase, instance, bundle):
+def assertion_factory(TestCase, instance, bundle, overrides={}):
     """
     Automatically test that a django model matches bundle content.
 
@@ -54,6 +54,9 @@ def assertion_factory(TestCase, instance, bundle):
     instance.refresh_from_db()
     for key in bundle.keys():
         field = camel_to_snake(key)
+
+        if field in overrides:
+            continue
 
         if instance._meta.get_field(field).get_internal_type() in ["ManyToManyField"]:
             result = [x.pk for x in getattr(instance, field).all()]
@@ -72,7 +75,7 @@ def assertion_factory(TestCase, instance, bundle):
         )
 
 
-def bundle_factory(instance, serializer="api_update_fields"):
+def bundle_factory(instance, serializer="api_update_fields", overrides={}):
     # TODO consider extending the django test client with these methods.
     # TODO handle Choices fields; otherwise we may pass invalid values
     """
@@ -91,6 +94,9 @@ def bundle_factory(instance, serializer="api_update_fields"):
     for field in getattr(instance, serializer)():
         sequence += 1
         type = instance._meta.get_field(field).get_internal_type()
+
+        if field in overrides:
+            continue
 
         if type in ["OneToOneField", "ForeignKey", "ManyToManyField"]:
             # TODO handle m2ms
