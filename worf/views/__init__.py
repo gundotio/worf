@@ -1,5 +1,4 @@
 from worf.views.detail import (
-    ChoicesFieldOptionsAPI,
     DetailAPI,
     DetailUpdateAPI,
 )
