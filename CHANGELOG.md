@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.5](https://github.com/gundotio/worf/compare/v0.2.4...v0.2.5) (2021-05-28)
+
+- Deprecates ChoicesAPI 
+- Adds override option to test factory
+
 ### [0.2.4](https://github.com/gundotio/worf/compare/v0.2.1...v0.2.4) (2021-05-14)
 
 - Raises validation error on email = None
