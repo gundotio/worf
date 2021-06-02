@@ -3,9 +3,10 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 
+from worf.casing import camel_to_snake
+from worf.exceptions import HTTP420
 from worf.views.base import AbstractBaseAPI
 from worf.views.create import CreateAPI
-from worf.exceptions import HTTP420
 
 
 class ListAPI(AbstractBaseAPI):
@@ -13,7 +14,9 @@ class ListAPI(AbstractBaseAPI):
     lookup_url_kwarg = "id"  # default incase lookup_field is set
     filters = {}
     ordering = []
-    search_fields = False
+    filter_fields = None
+    search_fields = None
+    sort_fields = None
     q_objects = Q()
     count = 0
     page_num = 1
@@ -28,11 +31,17 @@ class ListAPI(AbstractBaseAPI):
             raise ImproperlyConfigured(f"{self.codepath}.filters must be type: dict")
         if not isinstance(self.ordering, list):
             raise ImproperlyConfigured(f"{self.codepath}.ordering must be type: list")
-        if not isinstance(self.search_fields, bool) and not isinstance(
-            self.search_fields, dict
-        ):
+        if self.filter_fields is not None and not isinstance(self.filter_fields, list):
             raise ImproperlyConfigured(
-                f"{self.codepath}.search_filters must be of type bool or dict"
+                f"{self.codepath}.filter_fields must be type: list"
+            )
+        if self.search_fields is not None and not isinstance(self.search_fields, dict):
+            raise ImproperlyConfigured(
+                f"{self.codepath}.search_fields must be type: dict"
+            )
+        if self.sort_fields is not None and not isinstance(self.sort_fields, list):
+            raise ImproperlyConfigured(
+                f"{self.codepath}.sort_fields must be type: list"
             )
 
     def _set_base_lookup_kwargs(self):
@@ -54,7 +63,7 @@ class ListAPI(AbstractBaseAPI):
         For more advanced search use cases, override this method and pass GET
         with any remaining params you want to use classic django filters for.
         """
-        if not self.search_fields:
+        if self.search_fields is None:
             """If self.search_fields is not set, we don't allow search."""
             return
 
@@ -67,7 +76,6 @@ class ListAPI(AbstractBaseAPI):
         self.bundle.pop("q", None)
 
         if search_string and len(search_string):
-
             the_ors = self.search_fields.get("or", [])
             for attr in the_ors:
                 kwarg = {attr + "__icontains": search_string.strip()}
@@ -81,6 +89,8 @@ class ListAPI(AbstractBaseAPI):
             return
 
         for key in self.bundle.keys():
+            if self.filter_fields is not None and key not in self.filter_fields:
+                continue
 
             if self.get_field_type(key) == "ManyToManyField":
                 if not isinstance(self.bundle[key], list):
@@ -111,10 +121,16 @@ class ListAPI(AbstractBaseAPI):
         self._set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
 
+        order_by = self.ordering
+        if self.request.GET.get("sort"):
+            sort = self.parse_sort(self.request.GET.get("sort"))
+            if sort.lstrip("-") in self.sort_fields:
+                order_by = [sort]
+
         try:
             result_set = (
                 self.model.objects.filter(self.q_objects, **self.lookup_kwargs)
-                .order_by(*self.ordering)
+                .order_by(*order_by)
                 .distinct()
             )
         except TypeError as e:
@@ -148,6 +164,10 @@ class ListAPI(AbstractBaseAPI):
             return paginator.page(self.page_num)
         except EmptyPage:
             return []
+
+    def parse_sort(self, sort):
+        prefix = "-" if sort[0] == "-" else ""
+        return prefix + "__".join(map(camel_to_snake, sort.lstrip("-").split(".")))
 
     def serialize(self):
         serializer = self.get_serializer()
