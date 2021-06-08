@@ -17,6 +17,7 @@ class ListAPI(AbstractBaseAPI):
     filter_fields = None
     search_fields = None
     sort_fields = None
+    queryset = None
     q_objects = Q()
     count = 0
     page_num = 1
@@ -112,6 +113,9 @@ class ListAPI(AbstractBaseAPI):
             self.lookup_kwargs.update({key: self.bundle[key]})
 
     def get_queryset(self):
+        return (self.queryset or self.model.objects).all()
+
+    def get_processed_queryset(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  URL Kwargs
         # If these aren't reset they are polluted by cache (somehow)
         self.lookup_kwargs = {}
@@ -129,7 +133,8 @@ class ListAPI(AbstractBaseAPI):
 
         try:
             result_set = (
-                self.model.objects.filter(self.q_objects, **self.lookup_kwargs)
+                self.get_queryset()
+                .filter(self.q_objects, **self.lookup_kwargs)
                 .order_by(*order_by)
                 .distinct()
             )
@@ -142,7 +147,7 @@ class ListAPI(AbstractBaseAPI):
 
     def paginated_results(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PAGINATION
-        queryset = self.get_queryset()
+        queryset = self.get_processed_queryset()
         request = self.request
 
         if settings.DEBUG:
