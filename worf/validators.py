@@ -63,7 +63,7 @@ class ValidationMixin:
         return strip_tags(self.bundle[key])
 
     def _validate_bundle_int_or_none(self, key):
-        if self.bundle[key] is None or self.bundle[key] == "null":
+        if self.bundle[key] is None or self.bundle[key] == "":
             return None
 
         try:
