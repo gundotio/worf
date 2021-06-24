@@ -6,75 +6,89 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.html import strip_tags
 
-from worf.exceptions import HTTP400, NotImplementedInWorfYet
+from worf.exceptions import NotImplementedInWorfYet
 from worf.casing import snake_to_camel
 
 
 class ValidationMixin:
-    def _coerce_bool(self, value):
-        return {
-            "1": True,
-            "0": False,
-            "true": True,
-            "false": False,
-            True: True,
-            False: False,
-        }.get(str(value).lower().strip(), None)
+    boolean_values = {
+        "1": True,
+        "0": False,
+        "true": True,
+        "false": False,
+    }
 
-    def _validate_bundle_bool(self, key):
-        coerced = self._coerce_bool(self.bundle[key])
+    secure_fields = [
+        "password",
+        "password_confirmation",
+    ]
+
+    def _coerce_bool(self, value):
+        if isinstance(value, bool):
+            return value
+
+        return self.boolean_values.get(str(value).lower().strip(), None)
+
+    def _validate_boolean(self, key):
+        value = self.bundle[key]
+        coerced = self._coerce_bool(value)
+
         if not isinstance(coerced, bool):
-            msg = "Field {} accepts a boolean. Got {}, coerced to {}. Full bundle:\n\n{}".format(
-                snake_to_camel(key),
-                self.bundle[key],
-                coerced,
-                self.bundle,
+            raise ValidationError(
+                f"Field {snake_to_camel(key)} accepts a boolean, got {value}, coerced to {coerced}"
             )
-            raise HTTP400(msg)
 
         return coerced
 
-    def _validate_bundle_date_or_none(self, key):
-        if isinstance(self.bundle[key], str):
-            return datetime.strptime(self.bundle[key], "%Y-%m-%d")
+    def _validate_date(self, key):
+        value = self.bundle[key]
 
-        return None
+        if not isinstance(value, str):
+            return None
 
-    def _validate_bundle_many_to_many(self, key):
-        if not isinstance(self.bundle[key], list):
-            msg = "Field {} accepts an array. Got {} {} instead.".format(
-                snake_to_camel(key),
-                type(self.bundle[key]),
-                self.bundle[key],
+        return datetime.strptime(value, "%Y-%m-%d")
+
+    def _validate_many_to_many(self, key):
+        value = self.bundle[key]
+
+        if not isinstance(value, list):
+            raise ValidationError(
+                f"Field {snake_to_camel(key)} accepts an array, got {type(value)} {value}"
             )
-            raise HTTP400(msg)
 
         self.coerce_array_of_integers(key)
 
-    def _validate_bundle_str(self, key, max_len):
-        if not isinstance(self.bundle[key], str):
+    def _validate_string(self, key, max_length):
+        value = self.bundle[key]
+
+        if not isinstance(value, str):
             raise ValidationError(f"Field {snake_to_camel(key)} accepts string")
 
-        if max_len is not None and len(self.bundle[key]) > max_len:
-            raise HTTP400(
-                f"Field {snake_to_camel(key)} accepts a maximum of {max_len} characters"
+        if key not in self.secure_fields:
+            value = strip_tags(value).strip()
+
+        if max_length is not None and len(value) > max_length:
+            raise ValidationError(
+                f"Field {snake_to_camel(key)} accepts a maximum of {max_length} characters"
             )
 
-        return strip_tags(self.bundle[key])
+        return value
 
-    def _validate_bundle_int_or_none(self, key):
-        if self.bundle[key] is None or self.bundle[key] == "":
+    def _validate_int(self, key):
+        value = self.bundle[key]
+
+        if value is None or value == "":
             return None
 
         try:
-            integer = int(self.bundle[key])
+            integer = int(value)
         except (TypeError, ValueError):
             raise ValidationError(f"Field {snake_to_camel(key)} accepts an integer")
 
         return integer
 
-    def _validate_bundle_positive_int(self, key):
-        integer = self._validate_bundle_int_or_none(key)
+    def _validate_positive_int(self, key):
+        integer = self._validate_int(key)
 
         if integer < 0:
             raise ValidationError(
@@ -89,8 +103,8 @@ class ValidationMixin:
         try:
             self.bundle[key] = [int(id) for id in self.bundle[key]]
         except ValueError:
-            msg = f"Field {snake_to_camel(key)} accepts an array of integers. Got {self.bundle[key]} instead."
-            raise ValidationError(msg + " I couldn't coerce the values.")
+            message = f"Field {snake_to_camel(key)} accepts an array of integers. Got {self.bundle[key]} instead."
+            raise ValidationError(message + " I couldn't coerce the values.")
 
     def get_field_type(self, key):
         return self.model._meta.get_field(key).get_internal_type()
@@ -126,7 +140,7 @@ class ValidationMixin:
         @return value:
             - If the HTTP method is not PATCH and `key` does not exist in the
         model serializer method, return False.
-            - If an error is detected, HTTP400 or ValidationError will be raised
+            - If an error is detected, ValidationError will be raised
             - If all checks pass, True is returned
 
         Side Effects:
@@ -139,10 +153,10 @@ class ValidationMixin:
         # self.request.method == 'POST' or
         serializer = self.get_serializer()
         if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
-            err_msg = f"{snake_to_camel(key)} is not editable"
+            message = f"{snake_to_camel(key)} is not editable"
             if settings.DEBUG:
-                err_msg += f":: {serializer}"
-            raise ValidationError(err_msg)
+                message += f":: {serializer}"
+            raise ValidationError(message)
 
         if not hasattr(self.model, key):
             raise ValidationError(f"{snake_to_camel(key)} does not exist")
@@ -153,30 +167,30 @@ class ValidationMixin:
             self.bundle[key] = getattr(self, f"validate_{key}")(self.bundle[key])
 
         elif field_type in ["CharField", "TextField", "SlugField"]:
-            max_len = self.model._meta.get_field(key).max_length
-            self.bundle[key] = self._validate_bundle_str(key, max_len)
+            max_length = self.model._meta.get_field(key).max_length
+            self.bundle[key] = self._validate_string(key, max_length)
 
         elif field_type == "EmailField":
             self.bundle[key] = self.validate_email(self.bundle[key])
 
         elif field_type in ["IntegerField", "SmallIntegerField"]:
             # TODO check size of SmallIntegerField
-            self.bundle[key] = self._validate_bundle_int_or_none(key)
+            self.bundle[key] = self._validate_int(key)
 
         elif field_type == "PositiveIntegerField":
-            self.bundle[key] = self._validate_bundle_positive_int(key)
+            self.bundle[key] = self._validate_positive_int(key)
 
         elif field_type == "ManyToManyField":
-            self._validate_bundle_many_to_many(key)
+            self._validate_many_to_many(key)
 
         elif field_type in ["BooleanField"]:
-            self.bundle[key] = self._validate_bundle_bool(key)
+            self.bundle[key] = self._validate_boolean(key)
 
         elif field_type in ["ForeignKey"]:
             pass  # Django will raise an exception if handled improperly
 
         elif field_type in ["DateField"]:
-            self.bundle[key] = self._validate_bundle_date_or_none(key)
+            self.bundle[key] = self._validate_date(key)
 
         elif field_type in ["JSONField"]:
             pass
@@ -187,10 +201,10 @@ class ValidationMixin:
             #     raise ValidationError(f"Field {snake_to_camel(key)} requires valid JSON")
 
         else:
-            err_msg = f"{field_type} has no validation method for {key}"
+            message = f"{field_type} has no validation method for {key}"
             if settings.DEBUG:
-                err_msg += f":: Received {self.bundle[key]}"
-            raise NotImplementedInWorfYet(err_msg)
+                message += f":: Received {self.bundle[key]}"
+            raise NotImplementedInWorfYet(message)
             # TODO
             # FileField
             # UUIDField
