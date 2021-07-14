@@ -4,6 +4,7 @@ from uuid import UUID
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.utils.dateparse import parse_datetime
 from django.utils.html import strip_tags
 
 from worf.exceptions import NotImplementedInWorfYet
@@ -47,6 +48,19 @@ class ValidationMixin:
             return None
 
         return datetime.strptime(value, "%Y-%m-%d")
+
+    def _validate_datetime(self, key):
+        value = self.bundle[key]
+        coerced = None
+        if isinstance(value, str):
+            coerced = parse_datetime(value)
+
+        if not isinstance(coerced, datetime):
+            raise ValidationError(
+                f"Field {snake_to_camel(key)} accepts a iso datetime string, got {value}, coerced to {coerced}"
+            )
+
+        return coerced
 
     def _validate_many_to_many(self, key):
         value = self.bundle[key]
@@ -191,6 +205,9 @@ class ValidationMixin:
 
         elif field_type in ["DateField"]:
             self.bundle[key] = self._validate_date(key)
+
+        elif field_type in ["DateTimeField"]:
+            self.bundle[key] = self._validate_datetime(key)
 
         elif field_type in ["JSONField"]:
             pass
