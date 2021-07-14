@@ -21,7 +21,7 @@ This project is stable but will change drastically.
 
 ### Roadmap
 
-- Abstracting serializers away from model methods
+- [x] Abstracting serializers away from model methods
 - More support for different HTTP methods
 - Support for user-generated validators
 - Better file upload support
@@ -41,8 +41,12 @@ def api(self):
     ...
   ]
 ```
-#### Serializer
 
+#### Serializers
+
+`from worf.serializers import Serializer`
+
+##### Legacy Serializers
 Views append `_update_fields` to the `api_method` property. This model method will
 be executed on `PATCH` requests. `PATCH` requests are supported in `DetailUpdateAPI`.
 If you do not want to support `PATCH` on a particular endpoint, use `DetailAPI`.
@@ -82,6 +86,7 @@ class Book(models.Model):
     author_name = models.CharField(max_length=128)
     published_at = models.DateField()
 
+    # Legacy serializer style - don't use this
     def api_update_fields(self):
         return [
             "title",
@@ -104,10 +109,12 @@ from worf.views import ListAPI, DetailPatchAPI
 class BookList(ListCreateAPI):
   permissions = [Authenticated]
   model = Book
+  serializer = BookSerializer  # Omit to use legacy serializer
 
 class BookDetail(DetailPatchAPI):
   permissions = [Authenticated]
   model = Book
+  serializer = BookSerializer  # Omit to use legacy serializer
 ```
 
 ### URLs

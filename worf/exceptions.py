@@ -20,6 +20,11 @@ class HTTP404(HTTPException):
     status = 404
 
 
+class HTTP409(HTTPException):
+    message = "Conflict"
+    status = 409
+
+
 class HTTP410(HTTPException):
     message = "Gone"
     status = 410
@@ -35,7 +40,7 @@ class HTTP422(HTTPException):
     status = 422
 
 
-HTTP_EXCEPTIONS = (HTTP400, HTTP401, HTTP404, HTTP410, HTTP420, HTTP422)
+HTTP_EXCEPTIONS = (HTTP400, HTTP401, HTTP404, HTTP409, HTTP410, HTTP420, HTTP422)
 
 
 class NamingThingsError(ValueError):
