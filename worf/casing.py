@@ -18,7 +18,7 @@ def camel_to_snake(camel):
         return camel
 
     invalid_msg = f"{camel} is not valid camel case. "
-    if not camel.isalpha():
+    if not camel.replace("__", "").isalpha():
         raise NamingThingsError(invalid_msg + "It has non alphabetical chars!")
 
     snake = ""
