@@ -1,7 +1,11 @@
+from urllib.parse import urlencode
+from url_filter.filtersets import ModelFilterSet
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
+from django.http import QueryDict
 
 from worf.casing import camel_to_snake
 from worf.exceptions import HTTP420
@@ -90,10 +94,11 @@ class ListAPI(AbstractBaseAPI):
             return
 
         for key in self.bundle.keys():
+            field = key.split("__")[0]
             if self.filter_fields is not None and key not in self.filter_fields:
                 continue
 
-            if self.get_field_type(key) == "ManyToManyField":
+            if self.get_field_type(field) == "ManyToManyField":
                 if not isinstance(self.bundle[key], list):
                     # TODO simplify this when we move to POST for search.
                     # We do type coersion in set_bundle_from_querystring,
@@ -125,6 +130,8 @@ class ListAPI(AbstractBaseAPI):
         self._set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
 
+        query = QueryDict(urlencode(self.lookup_kwargs))
+
         order_by = self.ordering
         if self.request.GET.get("sort"):
             sort = self.parse_sort(self.request.GET.get("sort"))
@@ -132,9 +139,10 @@ class ListAPI(AbstractBaseAPI):
                 order_by = [sort]
 
         try:
+            ModelFilterSet.Meta.model = self.model
             result_set = (
-                self.get_queryset()
-                .filter(self.q_objects, **self.lookup_kwargs)
+                ModelFilterSet(data=query, queryset=self.get_queryset())
+                .filter()
                 .order_by(*order_by)
                 .distinct()
             )

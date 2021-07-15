@@ -165,6 +165,7 @@ class ValidationMixin:
         """
         # POST cannot validate b/c it allows fields not in api_update_fields
         # self.request.method == 'POST' or
+        field = key.split("__")[0]
         serializer = self.get_serializer()
         if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
             message = f"{snake_to_camel(key)} is not editable"
@@ -172,13 +173,13 @@ class ValidationMixin:
                 message += f":: {serializer}"
             raise ValidationError(message)
 
-        if not hasattr(self.model, key):
-            raise ValidationError(f"{snake_to_camel(key)} does not exist")
+        if not hasattr(self.model, field):
+            raise ValidationError(f"{snake_to_camel(field)} does not exist")
 
-        field_type = self.get_field_type(key)
+        field_type = self.get_field_type(field)
 
-        if hasattr(self, f"validate_{key}"):
-            self.bundle[key] = getattr(self, f"validate_{key}")(self.bundle[key])
+        if hasattr(self, f"validate_{field}"):
+            self.bundle[key] = getattr(self, f"validate_{field}")(self.bundle[key])
 
         elif field_type in ["CharField", "TextField", "SlugField"]:
             max_length = self.model._meta.get_field(key).max_length
