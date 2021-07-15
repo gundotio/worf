@@ -139,9 +139,13 @@ class ListAPI(AbstractBaseAPI):
                 order_by = [sort]
 
         try:
-            ModelFilterSet.Meta.model = self.model
+            # Not sure this syntax is acceptable, but without it, different filter sets to the same model will fail because django-url-filter uses https://pypi.org/project/cached-property/ to cache the filter set
+            class SelfFilterSet(ModelFilterSet):
+                class Meta(object):
+                    model = self.model
+
             result_set = (
-                ModelFilterSet(data=query, queryset=self.get_queryset())
+                SelfFilterSet(data=query, queryset=self.get_queryset())
                 .filter()
                 .order_by(*order_by)
                 .distinct()
