@@ -91,7 +91,7 @@ class ListAPI(AbstractBaseAPI):
             for attr in the_ands:
                 kwarg = {attr + "__icontains": search_string.strip()}
 
-        if not self.bundle:
+        if not self.filter_fields or not self.bundle:
             return
 
         for key in self.bundle.keys():
@@ -143,18 +143,24 @@ class ListAPI(AbstractBaseAPI):
             # Not sure this syntax is acceptable,
             # but without it, different filter sets to the same model will fail
             # because django-url-filter uses https://pypi.org/project/cached-property/ to cache the filter set
-            class DefaultModelFilterSet(ModelFilterSet):
-                class Meta(object):
-                    model = self.model
+            # class DefaultModelFilterSet(ModelFilterSet):
+            #     class Meta(object):
+            #         model = self.model
 
-            filter_set = self.filter_set or DefaultModelFilterSet
+            # filter_set = self.filter_set or DefaultModelFilterSet
 
+            # result_set = (
+            #     filter_set(data=query, queryset=self.get_queryset())
+            #     .filter()
+            #     .filter(
+            #         self.q_objects
+            #     )  #  Need to .filter twice, the first to make it a QuerySet, this one to apply q_objects filters
+            #     .order_by(*order_by)
+            #     .distinct()
+            # )
             result_set = (
-                filter_set(data=query, queryset=self.get_queryset())
-                .filter()
-                .filter(
-                    self.q_objects
-                )  #  Need to .filter twice, the first to make it a QuerySet, this one to apply q_objects filters
+                self.get_queryset()
+                .filter(self.q_objects, **self.lookup_kwargs)
                 .order_by(*order_by)
                 .distinct()
             )
