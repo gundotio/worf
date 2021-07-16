@@ -182,7 +182,7 @@ class ValidationMixin:
             self.bundle[key] = getattr(self, f"validate_{field}")(self.bundle[key])
 
         elif field_type in ["CharField", "TextField", "SlugField"]:
-            max_length = self.model._meta.get_field(key).max_length
+            max_length = self.model._meta.get_field(field).max_length
             self.bundle[key] = self._validate_string(key, max_length)
 
         elif field_type == "EmailField":

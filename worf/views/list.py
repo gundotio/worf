@@ -23,6 +23,7 @@ class ListAPI(AbstractBaseAPI):
     sort_fields = None
     queryset = None
     q_objects = Q()
+    filter_set = None
     count = 0
     page_num = 1
     num_pages = 1
@@ -139,14 +140,21 @@ class ListAPI(AbstractBaseAPI):
                 order_by = [sort]
 
         try:
-            # Not sure this syntax is acceptable, but without it, different filter sets to the same model will fail because django-url-filter uses https://pypi.org/project/cached-property/ to cache the filter set
-            class SelfFilterSet(ModelFilterSet):
+            # Not sure this syntax is acceptable,
+            # but without it, different filter sets to the same model will fail
+            # because django-url-filter uses https://pypi.org/project/cached-property/ to cache the filter set
+            class DefaultModelFilterSet(ModelFilterSet):
                 class Meta(object):
                     model = self.model
 
+            filter_set = self.filter_set or DefaultModelFilterSet
+
             result_set = (
-                SelfFilterSet(data=query, queryset=self.get_queryset())
+                filter_set(data=query, queryset=self.get_queryset())
                 .filter()
+                .filter(
+                    self.q_objects
+                )  #  Need to .filter twice, the first to make it a QuerySet, this one to apply q_objects filters
                 .order_by(*order_by)
                 .distinct()
             )
