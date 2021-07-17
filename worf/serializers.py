@@ -1,3 +1,11 @@
+import json
+from django.core.exceptions import ImproperlyConfigured
+
+
+def deserialize(response):
+    return json.loads(response.content.decode("UTF-8"))
+
+
 class Serializer:
     def create(self):
         return []

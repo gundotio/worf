@@ -1,4 +1,4 @@
-from worf.testing import deserialize
+from worf.serializers import deserialize
 
 
 def test_user_get(client, django_user_model):
