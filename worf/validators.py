@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from uuid import UUID
 
@@ -8,7 +9,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.html import strip_tags
 
 from worf.exceptions import NotImplementedInWorfYet
-from worf.casing import snake_to_camel
+from worf.casing import clean_lookup_keywords, snake_to_camel
 
 
 class ValidationMixin:
@@ -165,7 +166,7 @@ class ValidationMixin:
         """
         # POST cannot validate b/c it allows fields not in api_update_fields
         # self.request.method == 'POST' or
-        field = key.split("__")[0]
+        field = clean_lookup_keywords(key)
         serializer = self.get_serializer()
         if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
             message = f"{snake_to_camel(key)} is not editable"
