@@ -7,7 +7,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 from django.http import QueryDict
 
-from worf.casing import camel_to_snake
+from worf.casing import camel_to_snake, clean_lookup_keywords
 from worf.exceptions import HTTP420
 from worf.views.base import AbstractBaseAPI
 from worf.views.create import CreateAPI
@@ -95,8 +95,8 @@ class ListAPI(AbstractBaseAPI):
             return
 
         for key in self.bundle.keys():
-            field = key.split("__")[0]
-            if self.filter_fields is not None and key not in self.filter_fields:
+            field = clean_lookup_keywords(key)
+            if key not in self.filter_fields:
                 continue
 
             if self.get_field_type(field) == "ManyToManyField":
@@ -140,30 +140,26 @@ class ListAPI(AbstractBaseAPI):
                 order_by = [sort]
 
         try:
-            # Not sure this syntax is acceptable,
+            # Not sure this syntax is acceptable (for the class declaration),
             # but without it, different filter sets to the same model will fail
             # because django-url-filter uses https://pypi.org/project/cached-property/ to cache the filter set
-            # class DefaultModelFilterSet(ModelFilterSet):
-            #     class Meta(object):
-            #         model = self.model
+            class DefaultModelFilterSet(ModelFilterSet):
+                class Meta(object):
+                    model = self.model
 
-            # filter_set = self.filter_set or DefaultModelFilterSet
+            filter_set = self.filter_set or DefaultModelFilterSet
 
-            # result_set = (
-            #     filter_set(data=query, queryset=self.get_queryset())
-            #     .filter()
-            #     .filter(
-            #         self.q_objects
-            #     )  #  Need to .filter twice, the first to make it a QuerySet, this one to apply q_objects filters
-            #     .order_by(*order_by)
-            #     .distinct()
-            # )
             result_set = (
-                self.get_queryset()
-                .filter(self.q_objects, **self.lookup_kwargs)
+                filter_set(data=query, queryset=self.get_queryset())
+                .filter()
+                .filter(self.q_objects)
+                #  Need to .filter twice,
+                # the first to make it a QuerySet,
+                # second one to apply q_objects filters
                 .order_by(*order_by)
                 .distinct()
             )
+
         except TypeError as e:
             if settings.DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
