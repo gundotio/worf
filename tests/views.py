@@ -47,3 +47,14 @@ class UserList(ListAPI):
     ordering = ["pk"]
     serializer = UserSerializer
     permissions = [PublicEndpoint]
+    search_fields = {
+        "or": [
+            "email",
+            "username",
+        ]
+    }
+    filter_fields = [
+        "email",
+        "date_joined__gte",
+        "date_joined__lte",
+    ]
