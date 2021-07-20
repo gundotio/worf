@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 # Packages are maintained in setup.py under install_requires
 worf = {editable = true, path = "."}
-django-url-filter = "*"
 
 [dev-packages]
 autopep8 = "*"

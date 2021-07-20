@@ -1,5 +1,5 @@
 from datetime import datetime
-from worf.testing import deserialize
+from worf.serializers import deserialize
 
 
 def test_user_detail(client, user):

@@ -44,6 +44,7 @@ setup(
     description="Worf (Wade's Own Rest Framework): A more djangonic approach",
     install_requires=[
         "Django>=3.0.0,<3.3",
+        "django-url-filter>=0.3.15",
     ],
     include_package_data=True,
     keywords="django, rest, framework, api",
