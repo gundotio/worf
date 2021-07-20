@@ -1,3 +1,5 @@
+import pytest
+
 import django
 from django.conf import settings
 
@@ -39,3 +41,8 @@ def pytest_configure():
     )
 
     django.setup()
+
+
+@pytest.fixture(name="user")
+def user_fixture(django_user_model):
+    return django_user_model.objects.create_user(username="test", password="password")
