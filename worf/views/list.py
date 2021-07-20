@@ -1,14 +1,11 @@
-from urllib.parse import urlencode
-from url_filter.filtersets import ModelFilterSet
-
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
-from django.http import QueryDict
 
 from worf.casing import camel_to_snake, clean_lookup_keywords
 from worf.exceptions import HTTP420
+from worf.filters import apply_filterset, generate_filterset
 from worf.views.base import AbstractBaseAPI
 from worf.views.create import CreateAPI
 
@@ -49,6 +46,8 @@ class ListAPI(AbstractBaseAPI):
             raise ImproperlyConfigured(
                 f"{self.codepath}.sort_fields must be type: list"
             )
+        if self.filter_set is None:
+            self.filter_set = generate_filterset(self.model)
 
     def _set_base_lookup_kwargs(self):
         # Filters set directly on the class
@@ -124,14 +123,13 @@ class ListAPI(AbstractBaseAPI):
     def get_processed_queryset(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  URL Kwargs
         # If these aren't reset they are polluted by cache (somehow)
+        queryset = self.get_queryset()
+
         self.lookup_kwargs = {}
         self.q_objects = Q()
-        result_set = None
 
         self._set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
-
-        query = QueryDict(urlencode(self.lookup_kwargs))
 
         order_by = self.ordering
         if self.request.GET.get("sort"):
@@ -140,32 +138,18 @@ class ListAPI(AbstractBaseAPI):
                 order_by = [sort]
 
         try:
-            # Not sure this syntax is acceptable (for the class declaration),
-            # but without it, different filter sets to the same model will fail
-            # because django-url-filter uses https://pypi.org/project/cached-property/ to cache the filter set
-            class DefaultModelFilterSet(ModelFilterSet):
-                class Meta(object):
-                    model = self.model
-
-            filter_set = self.filter_set or DefaultModelFilterSet
-
-            result_set = (
-                filter_set(data=query, queryset=self.get_queryset())
-                .filter()
+            queryset = (
+                apply_filterset(self.filter_set, queryset, self.lookup_kwargs)
                 .filter(self.q_objects)
-                #  Need to .filter twice,
-                # the first to make it a QuerySet,
-                # second one to apply q_objects filters
                 .order_by(*order_by)
                 .distinct()
             )
-
         except TypeError as e:
             if settings.DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
             raise e
 
-        return result_set
+        return queryset
 
     def paginated_results(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PAGINATION
