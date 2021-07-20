@@ -1,6 +1,6 @@
 import pytest
 
-from worf.casing import camel_to_snake, snake_to_camel, whitespace_to_camel
+from worf.casing import camel_to_snake, clean_lookup_keywords, snake_to_camel, whitespace_to_camel
 from worf.exceptions import NamingThingsError
 
 
@@ -43,3 +43,9 @@ def test_snake_to_camel_catches_invalid_chars():
 
 def test_whitespace_to_camel():
     assert "thisIsAVerboseName" == whitespace_to_camel("This is a verbose name")
+
+
+def test_clean_lookup_keywords():
+    assert clean_lookup_keywords("name_with_keyword__gte") == "name_with_keyword"
+    assert clean_lookup_keywords("name_with_keyword__contains") == "name_with_keyword"
+    assert clean_lookup_keywords("name_with_keyword__not_a_keyword") == "name_with_keyword__not_a_keyword"
