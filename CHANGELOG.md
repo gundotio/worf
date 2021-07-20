@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/gundotio/worf/compare/v0.3.0...v0.3.1) (2021-07-20)
+
+- Adds `django-url-filters` as a dependency
+- Adds support for filtering using `__` model syntax
+
 ## [0.3.0](https://github.com/gundotio/worf/compare/v0.2.10...v0.3.0) (2021-07-20)
 
 - Adds verify_serializer_interface testing method for generating serializer tests
