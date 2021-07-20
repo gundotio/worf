@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/gundotio/worf/compare/v0.2.10...v0.3.0) (2021-07-20)
+
+- Adds verify_serializer_interface testing method for generating serializer tests
+
+### Breaking Changes
+- Removes generate_endpoint_tests test generator
+- Relocates testing.deserialize method to serializers.deserialize
+
 ### [0.2.10](https://github.com/gundotio/worf/compare/v0.2.9...v0.2.10) (2021-07-20)
 
 - Removes package dependencies from dev env Pipfile
