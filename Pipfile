@@ -4,7 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
+# Packages are maintained in setup.py under install_requires
+worf = {editable = true, path = "."}
 
 [dev-packages]
 autopep8 = "*"
