@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.10](https://github.com/gundotio/worf/compare/v0.2.9...v0.2.10) (2021-07-20)
+
+- Removes package dependencies from dev env Pipfile
+- Improves codeowners, binstubs, pytest settings
+
 ### [0.2.9](https://github.com/gundotio/worf/compare/v0.2.8...v0.2.9) (2021-07-15)
 
 - Adds HTTP409 exception
