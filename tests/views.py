@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from worf.permissions import PublicEndpoint
 from worf.serializers import Serializer
-from worf.views import DetailUpdateAPI
+from worf.views import DetailUpdateAPI, ListAPI
 
 from tests.models import DummyModel
 
@@ -36,7 +36,14 @@ class UserSerializer(Serializer):
         ]
 
 
-class UserAPI(DetailUpdateAPI):
+class UserDetail(DetailUpdateAPI):
     model = User
+    serializer = UserSerializer
+    permissions = [PublicEndpoint]
+
+
+class UserList(ListAPI):
+    model = User
+    ordering = ["pk"]
     serializer = UserSerializer
     permissions = [PublicEndpoint]
