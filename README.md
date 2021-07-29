@@ -175,9 +175,11 @@ Class Attributes
 |`payload_key`   | no  | `str`  | _Default:_ `model._meta.verbose_name_plural`. Use in order to rename the key for the results array |
 |`filters`      | no  | `dict` | _Default:_ `{}`. Pass key/value pairs that you wish to further filter the queryset beyond the `lookup_url_kwarg` |
 |`lookup_field` | no | `str` | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
-|`lookup_url_kwarg`| no | `str` | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set.  |
-|`ordering`     | no | `list` | _Default_: `[]`. Pass a list of valid fields to order the queryset by.  |
-|`search_fields`   | no | `dict` or `bool` | _Default_: `False`.  |
+|`lookup_url_kwarg`| no | `str` | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
+|`ordering`     | no | `list` | _Default_: `[]`. Pass a list of fields to default the queryset order by. |
+|`filter_fields`   | no | `list` | _Default_: `None`. Pass a list of fields to support filtering via query params. |
+|`search_fields`   | no | `dict` or `bool` | _Default_: `None`. Pass a dict with `and`/`or` fields to search via the `q` query param. |
+|`sort_fields`   | no | `list` | _Default_: `None`. Pass a list of fields to support sorting via the `sort` query param. |
 |`results_per_page`  | no  | `int` | _Default_: 25. Sets the number of results returned for each page. |
 |   |   |   |   |
 

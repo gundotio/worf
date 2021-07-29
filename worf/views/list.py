@@ -133,9 +133,9 @@ class ListAPI(AbstractBaseAPI):
 
         order_by = self.ordering
         if self.request.GET.get("sort"):
-            sort = self.parse_sort(self.request.GET.get("sort"))
-            if sort.lstrip("-") in self.sort_fields:
-                order_by = [sort]
+            sort = self.parse_sort(self.request.GET.getlist("sort"))
+            if set([s.lstrip("-") for s in sort]).issubset(self.sort_fields):
+                order_by = sort
 
         try:
             queryset = (
@@ -176,9 +176,12 @@ class ListAPI(AbstractBaseAPI):
         except EmptyPage:
             return []
 
-    def parse_sort(self, sort):
-        prefix = "-" if sort[0] == "-" else ""
-        return prefix + "__".join(map(camel_to_snake, sort.lstrip("-").split(".")))
+    def parse_sort(self, fields):
+        return [self.transform_sort(field) for field in fields]
+
+    def transform_sort(self, field):
+        prefix = "-" if field[0] == "-" else ""
+        return prefix + "__".join(map(camel_to_snake, field.lstrip("-").split(".")))
 
     def serialize(self):
         serializer = self.get_serializer()

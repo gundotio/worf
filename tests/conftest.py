@@ -2,6 +2,7 @@ import pytest
 
 import django
 from django.conf import settings
+from django.utils import timezone
 
 
 def pytest_configure():
@@ -43,6 +44,16 @@ def pytest_configure():
     django.setup()
 
 
+@pytest.fixture(name="now")
+def now_fixture():
+    return timezone.now()
+
+
+@pytest.fixture(name="user_factory")
+def user_factory_fixture(django_user_model):
+    return django_user_model.objects
+
+
 @pytest.fixture(name="user")
-def user_fixture(django_user_model):
-    return django_user_model.objects.create_user(username="test", password="password")
+def user_fixture(user_factory):
+    return user_factory.create_user(username="test", password="password")
