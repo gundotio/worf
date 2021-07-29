@@ -58,3 +58,7 @@ class UserList(ListAPI):
         "date_joined__gte",
         "date_joined__lte",
     ]
+    sort_fields = [
+        "id",
+        "date_joined",
+    ]
