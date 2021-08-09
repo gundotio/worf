@@ -35,10 +35,17 @@ def test_validate_bundle(view):
 
 
 @pytest.mark.django_db
-def test_validate_uuid_passes(view):
+def test_validate_uuid_accepts_str(view):
     string = "ce6a5b4f-599d-4442-8a74-d7a8d2b54854"
     result = view.validate_uuid(string)
     assert result == UUID(string)
+
+
+@pytest.mark.django_db
+def test_validate_uuid_accepts_uuid(view):
+    uuid = UUID("ce6a5b4f-599d-4442-8a74-d7a8d2b54854")
+    result = view.validate_uuid(uuid)
+    assert result == uuid
 
 
 @pytest.mark.django_db
