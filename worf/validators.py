@@ -132,7 +132,7 @@ class ValidationMixin:
         if value is None:
             raise ValidationError(f"Expected UUID, got {value}")
         try:
-            return UUID(value)
+            return UUID(str(value))
         except (TypeError, ValueError):
             raise ValidationError(f"Expected UUID, got {value}")
 
