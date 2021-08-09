@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
-from worf.views.base import AbstractBaseAPI
 from worf.shortcuts import get_instance_or_http404
+from worf.views.base import AbstractBaseAPI
 
 
 class DetailAPI(AbstractBaseAPI):
@@ -43,6 +43,13 @@ class DetailAPI(AbstractBaseAPI):
 
         for field in fields:
             self.validate_bundle(field)
+
+            field_type = self.get_field_type(field)
+
+            if field_type == "ManyToManyField":
+                getattr(instance, field).set(self.bundle[field])
+                continue
+
             setattr(instance, field, self.bundle[field])
 
         instance.save()
