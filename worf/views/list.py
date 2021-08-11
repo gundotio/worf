@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
-from django.db.models import Q
+from django.db.models import ManyToManyField, Q
 
 from worf.casing import camel_to_snake, clean_lookup_keywords
 from worf.exceptions import HTTP420
@@ -98,7 +98,7 @@ class ListAPI(AbstractBaseAPI):
             if key not in self.filter_fields:
                 continue
 
-            if self.get_field_type(field) == "ManyToManyField":
+            if isinstance(self.model._meta.get_field(field), ManyToManyField):
                 if not isinstance(self.bundle[key], list):
                     # TODO simplify this when we move to POST for search.
                     # We do type coersion in set_bundle_from_querystring,

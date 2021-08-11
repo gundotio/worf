@@ -73,7 +73,7 @@ def bundle_factory(instance, serializer="api_update_fields"):
                 max_len = instance._meta.get_field(field).max_length
                 value = "".join(choice(ascii_uppercase) for i in range(max_len))
 
-        elif type in ["IntegerField", "PositiveIntergerField", "SmallIntegerField"]:
+        elif type in ["IntegerField", "PositiveIntegerField", "SmallIntegerField"]:
             value = sequence
 
         elif type in ["BooleanField"]:

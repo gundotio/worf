@@ -1,5 +1,8 @@
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.db import models
+from django.db.utils import IntegrityError
 
+from worf.casing import snake_to_camel
 from worf.shortcuts import get_instance_or_http404
 from worf.views.base import AbstractBaseAPI
 
@@ -31,6 +34,20 @@ class DetailAPI(AbstractBaseAPI):
 
         return self.instance
 
+    def set_foreign_key(self, instance, key):
+        related_model = self.get_related_model(key)
+        try:
+            related_instance = related_model.objects.get(pk=self.bundle[key])
+        except related_model.DoesNotExist as e:
+            raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
+        setattr(instance, key, related_instance)
+
+    def set_many_to_many(self, instance, key):
+        try:
+            getattr(instance, key).set(self.bundle[key])
+        except IntegrityError as e:
+            raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
+
     def validate_and_update(self):
         """
         Update all fields passed in from json.
@@ -39,24 +56,22 @@ class DetailAPI(AbstractBaseAPI):
         Step 2: Update
         """
         instance = self.get_instance()
-        fields = self.bundle.keys()
+        keys = self.bundle.keys()
 
-        for field in fields:
-            self.validate_bundle(field)
+        for key in keys:
+            self.validate_bundle(key)
 
-            field_type = self.get_field_type(field)
+            field = self.model._meta.get_field(key)
 
-            if field_type == "ForeignKey":
-                related_model = self.get_related_model(field)
-                related_instance = related_model.objects.get(pk=self.bundle[field])
-                setattr(instance, field, related_instance)
+            if isinstance(field, models.ForeignKey):
+                self.set_foreign_key(instance, key)
                 continue
 
-            if field_type == "ManyToManyField":
-                getattr(instance, field).set(self.bundle[field])
+            if isinstance(field, models.ManyToManyField):
+                self.set_many_to_many(instance, key)
                 continue
 
-            setattr(instance, field, self.bundle[field])
+            setattr(instance, key, self.bundle[key])
 
         instance.save()
         instance.refresh_from_db()
