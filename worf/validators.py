@@ -121,9 +121,6 @@ class ValidationMixin:
             message = f"Field {snake_to_camel(key)} accepts an array of integers. Got {self.bundle[key]} instead."
             raise ValidationError(message + " I couldn't coerce the values.")
 
-    def get_field_type(self, key):
-        return self.model._meta.get_field(key).get_internal_type()
-
     def validate_int(self, value):
         if not isinstance(value, int):
             raise ValidationError(f"Expected integer, got {value}")
