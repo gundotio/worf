@@ -10,6 +10,7 @@ from django.core.exceptions import (
     ObjectDoesNotExist,
     ValidationError,
 )
+from django.db import models
 from django.http import JsonResponse
 from django.middleware.gzip import GZipMiddleware
 from django.views import View
@@ -132,7 +133,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
         self.set_bundle(raw_bundle)
 
-    def _get_lookup_field_type(self, field):
+    def _get_lookup_field(self, field):
         related = field.find("__")
 
         """Support one level of related field reference."""
@@ -146,17 +147,10 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             if target_field.find("__") != -1:
                 return False
 
-            return (
-                self.get_related_model(related_field)
-                ._meta.get_field(target_field)
-                .get_internal_type()
-            )
+            return self.get_related_model(related_field)._meta.get_field(target_field)
             # TODO if there is another reference, recurse
 
-        return self.get_field_type(field)
-
-    def get_field_type(self, field):
-        return self.model._meta.get_field(field).get_internal_type()
+        return self.model._meta.get_field(field)
 
     def get_related_model(self, field):
         return self.model._meta.get_field(field).related_model
@@ -172,18 +166,20 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
     def validate_lookup_field_values(self):
         # todo check for each lookup kwarg
         for field, url_kwarg in self.lookup_kwargs.items():
+            lookup_field = self._get_lookup_field(field)
 
-            lookup_field_type = self._get_lookup_field_type(field)
-
-            if lookup_field_type == "UUIDField":
+            if isinstance(lookup_field, models.UUIDField):
                 self.validate_uuid(url_kwarg)
-            elif lookup_field_type in [
-                "IntegerField",
-                "SmallIntegerField",
-                "PositiveIntergerField",
-                "ForeignKey",
-            ]:
-                self.validate_int(url_kwarg)
+            elif isinstance(
+                lookup_field,
+                (
+                    models.ForeignKey,
+                    models.IntegerField,
+                    models.PositiveIntegerField,
+                    models.SmallIntegerField,
+                ),
+            ):
+                self.validate_numeric(url_kwarg)
 
     def set_bundle_from_querystring(self):
         # parse_qs gives us a dictionary where all values are lists

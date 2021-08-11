@@ -3,6 +3,7 @@ from datetime import datetime
 from uuid import UUID
 
 from django.conf import settings
+from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.dateparse import parse_datetime
@@ -125,6 +126,12 @@ class ValidationMixin:
         if not isinstance(value, int):
             raise ValidationError(f"Expected integer, got {value}")
 
+    def validate_numeric(self, value):
+        try:
+            int(value)
+        except ValueError:
+            raise ValidationError(f"Expected numeric, got {value}")
+
     def validate_uuid(self, value):
         if value is None:
             raise ValidationError(f"Expected UUID, got {value}")
@@ -163,7 +170,7 @@ class ValidationMixin:
         """
         # POST cannot validate b/c it allows fields not in api_update_fields
         # self.request.method == 'POST' or
-        field = clean_lookup_keywords(key)
+        clean_key = clean_lookup_keywords(key)
         serializer = self.get_serializer()
         if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
             message = f"{snake_to_camel(key)} is not editable"
@@ -171,44 +178,43 @@ class ValidationMixin:
                 message += f":: {serializer}"
             raise ValidationError(message)
 
-        if not hasattr(self.model, field):
-            raise ValidationError(f"{snake_to_camel(field)} does not exist")
+        if not hasattr(self.model, clean_key):
+            raise ValidationError(f"{snake_to_camel(clean_key)} does not exist")
 
-        field_type = self.get_field_type(field)
+        field = self.model._meta.get_field(clean_key)
 
-        if hasattr(self, f"validate_{field}"):
-            self.bundle[key] = getattr(self, f"validate_{field}")(self.bundle[key])
+        if hasattr(self, f"validate_{clean_key}"):
+            self.bundle[key] = getattr(self, f"validate_{clean_key}")(self.bundle[key])
 
-        elif field_type in ["CharField", "TextField", "SlugField"]:
-            max_length = self.model._meta.get_field(field).max_length
-            self.bundle[key] = self._validate_string(key, max_length)
+        elif isinstance(field, (models.CharField, models.TextField, models.SlugField)):
+            self.bundle[key] = self._validate_string(key, field.max_length)
 
-        elif field_type == "EmailField":
+        elif isinstance(field, models.EmailField):
             self.bundle[key] = self.validate_email(self.bundle[key])
 
-        elif field_type in ["IntegerField", "SmallIntegerField"]:
+        elif isinstance(field, (models.IntegerField, models.SmallIntegerField)):
             # TODO check size of SmallIntegerField
             self.bundle[key] = self._validate_int(key)
 
-        elif field_type == "PositiveIntegerField":
+        elif isinstance(field, models.PositiveIntegerField):
             self.bundle[key] = self._validate_positive_int(key)
 
-        elif field_type == "ManyToManyField":
+        elif isinstance(field, models.ManyToManyField):
             self._validate_many_to_many(key)
 
-        elif field_type in ["BooleanField"]:
+        elif isinstance(field, models.BooleanField):
             self.bundle[key] = self._validate_boolean(key)
 
-        elif field_type in ["ForeignKey"]:
+        elif isinstance(field, models.ForeignKey):
             pass  # Django will raise an exception if handled improperly
 
-        elif field_type in ["DateField"]:
-            self.bundle[key] = self._validate_date(key)
-
-        elif field_type in ["DateTimeField"]:
+        elif isinstance(field, models.DateTimeField):
             self.bundle[key] = self._validate_datetime(key)
 
-        elif field_type in ["JSONField"]:
+        elif isinstance(field, models.DateField):
+            self.bundle[key] = self._validate_date(key)
+
+        elif isinstance(field, models.JSONField):
             pass
             # TODO check the type of json object we're expecting
             # try:
@@ -217,7 +223,7 @@ class ValidationMixin:
             #     raise ValidationError(f"Field {snake_to_camel(key)} requires valid JSON")
 
         else:
-            message = f"{field_type} has no validation method for {key}"
+            message = f"{field.get_internal_type()} has no validation method for {key}"
             if settings.DEBUG:
                 message += f":: Received {self.bundle[key]}"
             raise NotImplementedInWorfYet(message)

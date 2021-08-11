@@ -5,13 +5,13 @@ from worf.serializers import deserialize
 
 def test_user_detail(client, user):
     response = client.get(f"/users/{user.pk}/")
-    assert response.status_code == 200
+    assert response.status_code == 200, deserialize(response)
     assert deserialize(response)["username"] == "test"
 
 
 def test_user_list(client, user):
     response = client.get(f"/users/")
-    assert response.status_code == 200
+    assert response.status_code == 200, deserialize(response)
     assert len(deserialize(response)["users"]) == 1
     assert deserialize(response)["users"][0]["username"] == "test"
 
@@ -57,7 +57,7 @@ def test_user_list_sort_asc(client, user_factory):
     user_factory.create(username="a")
     user_factory.create(username="b")
     response = client.get(f"/users/?sort=id")
-    assert response.status_code == 200
+    assert response.status_code == 200, deserialize(response)
     assert len(deserialize(response)["users"]) == 2
     assert deserialize(response)["users"][0]["username"] == "a"
     assert deserialize(response)["users"][1]["username"] == "b"
@@ -67,7 +67,7 @@ def test_user_list_sort_desc(client, user_factory):
     user_factory.create(username="a")
     user_factory.create(username="b")
     response = client.get(f"/users/?sort=-id")
-    assert response.status_code == 200
+    assert response.status_code == 200, deserialize(response)
     assert len(deserialize(response)["users"]) == 2
     assert deserialize(response)["users"][0]["username"] == "b"
     assert deserialize(response)["users"][1]["username"] == "a"
@@ -79,7 +79,7 @@ def test_user_list_multisort(client, now, user_factory):
     user_factory.create(username="c", date_joined=now)
     user_factory.create(username="d", date_joined=now)
     response = client.get(f"/users/?sort=dateJoined&sort=-id")
-    assert response.status_code == 200
+    assert response.status_code == 200, deserialize(response)
     assert len(deserialize(response)["users"]) == 4
     assert deserialize(response)["users"][0]["username"] == "b"
     assert deserialize(response)["users"][1]["username"] == "d"
@@ -91,6 +91,6 @@ def test_user_update(client, user):
     url = f"/users/{user.pk}/"
     bundle = dict(username="testtest", email="something@example.com")
     response = client.patch(url, bundle, content_type="application/json")
-    assert response.status_code == 200
+    assert response.status_code == 200, deserialize(response)
     assert deserialize(response)["username"] == "testtest"
     assert deserialize(response)["email"] == "something@example.com"
