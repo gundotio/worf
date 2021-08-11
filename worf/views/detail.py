@@ -46,6 +46,12 @@ class DetailAPI(AbstractBaseAPI):
 
             field_type = self.get_field_type(field)
 
+            if field_type == "ForeignKey":
+                related_model = self.get_related_model(field)
+                related_instance = related_model.objects.get(pk=self.bundle[field])
+                setattr(instance, field, related_instance)
+                continue
+
             if field_type == "ManyToManyField":
                 getattr(instance, field).set(self.bundle[field])
                 continue

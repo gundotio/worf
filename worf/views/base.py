@@ -133,27 +133,33 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
         self.set_bundle(raw_bundle)
 
     def _get_lookup_field_type(self, field):
-
         related = field.find("__")
+
         """Support one level of related field reference."""
         if related != -1:
-            model = field[:related]
-            target = field[related + 2 :]
+            related_field = field[:related]
+            target_field = field[related + 2 :]
 
-            if target in ["gt", "lt", "contains", "startswith", "gte", "lte"]:
+            if target_field in ["gt", "lt", "contains", "startswith", "gte", "lte"]:
                 return False
 
-            if target.find("__") != -1:
+            if target_field.find("__") != -1:
                 return False
 
             return (
-                self.model._meta.get_field(model)
-                .related_model._meta.get_field(target)
+                self.get_related_model(related_field)
+                ._meta.get_field(target_field)
                 .get_internal_type()
             )
             # TODO if there is another reference, recurse
 
+        return self.get_field_type(field)
+
+    def get_field_type(self, field):
         return self.model._meta.get_field(field).get_internal_type()
+
+    def get_related_model(self, field):
+        return self.model._meta.get_field(field).related_model
 
     def get_serializer(self):
         if self.serializer:
