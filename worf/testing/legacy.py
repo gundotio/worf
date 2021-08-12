@@ -9,37 +9,7 @@ from django.utils import timezone
 from worf.casing import camel_to_snake, snake_to_camel
 
 
-def assertion_factory(TestCase, instance, bundle):
-    """
-    Automatically test that a django model matches bundle content.
-
-    @param TestCase: A TestCase class instance, typically `self`
-    @param instance: A model instance
-    @param bundle: A dictionary, potentially created by bundle_factory
-    """
-    # TODO consider extending the django test client with these methods. 👇
-    instance.refresh_from_db()
-    for key in bundle.keys():
-        field = camel_to_snake(key)
-
-        if instance._meta.get_field(field).get_internal_type() in ["ManyToManyField"]:
-            result = [x.pk for x in getattr(instance, field).all()]
-            TestCase.assertCountEqual(
-                result,
-                bundle[key],
-                msg=f"M2M {key} not set. Bundle was: \n\n {bundle}. Instance saved: \n\n {result}",
-            )
-            continue
-
-        result = getattr(instance, field)
-        TestCase.assertEqual(
-            result,
-            bundle[key],
-            msg=f"{key} not set. Bundle was: \n\n {bundle}. Instance saved: \n\n {result}",
-        )
-
-
-def bundle_factory(instance, serializer="api_update_fields"):
+def bundle_factory(instance, serializer="api_update_fields"):  # pragma: no cover
     # TODO consider extending the django test client with these methods.
     # TODO handle Choices fields; otherwise we may pass invalid values
     """
@@ -48,7 +18,7 @@ def bundle_factory(instance, serializer="api_update_fields"):
     @param instance the model instance we are testing against
     @param serializer (optional) the model method that sets update_fields
 
-    Limitiations:
+    Limitations:
         - Does not generate nor include any FK's, 1:1's, M2M fields
         - Only sets up valid data. Should always 200
     """
@@ -95,7 +65,7 @@ def bundle_factory(instance, serializer="api_update_fields"):
     return bundle
 
 
-def verify_model_interface(instance, api="api"):
+def verify_model_interface(instance, api="api"):  # pragma: no cover
     """
     Ensure that any editable snake case field has a corresponding camel.
 
