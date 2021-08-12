@@ -40,12 +40,12 @@ class ProfileSerializer(Serializer):
         return dict(
             username=model.user.username,
             email=model.user.email,
-            props=[p.api() for p in model.props.all()],
+            tags=[t.api() for t in model.tags.all()],
         )
 
     def write(self):
         return [
-            "props",
+            "tags",
         ]
 
 
@@ -83,6 +83,6 @@ class ProfileList(ListAPI):
     permissions = [PublicEndpoint]
     search_fields = {}
     filter_fields = [
-        "props",
+        "tags",
     ]
     

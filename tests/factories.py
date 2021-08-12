@@ -3,13 +3,13 @@ from django.contrib.auth.models import User
 import factory
 from factory.django import DjangoModelFactory
 
-from tests.models import Profile, Prop
+from tests.models import Profile, Tag
 
-class PropsManyToManyMixin(DjangoModelFactory):
+class TagsManyToManyMixin(DjangoModelFactory):
     @factory.post_generation
-    def props(self, create, extracted, **kwargs):
+    def tags(self, create, extracted, **kwargs):
         if create and extracted:
-            self.props.set(extracted)
+            self.tags.set(extracted)
 
 
     class Meta:
@@ -21,7 +21,7 @@ class UserFactory(DjangoModelFactory):
     username = factory.Sequence(lambda i: f"user-{i}")
     email = factory.Sequence(lambda i: f"user-{i}@example.com")
 
-class ProfileFactory(PropsManyToManyMixin):
+class ProfileFactory(TagsManyToManyMixin):
 
     class Meta:
         model = Profile
@@ -29,8 +29,8 @@ class ProfileFactory(PropsManyToManyMixin):
     user = factory.SubFactory(UserFactory)
 
 
-class PropFactory(DjangoModelFactory):
+class TagFactory(DjangoModelFactory):
     class Meta:
-        model = Prop
+        model = Tag
 
-    name = factory.Sequence(lambda i: f"prop-{i}")
+    name = factory.Sequence(lambda i: f"tag-{i}")
