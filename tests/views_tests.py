@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from worf.serializers import deserialize
 
-from tests.factories import ProfileFactory, PropFactory
+from tests.factories import ProfileFactory, TagFactory
 
 
 def test_user_detail(client, user):
@@ -57,16 +57,16 @@ def test_user_list_filters(client, user_factory):
 
 @pytest.mark.django_db
 def test_user_list_array_filter(client):
-    prop1 = PropFactory.create()
-    prop2 = PropFactory.create()
-    prop3 = PropFactory.create()
-    ProfileFactory.create(props=[prop1])
-    ProfileFactory.create(props=[prop2])
-    ProfileFactory.create(props=[prop1,prop2])
-    ProfileFactory.create(props=[prop3])
+    tag1 = TagFactory.create()
+    tag2 = TagFactory.create()
+    tag3 = TagFactory.create()
+    ProfileFactory.create(tags=[tag1])
+    ProfileFactory.create(tags=[tag2])
+    ProfileFactory.create(tags=[tag1,tag2])
+    ProfileFactory.create(tags=[tag3])
     ProfileFactory.create()
     response = client.get(
-        f"/profiles/?props={prop1.pk}&props={prop2.pk}"
+        f"/profiles/?tags={tag1.pk}&tags={tag2.pk}"
     )
     assert response.status_code == 200, deserialize(response)
     assert len(deserialize(response)["profiles"]) == 3

@@ -18,7 +18,7 @@ class DummyModel(models.Model):
         ]
 
 
-class Prop(models.Model):
+class Tag(models.Model):
     name = models.CharField(max_length=200)
 
     def api(self):
@@ -30,4 +30,4 @@ class Prop(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    props = models.ManyToManyField(Prop)
+    tags = models.ManyToManyField(Tag)
