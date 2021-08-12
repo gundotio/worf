@@ -5,7 +5,7 @@ from worf.permissions import PublicEndpoint
 from worf.serializers import Serializer
 from worf.views import DetailUpdateAPI, ListAPI
 
-from tests.models import DummyModel
+from tests.models import DummyModel, Profile
 
 
 class DummyAPI(DetailUpdateAPI):
@@ -35,6 +35,19 @@ class UserSerializer(Serializer):
             "email",
         ]
 
+class ProfileSerializer(Serializer):
+    def read(self, model):
+        return dict(
+            username=model.user.username,
+            email=model.user.email,
+            props=[p.api() for p in model.props.all()],
+        )
+
+    def write(self):
+        return [
+            "props",
+        ]
+
 
 class UserDetail(DetailUpdateAPI):
     model = User
@@ -62,3 +75,14 @@ class UserList(ListAPI):
         "id",
         "date_joined",
     ]
+
+class ProfileList(ListAPI):
+    model = Profile
+    ordering = ["pk"]
+    serializer = ProfileSerializer
+    permissions = [PublicEndpoint]
+    search_fields = {}
+    filter_fields = [
+        "props",
+    ]
+    

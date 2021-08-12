@@ -113,11 +113,7 @@ class ListAPI(AbstractBaseAPI):
                     self.coerce_array_of_integers(key)  # raises 422 if failure
 
                 self.lookup_kwargs.update(
-                    {
-                        f"{key}__in": ",".join(
-                            str(value) for value in self.bundle[key]
-                        )
-                    }
+                    {f"{key}__in": ",".join(str(value) for value in self.bundle[key])}
                 )
 
                 continue

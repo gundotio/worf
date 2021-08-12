@@ -1,6 +1,9 @@
+import pytest
 from datetime import datetime, timedelta
 
 from worf.serializers import deserialize
+
+from tests.factories import ProfileFactory, PropFactory
 
 
 def test_user_detail(client, user):
@@ -51,6 +54,22 @@ def test_user_list_filters(client, user_factory):
     )
     assert len(deserialize(response)["users"]) == 1
     assert deserialize(response)["users"][0]["username"] == "test2"
+
+@pytest.mark.django_db
+def test_user_list_array_filter(client):
+    prop1 = PropFactory.create()
+    prop2 = PropFactory.create()
+    prop3 = PropFactory.create()
+    ProfileFactory.create(props=[prop1])
+    ProfileFactory.create(props=[prop2])
+    ProfileFactory.create(props=[prop1,prop2])
+    ProfileFactory.create(props=[prop3])
+    ProfileFactory.create()
+    response = client.get(
+        f"/profiles/?props={prop1.pk}&props={prop2.pk}"
+    )
+    assert response.status_code == 200, deserialize(response)
+    assert len(deserialize(response)["profiles"]) == 3
 
 
 def test_user_list_sort_asc(client, user_factory):

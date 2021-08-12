@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class DummyModel(models.Model):
@@ -15,3 +16,18 @@ class DummyModel(models.Model):
             "email",
             "phone",
         ]
+
+
+class Prop(models.Model):
+    name = models.CharField(max_length=200)
+
+    def api(self):
+        return dict(
+            id=self.pk,
+            name=self.name,
+        )
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    props = models.ManyToManyField(Prop)
