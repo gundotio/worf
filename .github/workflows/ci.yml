@@ -18,7 +18,7 @@ jobs:
       - run: pip install pipenv
       - run: pipenv install --dev --python ${{matrix.python}}
       - run: pipenv install django~=${{matrix.django}}
-      - run: pipenv run pytest
+      - run: pipenv run pytest --cov
 
   lint:
     runs-on: ubuntu-latest
