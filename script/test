@@ -22,7 +22,4 @@ play_fail() {
 }
 
 bin/pytest \
-  --cov \
-  --cov-report html \
-  --cov-report term:skip-covered \
   && play_success || play_fail
