@@ -111,13 +111,14 @@ class ListAPI(AbstractBaseAPI):
             if isinstance(self.bundle[key], list):
                 if not all(isinstance(x, int) for x in self.bundle[key]):
                     self.coerce_array_of_integers(key)  # raises 422 if failure
-                    self.lookup_kwargs.update(
-                        {
-                            f"{key}__in": ",".join(
-                                str(value) for value in self.bundle[key]
-                            )
-                        }
-                    )
+
+                self.lookup_kwargs.update(
+                    {
+                        f"{key}__in": ",".join(
+                            str(value) for value in self.bundle[key]
+                        )
+                    }
+                )
 
                 continue
 
