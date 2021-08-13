@@ -1,4 +1,5 @@
 import pytest
+from pytest_factoryboy import register
 
 import django
 from django.conf import settings
@@ -43,17 +44,21 @@ def pytest_configure():
 
     django.setup()
 
+    from tests.factories import (
+        ProfileFactory,
+        RoleFactory,
+        TagFactory,
+        TeamFactory,
+        UserFactory,
+    )
+
+    register(ProfileFactory, "profile")
+    register(RoleFactory, "role")
+    register(TagFactory, "tag")
+    register(TeamFactory, "team")
+    register(UserFactory, "user")
+
 
 @pytest.fixture(name="now")
 def now_fixture():
     return timezone.now()
-
-
-@pytest.fixture(name="user_factory")
-def user_factory_fixture(django_user_model):
-    return django_user_model.objects
-
-
-@pytest.fixture(name="user")
-def user_fixture(user_factory):
-    return user_factory.create_user(username="test", password="password")

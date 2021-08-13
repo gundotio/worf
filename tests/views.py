@@ -2,10 +2,10 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from worf.permissions import PublicEndpoint
-from worf.serializers import Serializer
 from worf.views import DetailUpdateAPI, ListAPI
 
 from tests.models import DummyModel, Profile
+from tests.serializers import ProfileSerializer, UserSerializer
 
 
 class DummyAPI(DetailUpdateAPI):
@@ -20,38 +20,20 @@ class DummyAPI(DetailUpdateAPI):
         return "+5555555555"
 
 
-class UserSerializer(Serializer):
-    def read(self, model):
-        return dict(
-            username=model.username,
-            lastLogin=model.last_login,
-            dateJoined=model.date_joined,
-            email=model.email,
-        )
-
-    def write(self):
-        return [
-            "username",
-            "email",
-        ]
-
-class ProfileSerializer(Serializer):
-    def read(self, model):
-        return dict(
-            username=model.user.username,
-            email=model.user.email,
-            tags=[t.api() for t in model.tags.all()],
-        )
-
-    def write(self):
-        return [
-            "tags",
-        ]
+class ProfileList(ListAPI):
+    model = Profile
+    ordering = ["pk"]
+    serializer = ProfileSerializer
+    permissions = [PublicEndpoint]
+    search_fields = {}
+    filter_fields = [
+        "tags",
+    ]
 
 
-class UserDetail(DetailUpdateAPI):
-    model = User
-    serializer = UserSerializer
+class ProfileDetail(DetailUpdateAPI):
+    model = Profile
+    serializer = ProfileSerializer
     permissions = [PublicEndpoint]
 
 
@@ -76,13 +58,8 @@ class UserList(ListAPI):
         "date_joined",
     ]
 
-class ProfileList(ListAPI):
-    model = Profile
-    ordering = ["pk"]
-    serializer = ProfileSerializer
+
+class UserDetail(DetailUpdateAPI):
+    model = User
+    serializer = UserSerializer
     permissions = [PublicEndpoint]
-    search_fields = {}
-    filter_fields = [
-        "tags",
-    ]
-    
