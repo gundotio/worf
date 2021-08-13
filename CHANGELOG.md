@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.4](https://github.com/gundotio/worf/compare/v0.3.3...v0.3.4) (2021-08-13)
+
+- Really restores support for filtering with querystring arrays
+- Adds a PR tempalte
+- Requires coverage
+- Support Foreign Key Assignment
+
 ### [0.3.3](https://github.com/gundotio/worf/compare/v0.3.2...v0.3.3) (2021-08-12)
 
 - Restores support for filtering with querystring arrays such as `?this=that&this=this`
