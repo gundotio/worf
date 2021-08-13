@@ -44,6 +44,12 @@ def test_profile_update_foreign_key(client, db, profile, role_factory, team_fact
     assert result["role"]["name"] == role.name
     assert result["team"]["name"] == team.name
 
+    # invalid role
+    response = client.patch(url, dict(role=123), content_type="application/json")
+    result = deserialize(response)
+    assert response.status_code == 422, result
+    assert result["message"] == "Invalid role"
+
     # role is not nullable
     response = client.patch(url, dict(role=None), content_type="application/json")
     result = deserialize(response)
@@ -67,16 +73,19 @@ def test_profile_update_many_to_many(client, db, profile, tag):
     assert result["tags"][0]["id"] == tag.pk
     assert result["tags"][0]["name"] == tag.name
 
+    # tags can be empty
     response = client.patch(url, dict(tags=[]), content_type="application/json")
     result = deserialize(response)
     assert response.status_code == 200, result
     assert len(result["tags"]) == 0
 
+    # tags is not nullable
     response = client.patch(url, dict(tags=None), content_type="application/json")
     result = deserialize(response)
     assert response.status_code == 422, result
     assert "tags accepts an array, got <class 'NoneType'> None" in result["message"]
 
+    # tags must be pks.. for now anyway
     payload = dict(tags=["invalid"])
     response = client.patch(url, payload, content_type="application/json")
     result = deserialize(response)
