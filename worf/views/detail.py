@@ -37,7 +37,11 @@ class DetailAPI(AbstractBaseAPI):
     def set_foreign_key(self, instance, key):
         related_model = self.get_related_model(key)
         try:
-            related_instance = related_model.objects.get(pk=self.bundle[key])
+            related_instance = (
+                related_model.objects.get(pk=self.bundle[key])
+                if self.bundle[key] is not None
+                else None
+            )
         except related_model.DoesNotExist as e:
             raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
         setattr(instance, key, related_instance)
@@ -62,6 +66,9 @@ class DetailAPI(AbstractBaseAPI):
             self.validate_bundle(key)
 
             field = self.model._meta.get_field(key)
+
+            if self.bundle[key] is None and not field.null:
+                raise ValidationError(f"Invalid {snake_to_camel(key)}")
 
             if isinstance(field, models.ForeignKey):
                 self.set_foreign_key(instance, key)
