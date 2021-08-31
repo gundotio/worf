@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from uuid import UUID
 
@@ -7,7 +6,6 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.dateparse import parse_datetime
-from django.utils.html import strip_tags
 
 from worf.exceptions import NotImplementedInWorfYet
 from worf.casing import clean_lookup_keywords, snake_to_camel
@@ -81,7 +79,7 @@ class ValidationMixin:
             raise ValidationError(f"Field {snake_to_camel(key)} accepts string")
 
         if key not in self.secure_fields:
-            value = strip_tags(value).strip()
+            value = value.strip()
 
         if max_length is not None and len(value) > max_length:
             raise ValidationError(
