@@ -9,9 +9,18 @@ class CreateAPI(AbstractBaseAPI):
         return {}
 
     def post(self, request, *args, **kwargs):
+        new_instance = self.create()
         serializer = self.get_serializer()
+        return self.render_to_response(serializer.read(new_instance), 201)
 
-        create_fields = serializer.create()
+    def create(self):
+        self.validate()
+
+        return self.model.objects.create(**self.bundle)
+
+    def validate(self):
+        create_fields = self.get_serializer().create()
+
         for key in self.bundle.keys():
             self.validate_bundle(key)
             # ignore create_fields for now if it's empty
@@ -22,6 +31,3 @@ class CreateAPI(AbstractBaseAPI):
                         snake_to_camel(key), self.name
                     )
                 )
-
-        new_instance = self.model.objects.create(**self.bundle)
-        return self.render_to_response(serializer.read(new_instance), 201)
