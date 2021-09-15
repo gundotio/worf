@@ -52,23 +52,13 @@ class DetailAPI(AbstractBaseAPI):
         except IntegrityError as e:
             raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
 
-    def validate_and_update(self):
-        """
-        Update all fields passed in from json.
-
-        Step 1: Validate
-        Step 2: Update
-        """
+    def update(self):
         instance = self.get_instance()
-        keys = self.bundle.keys()
 
-        for key in keys:
-            self.validate_bundle(key)
+        self.validate()
 
+        for key in self.bundle.keys():
             field = self.model._meta.get_field(key)
-
-            if self.bundle[key] is None and not field.null:
-                raise ValidationError(f"Invalid {snake_to_camel(key)}")
 
             if isinstance(field, models.ForeignKey):
                 self.set_foreign_key(instance, key)
@@ -83,8 +73,19 @@ class DetailAPI(AbstractBaseAPI):
         instance.save()
         instance.refresh_from_db()
 
+        return instance
+
+    def validate(self):
+        for key in self.bundle.keys():
+            self.validate_bundle(key)
+
+            field = self.model._meta.get_field(key)
+
+            if self.bundle[key] is None and not field.null:
+                raise ValidationError(f"Invalid {snake_to_camel(key)}")
+
 
 class DetailUpdateAPI(DetailAPI):
     def patch(self, request, *args, **kwargs):
-        self.validate_and_update()
+        self.update()
         return self.get(request)
