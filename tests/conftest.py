@@ -47,6 +47,7 @@ def pytest_configure():
     from tests.factories import (
         ProfileFactory,
         RoleFactory,
+        SkillFactory,
         TagFactory,
         TeamFactory,
         UserFactory,
@@ -54,6 +55,7 @@ def pytest_configure():
 
     register(ProfileFactory, "profile")
     register(RoleFactory, "role")
+    register(SkillFactory, "skill")
     register(TagFactory, "tag")
     register(TeamFactory, "team")
     register(UserFactory, "user")
@@ -62,3 +64,13 @@ def pytest_configure():
 @pytest.fixture(name="now")
 def now_fixture():
     return timezone.now()
+
+
+@pytest.fixture(name="profile_url")
+def profile_url_fixture(profile):
+    return f"/profiles/{profile.pk}/"
+
+
+@pytest.fixture(name="user_url")
+def user_url_fixture(user):
+    return f"/users/{user.pk}/"

@@ -49,7 +49,37 @@ class DetailAPI(AbstractBaseAPI):
     def set_many_to_many(self, instance, key):
         try:
             getattr(instance, key).set(self.bundle[key])
-        except IntegrityError as e:
+        except (IntegrityError, ValueError) as e:
+            raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
+
+    def set_many_to_many_with_through(self, instance, key):
+        try:
+            attr = getattr(self.model, key)
+
+            through_model = attr.through
+            model_name = self.model._meta.model_name
+            target_field_name = attr.field.m2m_target_field_name()
+            reverse_name = attr.field.m2m_reverse_name()
+
+            getattr(instance, key).clear()
+
+            through_model.objects.bulk_create(
+                [
+                    through_model(
+                        **{
+                            key: value
+                            for key, value in item.items()
+                            if key != target_field_name
+                        },
+                        **{
+                            model_name: instance,
+                            reverse_name: item[target_field_name],
+                        },
+                    )
+                    for item in self.bundle[key]
+                ]
+            )
+        except (AttributeError, IntegrityError, ValueError) as e:
             raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
 
     def update(self):
@@ -58,13 +88,17 @@ class DetailAPI(AbstractBaseAPI):
         self.validate()
 
         for key in self.bundle.keys():
-            field = self.model._meta.get_field(key)
+            attr = getattr(self.model, key)
 
-            if isinstance(field, models.ForeignKey):
+            if isinstance(attr.field, models.ForeignKey):
                 self.set_foreign_key(instance, key)
                 continue
 
-            if isinstance(field, models.ManyToManyField):
+            if isinstance(attr.field, models.ManyToManyField):
+                if not attr.through._meta.auto_created:
+                    self.set_many_to_many_with_through(instance, key)
+                    continue
+
                 self.set_many_to_many(instance, key)
                 continue
 
