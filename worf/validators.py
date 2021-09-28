@@ -70,8 +70,6 @@ class ValidationMixin:
                 f"Field {snake_to_camel(key)} accepts an array, got {type(value)} {value}"
             )
 
-        self.coerce_array_of_integers(key)
-
     def _validate_string(self, key, max_length):
         value = self.bundle[key]
 

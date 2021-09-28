@@ -22,13 +22,41 @@ class Role(models.Model):
     name = models.CharField(max_length=64)
 
 
-class Tag(models.Model):
+class Skill(models.Model):
     name = models.CharField(max_length=200)
 
     def api(self):
         return dict(
             id=self.pk,
             name=self.name,
+        )
+
+
+class RatedSkill(models.Model):
+    class Meta:
+        ordering = ["skill__name"]
+        unique_together = ["profile", "skill"]
+
+    RATING_CHOICES = [
+        (5, "Excellent"),
+        (4, "Great"),
+        (3, "Average"),
+        (2, "Poor"),
+        (1, "Bad"),
+    ]
+
+    profile = models.ForeignKey("Profile", on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    skill = models.ForeignKey("Skill", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.skill.name}: {self.get_rating_display()}"
+
+    def api(self):
+        return dict(
+            id=self.skill.pk,
+            name=self.skill.name,
+            rating=self.rating,
         )
 
 
@@ -50,4 +78,5 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, blank=True, null=True, on_delete=models.SET_NULL)
+    skills = models.ManyToManyField(Skill, through=RatedSkill)
     tags = models.ManyToManyField(Tag)

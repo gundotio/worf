@@ -23,6 +23,7 @@ class ProfileSerializer(Serializer):
             username=model.user.username,
             email=model.user.email,
             role=dict(name=model.role.name) if model.role else None,
+            skills=[t.api() for t in model.ratedskill_set.all()],
             team=dict(name=model.team.name) if model.team else None,
             tags=[t.api() for t in model.tags.all()],
         )
@@ -30,6 +31,7 @@ class ProfileSerializer(Serializer):
     def write(self):
         return [
             "role",
+            "skills",
             "team",
             "tags",
         ]
