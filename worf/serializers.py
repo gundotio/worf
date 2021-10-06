@@ -1,4 +1,5 @@
 import json
+
 from django.core.exceptions import ImproperlyConfigured
 
 
@@ -9,6 +10,9 @@ def deserialize(response):
 class Serializer:
     def create(self):
         return []
+
+    def list(self, items):
+        return [self.read(item) for item in items]
 
     def read(self, model):
         return {}
