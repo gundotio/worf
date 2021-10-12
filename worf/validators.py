@@ -52,6 +52,7 @@ class ValidationMixin:
     def _validate_datetime(self, key):
         value = self.bundle[key]
         coerced = None
+
         if isinstance(value, str):
             coerced = parse_datetime(value)
 
@@ -179,7 +180,13 @@ class ValidationMixin:
 
         field = self.model._meta.get_field(clean_key)
 
-        if hasattr(self, f"validate_{clean_key}"):
+        if field.blank and self.bundle[key] == "":
+            pass
+
+        elif field.null and self.bundle[key] is None:
+            pass
+
+        elif hasattr(self, f"validate_{clean_key}"):
             self.bundle[key] = getattr(self, f"validate_{clean_key}")(self.bundle[key])
 
         elif isinstance(field, (models.CharField, models.TextField, models.SlugField)):
