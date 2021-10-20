@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.1](https://github.com/gundotio/worf/compare/v0.4.0...v0.4.1) (2021-10-20)
+
+- Fixes an issue where fields that support null will error when given a null value
+
 ## [0.4.0](https://github.com/gundotio/worf/compare/v0.3.6...v0.4.0) (2021-10-07)
 
 - Introduces support for setting M2M through models
