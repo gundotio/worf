@@ -180,6 +180,12 @@ class ListAPI(AbstractBaseAPI):
         except EmptyPage:
             return []
 
+    def specific_fields(self, result):
+        fields = self.bundle.get("fields", [])
+        if fields:
+            return {key: value for key, value in result.items() if key in fields}
+        return result
+
     def parse_sort(self, fields):
         return [self.transform_sort(field) for field in fields]
 
@@ -192,7 +198,8 @@ class ListAPI(AbstractBaseAPI):
 
         payload = {
             str(self.name): [
-                serializer.read(instance) for instance in self.paginated_results()
+                self.specific_fields(serializer.read(instance))
+                for instance in self.paginated_results()
             ]
         }
 
