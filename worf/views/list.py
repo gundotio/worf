@@ -68,9 +68,6 @@ class ListAPI(AbstractBaseAPI):
         For more advanced search use cases, override this method and pass GET
         with any remaining params you want to use classic django filters for.
         """
-        if self.search_fields is None:
-            """If self.search_fields is not set, we don't allow search."""
-            return
 
         self.set_bundle_from_querystring()
         # Whatever is not q or page as a querystring param will
