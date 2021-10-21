@@ -11,7 +11,6 @@ from worf.views.create import CreateAPI
 
 
 class ListAPI(AbstractBaseAPI):
-    results_per_page = 25
     lookup_url_kwarg = "id"  # default incase lookup_field is set
     filters = {}
     ordering = []
@@ -23,6 +22,8 @@ class ListAPI(AbstractBaseAPI):
     filter_set = None
     count = 0
     page_num = 1
+    per_page = 25
+    max_per_page = None
     num_pages = 1
 
     def get(self, request, *args, **kwargs):
@@ -163,10 +164,10 @@ class ListAPI(AbstractBaseAPI):
         if settings.DEBUG:
             self.query = str(queryset.query)
 
-        if self.results_per_page is None:
-            return queryset
-
-        paginator = Paginator(queryset, self.results_per_page)
+        default_per_page = getattr(self, "results_per_page", self.per_page)
+        per_page = max(int(request.GET.get("perPage") or default_per_page), 1)
+        max_per_page = self.max_per_page or default_per_page
+        paginator = Paginator(queryset, min(per_page, max_per_page))
 
         self.page_num = int(request.GET.get("page") or request.GET.get("p") or 1)
         if self.page_num < 1:
@@ -196,7 +197,7 @@ class ListAPI(AbstractBaseAPI):
             ]
         }
 
-        if self.results_per_page:
+        if self.per_page:
             payload.update(
                 {
                     "pagination": dict(

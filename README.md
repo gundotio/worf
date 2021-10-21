@@ -180,10 +180,12 @@ Class Attributes
 |`filter_fields`   | no | `list` | _Default_: `None`. Pass a list of fields to support filtering via query params. |
 |`search_fields`   | no | `dict` or `bool` | _Default_: `None`. Pass a dict with `and`/`or` fields to search via the `q` query param. |
 |`sort_fields`   | no | `list` | _Default_: `None`. Pass a list of fields to support sorting via the `sort` query param. |
-|`results_per_page`  | no  | `int` | _Default_: 25. Sets the number of results returned for each page. |
+|`per_page`  | no  | `int` | _Default_: 25. Sets the number of results returned for each page. |
+|`max_per_page`  | no  | `int` | _Default_: Same as `per_page`. Sets the max number of results to allow when passing the `perPage` query param. |
 |   |   |   |   |
 
 ##### Search
+
 Setting `search_fields` to `True` will enable search based on url parameters.
 Parameters in the URL must be camelCase and exactly match the snake_case model
 field.
@@ -196,7 +198,7 @@ must be composed of django filter lookup argument names.
 
 All ListAPI views are paginated and include a `pagination` json object.
 
-Use `results_per_page` to set custom limit for pagination. Default 25.
+Use `per_page` to set custom limit for pagination. Default 25.
 
 ##### `get_queryset()` method
 This method will use `lookup_url_kwarg` and `lookup_field` to filter results.
