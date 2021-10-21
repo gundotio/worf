@@ -77,9 +77,6 @@ class ValidationMixin:
         if not isinstance(value, str):
             raise ValidationError(f"Field {snake_to_camel(key)} accepts string")
 
-        if key not in self.secure_fields:
-            value = value.strip()
-
         if max_length is not None and len(value) > max_length:
             raise ValidationError(
                 f"Field {snake_to_camel(key)} accepts a maximum of {max_length} characters"
@@ -177,6 +174,9 @@ class ValidationMixin:
 
         if not hasattr(self.model, clean_key):
             raise ValidationError(f"{snake_to_camel(clean_key)} does not exist")
+
+        if key not in self.secure_fields and isinstance(self.bundle[key], str):
+            self.bundle[key] = self.bundle[key].strip()
 
         field = self.model._meta.get_field(clean_key)
 
