@@ -25,7 +25,7 @@ class ProfileList(ListAPI):
     ordering = ["pk"]
     serializer = ProfileSerializer
     permissions = [PublicEndpoint]
-    search_fields = {}
+    search_fields = []
     filter_fields = [
         "tags",
     ]
@@ -42,16 +42,14 @@ class UserList(ListAPI):
     ordering = ["pk"]
     serializer = UserSerializer
     permissions = [PublicEndpoint]
-    search_fields = {
-        "or": [
-            "email",
-            "username",
-        ]
-    }
     filter_fields = [
         "email",
         "date_joined__gte",
         "date_joined__lte",
+    ]
+    search_fields = [
+        "email",
+        "username",
     ]
     sort_fields = [
         "id",

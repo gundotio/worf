@@ -1,3 +1,7 @@
+import operator
+from functools import reduce
+import warnings
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
@@ -14,11 +18,10 @@ class ListAPI(AbstractBaseAPI):
     lookup_url_kwarg = "id"  # default incase lookup_field is set
     filters = {}
     ordering = []
-    filter_fields = None
-    search_fields = None
-    sort_fields = None
+    filter_fields = []
+    search_fields = []
+    sort_fields = []
     queryset = None
-    q_objects = Q()
     filter_set = None
     count = 0
     page_num = 1
@@ -31,24 +34,34 @@ class ListAPI(AbstractBaseAPI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        codepath = self.codepath
+
         if not isinstance(self.filters, dict):
-            raise ImproperlyConfigured(f"{self.codepath}.filters must be type: dict")
+            raise ImproperlyConfigured(f"{codepath}.filters must be type: dict")
+
         if not isinstance(self.ordering, list):
-            raise ImproperlyConfigured(f"{self.codepath}.ordering must be type: list")
-        if self.filter_fields is not None and not isinstance(self.filter_fields, list):
-            raise ImproperlyConfigured(
-                f"{self.codepath}.filter_fields must be type: list"
-            )
-        if self.search_fields is not None and not isinstance(self.search_fields, dict):
-            raise ImproperlyConfigured(
-                f"{self.codepath}.search_fields must be type: dict"
-            )
-        if self.sort_fields is not None and not isinstance(self.sort_fields, list):
-            raise ImproperlyConfigured(
-                f"{self.codepath}.sort_fields must be type: list"
-            )
+            raise ImproperlyConfigured(f"{codepath}.ordering must be type: list")
+
+        if not isinstance(self.filter_fields, list):
+            raise ImproperlyConfigured(f"{codepath}.filter_fields must be type: list")
+
+        if not isinstance(self.search_fields, (dict, list)):
+            raise ImproperlyConfigured(f"{codepath}.search_fields must be type: list")
+
+        if not isinstance(self.sort_fields, list):
+            raise ImproperlyConfigured(f"{codepath}.sort_fields must be type: list")
+
+        # generate a default filterset if a custom one was not provided
         if self.filter_set is None:
             self.filter_set = generate_filterset(self.model)
+
+        # support deprecated search_fields and/or dict syntax (note that `and` does nothing)
+        if isinstance(self.search_fields, dict):
+            warnings.warn(
+                f"Passing a dict to {codepath}.search_fields is deprecated. Pass a list instead."
+            )
+            self.search_fields = self.search_fields.get("or", [])
 
     def _set_base_lookup_kwargs(self):
         # Filters set directly on the class
@@ -69,27 +82,24 @@ class ListAPI(AbstractBaseAPI):
         For more advanced search use cases, override this method and pass GET
         with any remaining params you want to use classic django filters for.
         """
-        if self.search_fields is None:
-            """If self.search_fields is not set, we don't allow search."""
+        if not self.filter_fields and not self.search_fields:
             return
 
         self.set_bundle_from_querystring()
+
         # Whatever is not q or page as a querystring param will
         # be used for key-value search.
-        search_string = self.bundle.get("q", False)
+        query = self.bundle.pop("q", "").strip()
+
         self.bundle.pop("page", None)
         self.bundle.pop("p", None)
-        self.bundle.pop("q", None)
 
-        if search_string and len(search_string):
-            the_ors = self.search_fields.get("or", [])
-            for attr in the_ors:
-                kwarg = {attr + "__icontains": search_string.strip()}
-                self.q_objects.add(Q(**kwarg), Q.OR)
-
-            the_ands = self.search_fields.get("ands", [])
-            for attr in the_ands:
-                kwarg = {attr + "__icontains": search_string.strip()}
+        if query:
+            search_icontains = (
+                Q(**{f"{search_field}__icontains": query})
+                for search_field in self.search_fields
+            )
+            self.search_query = reduce(operator.or_, search_icontains)
 
         if not self.filter_fields or not self.bundle:
             return
@@ -131,7 +141,7 @@ class ListAPI(AbstractBaseAPI):
         queryset = self.get_queryset()
 
         self.lookup_kwargs = {}
-        self.q_objects = Q()
+        self.search_query = Q()
 
         self._set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
@@ -145,7 +155,7 @@ class ListAPI(AbstractBaseAPI):
         try:
             queryset = (
                 apply_filterset(self.filter_set, queryset, self.lookup_kwargs)
-                .filter(self.q_objects)
+                .filter(self.search_query)
                 .order_by(*order_by)
                 .distinct()
             )
@@ -229,7 +239,7 @@ class ListAPI(AbstractBaseAPI):
                     "bundle": self.bundle,
                     "lookup_kwargs": self.lookup_kwargs,
                     "query": self.query,
-                    "q_objs": str(self.q_objects),
+                    "search_query": str(self.search_query),
                     "serializer": str(serializer),
                 }
             }

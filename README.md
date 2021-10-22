@@ -156,43 +156,37 @@ recommended to use this abstract view directly.
 
 Class Attributes
 
-|name | required | type | description |
+| Name | Type | Default | Description |
 | -- | -- | -- | -- |
-|`bundle_name` | no | `str` | _Default:_ `None` If set, the returned data will use this name. I.e., {`bundle_name`: return_data}|
-|`model`| yes | `class` | An uninstantiated `django.db.models.model` class.  |
-|`permissions`| yes | `list` of permissions classes | Will return appropriate HTTP status code based on the definition of the permission class.
-|   |   |   |   |
+| `model`       | `class` | `None` | An uninstantiated `django.db.models.model` class. |
+| `permissions` | `list`  | `[]`   | Pass a list of permissions classes. |
 
 ##### HTTP Methods
+
 - GET is always supported.
 
 
 #### `ListAPI`
 
-|name | required | type | description |
+| Name | Type | Default | Description |
 | -- | -- | -- | -- |
-|`api_method`   | no | `str`  | _Default:_ `api`. Must refer to a `model` method. This method is used to return data for `GET` requests. |
-|`payload_key`   | no  | `str`  | _Default:_ `model._meta.verbose_name_plural`. Use in order to rename the key for the results array |
-|`filters`      | no  | `dict` | _Default:_ `{}`. Pass key/value pairs that you wish to further filter the queryset beyond the `lookup_url_kwarg` |
-|`lookup_field` | no | `str` | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
-|`lookup_url_kwarg`| no | `str` | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
-|`ordering`     | no | `list` | _Default_: `[]`. Pass a list of fields to default the queryset order by. |
-|`filter_fields`   | no | `list` | _Default_: `None`. Pass a list of fields to support filtering via query params. |
-|`search_fields`   | no | `dict` or `bool` | _Default_: `None`. Pass a dict with `and`/`or` fields to search via the `q` query param. |
-|`sort_fields`   | no | `list` | _Default_: `None`. Pass a list of fields to support sorting via the `sort` query param. |
-|`per_page`  | no  | `int` | _Default_: 25. Sets the number of results returned for each page. |
-|`max_per_page`  | no  | `int` | _Default_: Same as `per_page`. Sets the max number of results to allow when passing the `perPage` query param. |
-|   |   |   |   |
+| `api_method`        | `str`  | `api`                 | Must refer to a `model` method. This method is used to return data for `GET` requests. |
+| `payload_key`       | `str`  | `verbose_name_plural` | Use in order to rename the key for the results array |
+| `filters`           | `dict` | `{}`                  | Pass key/value pairs that you wish to further filter the queryset beyond the `lookup_url_kwarg` |
+| `lookup_field`      | `str`  | `None`                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
+| `lookup_url_kwarg`  | `str`  | `None`                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
+| `ordering`          | `list` | `[]`                  | Pass a list of fields to default the queryset order by. |
+| `filter_fields`     | `list` | `[]`                  | Pass a list of fields to support filtering via query params. |
+| `search_fields`     | `list` | `[]`                  | Pass a list of fields to full text search via the `q` query param. |
+| `sort_fields`       | `list` | `[]`                  | Pass a list of fields to support sorting via the `sort` query param. |
+| `per_page`          | `int`  | `25`                  | Sets the number of results returned for each page. |
+| `max_per_page`      | `int`  | `per_page`            | Sets the max number of results to allow when passing the `perPage` query param. |
 
 ##### Search
 
-Setting `search_fields` to `True` will enable search based on url parameters.
-Parameters in the URL must be camelCase and exactly match the snake_case model
-field.
+Parameters in the URL must be camelCase and exactly match the snake_case model field.
 
-To allow full text search, set to a dictionary of two lists: 'or' & 'and'. Each
-list will be assembled using either `Q.OR` or `Q.AND`. Fields in each list
-must be composed of django filter lookup argument names.
+To allow full text search, set to a list of fields for django filter lookups.
 
 ##### Pagination
 
@@ -201,11 +195,13 @@ All ListAPI views are paginated and include a `pagination` json object.
 Use `per_page` to set custom limit for pagination. Default 25.
 
 ##### `get_queryset()` method
+
 This method will use `lookup_url_kwarg` and `lookup_field` to filter results.
 You _should_ not need to override get_queryset. Instead, set the optional variables
 listed above to configure the queryset.
 
 ##### Return
+
 1. A list of the `ListAPI.{model}.{instance}.api()` method by default.
 2. If `lookup_field` and `lookup_url_kwarg` fields are set, it will return a filtered list.
 
@@ -228,12 +224,11 @@ properly. Do this by performing whatever logic you need to do, then update the
 
 #### `DetailAPI`
 
-|name | default | type | description |
+| Name | Type | Default | Description |
 | -- | -- | -- | -- |
-|`api_method` | `api` | `str`  | Must refer to a `model` method. This method is used to return data for `GET` requests. Additionally, `{api_method}_update_fields` will be called to execute `PATCH` requests.|
-|`lookup_field`| `id` | `str` | Override with the lookup field used to filter the _model_. Defaults to `id`|
-|`lookup_url_kwarg`| `id` | `str` | Override with the name of the parameter passed to the view by the URL route. Defaults to `id`  |
-|   |   |   |   |
+| `api_method`       | `str` | `api` | Must refer to a `model` method. This method is used to return data for `GET` requests. Additionally, `{api_method}_update_fields` will be called to execute `PATCH` requests.|
+| `lookup_field`     | `str` | `id`  | Override with the lookup field used to filter the _model_. Defaults to `id`|
+| `lookup_url_kwarg` | `str` | `id`  | Override with the name of the parameter passed to the view by the URL route. Defaults to `id`  |
 
 ##### `get_instance()` method
 This method uses `lookup_field` and `lookup_url_kwargs` to return a model instance.
