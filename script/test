@@ -1,7 +1,7 @@
 #!/bin/bash
 
-set -eou pipefail
 cd "$(dirname "$0")/.."
+set -eou pipefail
 
 play_success() {
   case $OSTYPE in
