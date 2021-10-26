@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -eou pipefail
+cd "$(dirname "$0")/.."
+
+Y=$(tput setaf 3) X=$(tput sgr0)
+
+echo -e "${Y}==>${X} Autoflake"
+autoflake --in-place --recursive --remove-all-unused-imports worf
+
+echo -e "${Y}==>${X} Black"
+black worf
+
+echo -e "${Y}==>${X} Flake8"
+flake8 worf
