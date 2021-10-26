@@ -8,8 +8,10 @@ name = "pypi"
 worf = {editable = true, path = "."}
 
 [dev-packages]
+autoflake = "*"
 autopep8 = "*"
 black = "==20.8b1"
+build = "*"
 coverage = "*"
 factory-boy = "*"
 flake8 = "*"
@@ -18,10 +20,12 @@ pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
 pytest-factoryboy = "*"
-pytest-xdist = {extras = ["psutil"], version = "*"}
 pytest-watch = "*"
-build = "*"
+pytest-xdist = {extras = ["psutil"], version = "*"}
 twine = "*"
 
 [requires]
 python_version = "3.8"
+
+[scripts]
+lint = "./script/lint"
