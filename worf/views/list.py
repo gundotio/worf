@@ -105,11 +105,24 @@ class ListAPI(AbstractBaseAPI):
             return
 
         for key in self.bundle.keys():
-            field = clean_lookup_keywords(key)
             if key not in self.filter_fields:
                 continue
 
-            if isinstance(self.model._meta.get_field(field), ManyToManyField):
+            clean_key = clean_lookup_keywords(key)
+
+            annotation = (
+                self.get_queryset().query.annotations.get(clean_key)
+                if hasattr(self, "get_queryset")
+                else None
+            )
+
+            field = (
+                annotation.output_field
+                if annotation
+                else self.model._meta.get_field(clean_key)
+            )
+
+            if isinstance(field, ManyToManyField):
                 if not isinstance(self.bundle[key], list):
                     # TODO simplify this when we move to POST for search.
                     # We do type coersion in set_bundle_from_querystring,
