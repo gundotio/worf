@@ -164,21 +164,33 @@ class ValidationMixin:
         """
         # POST cannot validate b/c it allows fields not in api_update_fields
         # self.request.method == 'POST' or
-        clean_key = clean_lookup_keywords(key)
         serializer = self.get_serializer()
+
         if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
             message = f"{snake_to_camel(key)} is not editable"
             if settings.DEBUG:
                 message += f":: {serializer}"
             raise ValidationError(message)
 
-        if not hasattr(self.model, clean_key):
+        clean_key = clean_lookup_keywords(key)
+
+        annotation = (
+            self.get_queryset().query.annotations.get(clean_key)
+            if hasattr(self, "get_queryset")
+            else None
+        )
+
+        if not hasattr(self.model, clean_key) and not annotation:
             raise ValidationError(f"{snake_to_camel(clean_key)} does not exist")
 
         if key not in self.secure_fields and isinstance(self.bundle[key], str):
             self.bundle[key] = self.bundle[key].strip()
 
-        field = self.model._meta.get_field(clean_key)
+        field = (
+            annotation.output_field
+            if annotation
+            else self.model._meta.get_field(clean_key)
+        )
 
         if field.blank and self.bundle[key] == "":
             pass
