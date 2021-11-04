@@ -3,14 +3,13 @@ from django.db import models
 from django.db.utils import IntegrityError
 
 from worf.casing import snake_to_camel
-from worf.shortcuts import get_instance_or_http404
 from worf.views.base import AbstractBaseAPI
 
 
 class DetailAPI(AbstractBaseAPI):
     lookup_field = "id"
     lookup_url_kwarg = "id"
-    instance = None
+    queryset = None
 
     def get(self, request, *args, **kwargs):
         return self.render_to_response()
@@ -23,14 +22,16 @@ class DetailAPI(AbstractBaseAPI):
             raise ImproperlyConfigured(f"{serializer} did not return a dictionary")
         return payload
 
+    def get_queryset(self):
+        return (self.queryset or self.model.objects).all()
+
     def get_instance(self):
-        # TODO support multiple lookup_fields
         self.lookup_kwargs = {self.lookup_field: self.kwargs[self.lookup_url_kwarg]}
 
         self.validate_lookup_field_values()
 
-        if self.instance is None:
-            self.instance = get_instance_or_http404(self.model, **self.lookup_kwargs)
+        if not hasattr(self, "instance"):
+            self.instance = self.get_queryset().get(**self.lookup_kwargs)
 
         return self.instance
 
