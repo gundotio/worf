@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.3](https://github.com/gundotio/worf/compare/v0.4.2...v0.4.3) (2021-11-05)
+
+- Support annotation filters for more flexible query param filters #66
+- Support custom queryset on detail views #68
+- Switch search fields to `list` and deprecate `dict` syntax #63
+- Lint script #65
+- Reorganize tests #67
+
 ### [0.4.2](https://github.com/gundotio/worf/compare/v0.4.1...v0.4.2) (2021-10-25)
 
 - Adds support for `fields` query parameter
