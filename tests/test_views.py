@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 json_type = "application/json"
 
@@ -27,9 +27,9 @@ def test_profile_list_search(client, db, profile, user):
 
 
 def test_profile_list_annotation_filter(client, db, profile_factory):
-    profile_factory.create(user__date_joined="2020-01-01T00:00:00")
-    profile_factory.create(user__date_joined="2020-12-01T00:00:00")
-    response = client.get("/profiles/?dateJoined__gte=2020-06-01T00:00:00")
+    profile_factory.create(user__date_joined="2020-01-01T00:00:00Z")
+    profile_factory.create(user__date_joined="2020-12-01T00:00:00Z")
+    response = client.get("/profiles/?dateJoined__gte=2020-06-01T00:00:00Z")
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 1
@@ -39,9 +39,10 @@ def test_profile_list_subset_search(client, db, profile, user):
     response = client.get(f"/profiles/subset/?name={user.first_name} {user.last_name}")
     result = response.json()
     assert response.status_code == 200, result
+    assert len(result["profiles"]) == 0
 
 
-def test_profile_list_array_filter(client, db, profile_factory, tag_factory):
+def test_profile_list_and_filter(client, db, profile_factory, tag_factory):
     tag1, tag2, tag3 = tag_factory.create_batch(3)
     profile_factory.create(tags=[tag1])
     profile_factory.create(tags=[tag2])
@@ -49,6 +50,19 @@ def test_profile_list_array_filter(client, db, profile_factory, tag_factory):
     profile_factory.create(tags=[tag3])
     profile_factory.create()
     response = client.get(f"/profiles/?tags={tag1.pk}&tags={tag2.pk}")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+
+
+def test_profile_list_or_filter(client, db, profile_factory, tag_factory):
+    tag1, tag2, tag3 = tag_factory.create_batch(3)
+    profile_factory.create(tags=[tag1])
+    profile_factory.create(tags=[tag2])
+    profile_factory.create(tags=[tag1, tag2])
+    profile_factory.create(tags=[tag3])
+    profile_factory.create()
+    response = client.get(f"/profiles/?tags__in={tag1.pk}&tags__in={tag2.pk}")
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 3
@@ -180,9 +194,9 @@ def test_user_list(client, db, user):
 
 
 def test_user_list_filters(client, db, user_factory):
-    january = datetime.fromisoformat("2021-01-01T00:00:00+00:00")
-    february = datetime.fromisoformat("2021-02-01T00:00:00+00:00")
-    march = datetime.fromisoformat("2021-03-01T00:00:00+00:00")
+    january = "2021-01-01T00:00:00Z"
+    february = "2021-02-01T00:00:00Z"
+    march = "2021-03-01T00:00:00Z"
 
     user1 = user_factory.create(date_joined=january)
     user2 = user_factory.create(date_joined=february)

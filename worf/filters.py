@@ -52,6 +52,6 @@ def generate_filterset(model, queryset):
 
 
 def apply_filterset(filter_set, queryset, lookup_kwargs):
-    data = QueryDict(urlencode(lookup_kwargs))
+    data = QueryDict(urlencode(lookup_kwargs, True))
 
     return filter_set(data=data, queryset=queryset).filter()

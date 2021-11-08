@@ -5,9 +5,9 @@ import warnings
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
-from django.db.models import ManyToManyField, Q
+from django.db.models import Q
 
-from worf.casing import camel_to_snake, clean_lookup_keywords
+from worf.casing import camel_to_snake
 from worf.exceptions import HTTP420
 from worf.filters import apply_filterset, generate_filterset
 from worf.views.base import AbstractBaseAPI
@@ -108,42 +108,14 @@ class ListAPI(AbstractBaseAPI):
             if key not in self.filter_fields:
                 continue
 
-            clean_key = clean_lookup_keywords(key)
+            value = self.bundle[key]
 
-            annotation = (
-                self.get_queryset().query.annotations.get(clean_key)
-                if hasattr(self, "get_queryset")
-                else None
-            )
+            # support passing in and range as lists
+            if isinstance(value, list):
+                if key.endswith("__in") or key.endswith("__range"):
+                    value = ",".join(str(item) for item in value)
 
-            field = (
-                annotation.output_field
-                if annotation
-                else self.model._meta.get_field(clean_key)
-            )
-
-            if isinstance(field, ManyToManyField):
-                if not isinstance(self.bundle[key], list):
-                    # TODO simplify this when we move to POST for search.
-                    # We do type coersion in set_bundle_from_querystring,
-                    # so we need to restore the type of M2M fields as list.
-                    self.bundle[key] = [self.bundle[key]]
-
-                self.validate_bundle(key)
-
-            # If we get a list, only support integer values, and skip bundle validation.
-            if isinstance(self.bundle[key], list):
-                if not all(isinstance(x, int) for x in self.bundle[key]):
-                    self.coerce_array_of_integers(key)  # raises 422 if failure
-
-                self.lookup_kwargs.update(
-                    {f"{key}__in": ",".join(str(value) for value in self.bundle[key])}
-                )
-
-                continue
-
-            self.validate_bundle(key)
-            self.lookup_kwargs.update({key: self.bundle[key]})
+            self.lookup_kwargs[key] = value
 
     def get_queryset(self):
         if self.queryset is None:
@@ -167,13 +139,21 @@ class ListAPI(AbstractBaseAPI):
             if set([s.lstrip("-") for s in sort]).issubset(self.sort_fields):
                 order_by = sort
 
+        lookups = self.lookup_kwargs.items()
+        filterset_kwargs = {k: v for k, v in lookups if not isinstance(v, list)}
+        list_kwargs = {k: v for k, v in lookups if isinstance(v, list)}
+
         try:
             queryset = (
-                apply_filterset(self.filter_set, queryset, self.lookup_kwargs)
+                apply_filterset(self.filter_set, queryset, filterset_kwargs)
                 .filter(self.search_query)
                 .order_by(*order_by)
                 .distinct()
             )
+
+            for key, value in list_kwargs.items():
+                for item in value:
+                    queryset = queryset.filter(**{key: item})
         except TypeError as e:
             if settings.DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")

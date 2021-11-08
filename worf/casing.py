@@ -1,37 +1,4 @@
-import re
 from worf.exceptions import NamingThingsError
-
-lookup_keywords = [
-    "exact",
-    "iexact",
-    "contains",
-    "icontains",
-    "in",
-    "gt",
-    "gte",
-    "lt",
-    "lte",
-    "startswith",
-    "istartswith",
-    "endswith",
-    "iendswith",
-    "range",
-    "date",
-    "year",
-    "iso_year",
-    "month",
-    "day",
-    "week",
-    "week_day",
-    "quarter",
-    "time",
-    "hour",
-    "minute",
-    "second",
-    "isnull",
-    "regex",
-    "iregex",
-]
 
 
 def snake_to_camel(snake):
@@ -51,7 +18,8 @@ def camel_to_snake(camel):
         return camel
 
     invalid_msg = f"{camel} is not valid camel case. "
-    if not clean_lookup_keywords(camel).isalpha():
+
+    if not camel.replace("__", "").isalpha():
         raise NamingThingsError(invalid_msg + "It has non alphabetical chars!")
 
     snake = ""
@@ -67,6 +35,7 @@ def camel_to_snake(camel):
             snake += value
 
         last_was_upper = value.isupper()
+
     return snake
 
 
@@ -77,7 +46,3 @@ def whitespace_to_camel(string):
 
     new_string = string[:pos] + string[pos + 1 :].capitalize()
     return whitespace_to_camel(new_string)
-
-
-def clean_lookup_keywords(string):
-    return re.sub("__(" + "|".join(lookup_keywords) + ")$", "", string)

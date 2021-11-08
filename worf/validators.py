@@ -8,7 +8,7 @@ from django.core.validators import validate_email
 from django.utils.dateparse import parse_datetime
 
 from worf.exceptions import NotImplementedInWorfYet
-from worf.casing import clean_lookup_keywords, snake_to_camel
+from worf.casing import snake_to_camel
 
 
 class ValidationMixin:
@@ -172,24 +172,20 @@ class ValidationMixin:
                 message += f":: {serializer}"
             raise ValidationError(message)
 
-        clean_key = clean_lookup_keywords(key)
-
         annotation = (
-            self.get_queryset().query.annotations.get(clean_key)
+            self.get_queryset().query.annotations.get(key)
             if hasattr(self, "get_queryset")
             else None
         )
 
-        if not hasattr(self.model, clean_key) and not annotation:
-            raise ValidationError(f"{snake_to_camel(clean_key)} does not exist")
+        if not hasattr(self.model, key) and not annotation:
+            raise ValidationError(f"{snake_to_camel(key)} does not exist")
 
         if key not in self.secure_fields and isinstance(self.bundle[key], str):
             self.bundle[key] = self.bundle[key].strip()
 
         field = (
-            annotation.output_field
-            if annotation
-            else self.model._meta.get_field(clean_key)
+            annotation.output_field if annotation else self.model._meta.get_field(key)
         )
 
         if field.blank and self.bundle[key] == "":
@@ -198,8 +194,8 @@ class ValidationMixin:
         elif field.null and self.bundle[key] is None:
             pass
 
-        elif hasattr(self, f"validate_{clean_key}"):
-            self.bundle[key] = getattr(self, f"validate_{clean_key}")(self.bundle[key])
+        elif hasattr(self, f"validate_{key}"):
+            self.bundle[key] = getattr(self, f"validate_{key}")(self.bundle[key])
 
         elif isinstance(field, (models.CharField, models.TextField, models.SlugField)):
             self.bundle[key] = self._validate_string(key, field.max_length)

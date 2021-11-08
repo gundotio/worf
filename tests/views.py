@@ -35,21 +35,12 @@ class ProfileList(ListAPI):
     filter_fields = [
         "date_joined__gte",
         "tags",
+        "tags__in",
     ]
 
 
-class ProfileListSubSet(ListAPI):
-    model = Profile
-    queryset = Profile.objects.annotate(
-        name=Concat("user__first_name", Value(" "), "user__last_name"),
-    ).none()
-    ordering = ["pk"]
-    serializer = ProfileSerializer
-    permissions = [PublicEndpoint]
-    search_fields = []
-    filter_fields = [
-        "tags",
-    ]
+class ProfileListSubSet(ProfileList):
+    queryset = ProfileList.queryset.none()
 
 
 class ProfileDetail(DetailUpdateAPI):
