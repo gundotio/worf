@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.4](https://github.com/gundotio/worf/compare/v0.4.3...v0.4.4) (2021-11-08)
+
+- Support annotation filters without the need for a custom filterset https://github.com/gundotio/worf/pull/70
+- Bugfix for empty queryset handling https://github.com/gundotio/worf/pull/71
+
 ### [0.4.3](https://github.com/gundotio/worf/compare/v0.4.2...v0.4.3) (2021-11-05)
 
 - Support annotation filters for more flexible query param filters #66
