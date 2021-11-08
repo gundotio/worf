@@ -18,6 +18,20 @@ def test_profile_list(client, db, profile, user):
     assert result["profiles"][0]["username"] == user.username
 
 
+def test_profile_list_search(client, db, profile, user):
+    response = client.get(f"/profiles/?name={user.first_name} {user.last_name}")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+    assert result["profiles"][0]["username"] == user.username
+
+
+def test_profile_list_subset_search(client, db, profile, user):
+    response = client.get(f"/profiles/subset/?name={user.first_name} {user.last_name}")
+    result = response.json()
+    assert response.status_code == 200, result
+
+
 def test_profile_list_array_filter(client, db, profile_factory, tag_factory):
     tag1, tag2, tag3 = tag_factory.create_batch(3)
     profile_factory.create(tags=[tag1])
