@@ -26,6 +26,15 @@ def test_profile_list_search(client, db, profile, user):
     assert result["profiles"][0]["username"] == user.username
 
 
+def test_profile_list_annotation_filter(client, db, profile_factory):
+    profile_factory.create(user__date_joined="2020-01-01T00:00:00")
+    profile_factory.create(user__date_joined="2020-12-01T00:00:00")
+    response = client.get("/profiles/?dateJoined__gte=2020-06-01T00:00:00")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+
+
 def test_profile_list_subset_search(client, db, profile, user):
     response = client.get(f"/profiles/subset/?name={user.first_name} {user.last_name}")
     result = response.json()

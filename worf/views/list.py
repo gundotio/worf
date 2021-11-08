@@ -54,7 +54,7 @@ class ListAPI(AbstractBaseAPI):
 
         # generate a default filterset if a custom one was not provided
         if self.filter_set is None:
-            self.filter_set = generate_filterset(self.model)
+            self.filter_set = generate_filterset(self.model, self.queryset)
 
         # support deprecated search_fields and/or dict syntax (note that `and` does nothing)
         if isinstance(self.search_fields, dict):
