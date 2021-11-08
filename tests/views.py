@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.db.models import Value
+from django.db.models.functions import Concat
 
 from worf.permissions import PublicEndpoint
 from worf.views import DetailUpdateAPI, ListAPI
@@ -22,6 +24,9 @@ class DummyAPI(DetailUpdateAPI):
 
 class ProfileList(ListAPI):
     model = Profile
+    queryset = Profile.objects.annotate(
+        name=Concat("user__first_name", Value(" "), "user__last_name"),
+    )
     ordering = ["pk"]
     serializer = ProfileSerializer
     permissions = [PublicEndpoint]
@@ -29,6 +34,10 @@ class ProfileList(ListAPI):
     filter_fields = [
         "tags",
     ]
+
+
+class ProfileListSubSet(ProfileList):
+    queryset = ProfileList.queryset.none()
 
 
 class ProfileDetail(DetailUpdateAPI):

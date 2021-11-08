@@ -146,7 +146,9 @@ class ListAPI(AbstractBaseAPI):
             self.lookup_kwargs.update({key: self.bundle[key]})
 
     def get_queryset(self):
-        return (self.queryset or self.model.objects).all()
+        if self.queryset is None:
+            return self.model.objects.all()
+        return self.queryset.all()
 
     def get_processed_queryset(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  URL Kwargs

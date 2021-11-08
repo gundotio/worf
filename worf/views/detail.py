@@ -23,7 +23,9 @@ class DetailAPI(AbstractBaseAPI):
         return payload
 
     def get_queryset(self):
-        return (self.queryset or self.model.objects).all()
+        if self.queryset is None:
+            return self.model.objects.all()
+        return self.queryset.all()
 
     def get_instance(self):
         self.lookup_kwargs = {self.lookup_field: self.kwargs[self.lookup_url_kwarg]}
