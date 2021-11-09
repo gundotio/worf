@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 
-from worf.casing import snake_to_camel
 from worf.views.base import AbstractBaseAPI
 
 
@@ -27,7 +26,5 @@ class CreateAPI(AbstractBaseAPI):
             # this should be moved into validate bundle
             if create_fields and key not in create_fields:
                 raise ValidationError(
-                    "{} not allowed when creating {}".format(
-                        snake_to_camel(key), self.name
-                    )
+                    f"{self.keymap[key]} not allowed when creating {self.name}"
                 )

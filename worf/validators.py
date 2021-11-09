@@ -8,7 +8,6 @@ from django.core.validators import validate_email
 from django.utils.dateparse import parse_datetime
 
 from worf.exceptions import NotImplementedInWorfYet
-from worf.casing import snake_to_camel
 
 
 class ValidationMixin:
@@ -36,7 +35,7 @@ class ValidationMixin:
 
         if not isinstance(coerced, bool):
             raise ValidationError(
-                f"Field {snake_to_camel(key)} accepts a boolean, got {value}, coerced to {coerced}"
+                f"Field {self.keymap[key]} accepts a boolean, got {value}, coerced to {coerced}"
             )
 
         return coerced
@@ -58,7 +57,7 @@ class ValidationMixin:
 
         if not isinstance(coerced, datetime):
             raise ValidationError(
-                f"Field {snake_to_camel(key)} accepts a iso datetime string, got {value}, coerced to {coerced}"
+                f"Field {self.keymap[key]} accepts a iso datetime string, got {value}, coerced to {coerced}"
             )
 
         return coerced
@@ -68,18 +67,18 @@ class ValidationMixin:
 
         if not isinstance(value, list):
             raise ValidationError(
-                f"Field {snake_to_camel(key)} accepts an array, got {type(value)} {value}"
+                f"Field {self.keymap[key]} accepts an array, got {type(value)} {value}"
             )
 
     def _validate_string(self, key, max_length):
         value = self.bundle[key]
 
         if not isinstance(value, str):
-            raise ValidationError(f"Field {snake_to_camel(key)} accepts string")
+            raise ValidationError(f"Field {self.keymap[key]} accepts string")
 
         if max_length is not None and len(value) > max_length:
             raise ValidationError(
-                f"Field {snake_to_camel(key)} accepts a maximum of {max_length} characters"
+                f"Field {self.keymap[key]} accepts a maximum of {max_length} characters"
             )
 
         return value
@@ -93,7 +92,7 @@ class ValidationMixin:
         try:
             integer = int(value)
         except (TypeError, ValueError):
-            raise ValidationError(f"Field {snake_to_camel(key)} accepts an integer")
+            raise ValidationError(f"Field {self.keymap[key]} accepts an integer")
 
         return integer
 
@@ -102,7 +101,7 @@ class ValidationMixin:
 
         if integer < 0:
             raise ValidationError(
-                f"Field {snake_to_camel(key)} accepts a positive integer"
+                f"Field {self.keymap[key]} accepts a positive integer"
             )
 
         return integer
@@ -113,7 +112,7 @@ class ValidationMixin:
         try:
             self.bundle[key] = [int(id) for id in self.bundle[key]]
         except ValueError:
-            message = f"Field {snake_to_camel(key)} accepts an array of integers. Got {self.bundle[key]} instead."
+            message = f"Field {self.keymap[key]} accepts an array of integers. Got {self.bundle[key]} instead."
             raise ValidationError(message + " I couldn't coerce the values.")
 
     def validate_int(self, value):
@@ -167,7 +166,7 @@ class ValidationMixin:
         serializer = self.get_serializer()
 
         if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
-            message = f"{snake_to_camel(key)} is not editable"
+            message = f"{self.keymap[key]} is not editable"
             if settings.DEBUG:
                 message += f":: {serializer}"
             raise ValidationError(message)
@@ -179,7 +178,7 @@ class ValidationMixin:
         )
 
         if not hasattr(self.model, key) and not annotation:
-            raise ValidationError(f"{snake_to_camel(key)} does not exist")
+            raise ValidationError(f"{self.keymap[key]} does not exist")
 
         if key not in self.secure_fields and isinstance(self.bundle[key], str):
             self.bundle[key] = self.bundle[key].strip()
@@ -231,7 +230,7 @@ class ValidationMixin:
             # try:
             #     json.loads(self.bundle[key])
             # except ValueError:
-            #     raise ValidationError(f"Field {snake_to_camel(key)} requires valid JSON")
+            #     raise ValidationError(f"Field {self.keymap[key]} requires valid JSON")
 
         else:
             message = f"{field.get_internal_type()} has no validation method for {key}"

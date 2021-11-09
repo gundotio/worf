@@ -37,12 +37,3 @@ def camel_to_snake(camel):
         last_was_upper = value.isupper()
 
     return snake
-
-
-def whitespace_to_camel(string):
-    pos = string.find(" ")
-    if pos == -1:
-        return string[:1].lower() + string[1:]
-
-    new_string = string[:pos] + string[pos + 1 :].capitalize()
-    return whitespace_to_camel(new_string)

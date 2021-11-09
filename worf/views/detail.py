@@ -2,7 +2,6 @@ from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.db import models
 from django.db.utils import IntegrityError
 
-from worf.casing import snake_to_camel
 from worf.views.base import AbstractBaseAPI
 
 
@@ -46,14 +45,14 @@ class DetailAPI(AbstractBaseAPI):
                 else None
             )
         except related_model.DoesNotExist as e:
-            raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
+            raise ValidationError(f"Invalid {self.keymap[key]}") from e
         setattr(instance, key, related_instance)
 
     def set_many_to_many(self, instance, key):
         try:
             getattr(instance, key).set(self.bundle[key])
         except (IntegrityError, ValueError) as e:
-            raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
+            raise ValidationError(f"Invalid {self.keymap[key]}") from e
 
     def set_many_to_many_with_through(self, instance, key):
         try:
@@ -83,7 +82,7 @@ class DetailAPI(AbstractBaseAPI):
                 ]
             )
         except (AttributeError, IntegrityError, ValueError) as e:
-            raise ValidationError(f"Invalid {snake_to_camel(key)}") from e
+            raise ValidationError(f"Invalid {self.keymap[key]}") from e
 
     def update(self):
         instance = self.get_instance()
@@ -119,7 +118,7 @@ class DetailAPI(AbstractBaseAPI):
             field = self.model._meta.get_field(key)
 
             if self.bundle[key] is None and not field.null:
-                raise ValidationError(f"Invalid {snake_to_camel(key)}")
+                raise ValidationError(f"Invalid {self.keymap[key]}")
 
 
 class DetailUpdateAPI(DetailAPI):
