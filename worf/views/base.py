@@ -17,7 +17,7 @@ from django.views import View
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 
-from worf.casing import camel_to_snake, whitespace_to_camel
+from worf.casing import camel_to_snake, snake_to_camel
 from worf.exceptions import HTTP_EXCEPTIONS, HTTP404, HTTP422, PermissionsException
 from worf.serializers import LegacySerializer
 from worf.validators import ValidationMixin
@@ -89,7 +89,8 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
     def name(self):
         if isinstance(self.payload_key, str):
             return self.payload_key
-        return whitespace_to_camel(self.model._meta.verbose_name_plural)
+        verbose_name_plural = self.model._meta.verbose_name_plural
+        return snake_to_camel(verbose_name_plural.replace(" ", "_").lower())
 
     def _check_permissions(self):
         """Return a permissions exception when in debug mode instead of 404."""
@@ -185,31 +186,24 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
         # parse_qs gives us a dictionary where all values are lists
         qs = parse_qs(self.request.META["QUERY_STRING"])
 
-        # TODO: TLDR; Switch to POST for search instead of GET/querystring params.
-        # we want to preserve strings wherever there are not duplicate keys
-        # Step through the list and construct a dictionary for all fields
-        # that are not duplicated
-
-        # fundamentally all urlparams are treated as arrays natively.
-        # we can't enforce type coersion here...
-
-        # we can't assume everything is an array or everything is not an array
-        # when it's a querystring
-
         raw_bundle = {}
+
         for key, value in qs.items():
             raw_bundle[key] = value[0] if len(value) == 1 else value
 
         self.set_bundle(raw_bundle)
 
-    def set_bundle(self, raw):
+    def set_bundle(self, raw_bundle):
         self.bundle = {}
-        if not raw:
+        self.keymap = {}
+
+        if not raw_bundle:
             return  # No need to loop or set self.bundle again if it's empty
 
-        for key in raw.keys():
+        for key in raw_bundle.keys():
             field = camel_to_snake(key)
-            self.bundle[field] = raw[key]
+            self.bundle[field] = raw_bundle[key]
+            self.keymap[field] = key
 
     def dispatch(self, request, *args, **kwargs):
         method = request.method.lower()
