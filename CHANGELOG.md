@@ -2,21 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.6](https://github.com/gundotio/worf/compare/v0.4.5...v0.4.6) (2021-11-09)
+
+- Support string list filters [#69](https://github.com/gundotio/worf/pull/69)
+- Remove unused `get_instance_or_http404`
+- Test for `get_version` shortcut
+
 ### [0.4.5](https://github.com/gundotio/worf/compare/v0.4.4...v0.4.5) (2021-11-08)
 
-- Support annotation filters without the need for a custom filterset https://github.com/gundotio/worf/pull/70
+- Support annotation filters without the need for a custom filterset [#70](https://github.com/gundotio/worf/pull/70)
 
 ### [0.4.4](https://github.com/gundotio/worf/compare/v0.4.3...v0.4.4) (2021-11-08)
 
-- Bugfix for empty queryset handling https://github.com/gundotio/worf/pull/71
+- Bugfix for empty queryset handling [#71](https://github.com/gundotio/worf/pull/71)
 
 ### [0.4.3](https://github.com/gundotio/worf/compare/v0.4.2...v0.4.3) (2021-11-05)
 
-- Support annotation filters for more flexible query param filters #66
-- Support custom queryset on detail views #68
-- Switch search fields to `list` and deprecate `dict` syntax #63
-- Lint script #65
-- Reorganize tests #67
+- Support annotation filters for more flexible query param filters [#66](https://github.com/gundotio/worf/pull/66)
+- Support custom queryset on detail views [#68](https://github.com/gundotio/worf/pull/68)
+- Switch search fields to `list` and deprecate `dict` syntax [#63](https://github.com/gundotio/worf/pull/63)
+- Lint script [#65](https://github.com/gundotio/worf/pull/65)
+- Reorganize tests [#67](https://github.com/gundotio/worf/pull/67)
 
 ### [0.4.2](https://github.com/gundotio/worf/compare/v0.4.1...v0.4.2) (2021-10-25)
 
@@ -92,7 +98,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.7](https://github.com/gundotio/worf/compare/v0.2.6...v0.2.7) (2021-06-25)
 
-- Trim string input unless the field is in `secure_fields` 
+- Trim string input unless the field is in `secure_fields`
 
 ### [0.2.6](https://github.com/gundotio/worf/compare/v0.2.5...v0.2.6) (2021-06-08)
 
@@ -102,7 +108,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.5](https://github.com/gundotio/worf/compare/v0.2.4...v0.2.5) (2021-05-28)
 
-- Deprecates ChoicesAPI 
+- Deprecates ChoicesAPI
 - Adds override option to test factory
 
 ### [0.2.4](https://github.com/gundotio/worf/compare/v0.2.1...v0.2.4) (2021-05-14)
@@ -120,14 +126,14 @@ All notable changes to this project will be documented in this file. See [standa
 ### [0.2.1](https://github.com/gundotio/worf/compare/v0.2.0...v0.2.1) (2021-04-29)
 
 - Makes Serializers model-agnostic
-- Adds LegacySerializer for backwards compatibility 
+- Adds LegacySerializer for backwards compatibility
 - Adds official support for python 3.7
 
 ## [0.2.0](https://github.com/gundotio/worf/compare/v0.1.6...v0.2.0) (2021-04-26)
 
 - Removes implicit `GET` method from all APIViews
 - Adds optional `serializer` to each API, which will supercede the
-`api_method` 
+`api_method`
 
 ### [0.1.6](https://github.com/gundotio/worf/compare/v0.1.5...v0.1.6) (2021-04-20)
 
@@ -142,7 +148,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 - Improves setup for pypi
 - Improves tetst coverage
-- Adds get_instance_or_http404 to replace djago's get_object_or_404, 
+- Adds get_instance_or_http404 to replace djago's get_object_or_404,
 to return javascript error instead of 404 page
 
 ### [0.1.3](https://github.com/gundotio/worf/compare/v0.1.2...v0.1.3) (2021-03-30)
