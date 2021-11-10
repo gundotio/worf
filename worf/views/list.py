@@ -4,7 +4,7 @@ import warnings
 
 from django.core.exceptions import EmptyResultSet, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
-from django.db.models import Q
+from django.db.models import F, OrderBy, Q
 
 from worf.casing import camel_to_snake
 from worf.conf import settings
@@ -55,7 +55,7 @@ class ListAPI(AbstractBaseAPI):
             self.filter_set = generate_filterset(self.model, self.queryset)
 
         # support deprecated search_fields and/or dict syntax (note that `and` does nothing)
-        if isinstance(self.search_fields, dict):
+        if isinstance(self.search_fields, dict):  # pragma: no cover - deprecated
             warnings.warn(
                 f"Passing a dict to {codepath}.search_fields is deprecated. Pass a list instead."
             )
@@ -113,7 +113,7 @@ class ListAPI(AbstractBaseAPI):
 
             value = self.bundle[key]
 
-            # support passing in and range as lists
+            # support passing `in` and `range` as lists
             if isinstance(value, list):
                 if strip_key.endswith("__in") or strip_key.endswith("__range"):
                     value = ",".join(str(item) for item in value)
@@ -126,24 +126,16 @@ class ListAPI(AbstractBaseAPI):
         return self.queryset.all()
 
     def get_processed_queryset(self):
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  URL Kwargs
-        # If these aren't reset they are polluted by cache (somehow)
-
         self.lookup_kwargs = {}
         self.search_query = Q()
 
         self._set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
 
-        order_by = self.ordering
-        if self.request.GET.get("sort"):
-            sort = self.parse_sort(self.request.GET.getlist("sort"))
-            if set([s.lstrip("-") for s in sort]).issubset(self.sort_fields):
-                order_by = sort
-
         lookups = self.lookup_kwargs.items()
         filterset_kwargs = {k: v for k, v in lookups if not isinstance(v, list)}
         list_kwargs = {k: v for k, v in lookups if isinstance(v, list)}
+        ordering = self.get_ordering(self.request.GET.getlist("sort"))
 
         queryset = self.get_queryset()
 
@@ -162,14 +154,28 @@ class ListAPI(AbstractBaseAPI):
                         else queryset.filter(**{key: item})
                     )
 
-            if order_by:
-                queryset = queryset.order_by(*order_by)
-        except TypeError as e:
+            if ordering:
+                queryset = queryset.order_by(*ordering)
+        except TypeError as e:  # pragma: no cover - debugging
             if settings.WORF_DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
             raise e
 
         return queryset
+
+    def get_ordering(self, sorts):
+        ordering = []
+
+        for sort in sorts:
+            field = "__".join(map(camel_to_snake, sort.lstrip("-").split(".")))
+            if field not in self.sort_fields:
+                continue
+            ordering.append(self.get_sort_field(field, descending=sort[0] == "-"))
+
+        return ordering or self.ordering
+
+    def get_sort_field(self, field, descending=False):
+        return OrderBy(F(field), descending=descending)
 
     def get_serializer(self):
         if self.list_serializer and self.request.method == "GET":
@@ -177,7 +183,6 @@ class ListAPI(AbstractBaseAPI):
         return super().get_serializer()
 
     def paginated_results(self):
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PAGINATION
         queryset = self.get_processed_queryset()
         request = self.request
 
@@ -209,13 +214,6 @@ class ListAPI(AbstractBaseAPI):
         if fields:
             return {key: value for key, value in result.items() if key in fields}
         return result
-
-    def parse_sort(self, fields):
-        return [self.transform_sort(field) for field in fields]
-
-    def transform_sort(self, field):
-        prefix = "-" if field[0] == "-" else ""
-        return prefix + "__".join(map(camel_to_snake, field.lstrip("-").split(".")))
 
     def serialize(self):
         serializer = self.get_serializer()

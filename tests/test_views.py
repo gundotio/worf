@@ -351,7 +351,7 @@ def test_user_list_multisort(client, now, db, user_factory):
     user_factory.create(username="b", date_joined=now - timedelta(hours=1))
     user_factory.create(username="c", date_joined=now)
     user_factory.create(username="d", date_joined=now)
-    response = client.get("/users/?sort=dateJoined&sort=-id")
+    response = client.get("/users/?sort=dateJoined&sort=-id&sort=invalid")
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["users"]) == 4
