@@ -5,7 +5,7 @@ import warnings
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
-from django.db.models import Q
+from django.db.models import F, OrderBy, Q
 
 from worf.casing import camel_to_snake
 from worf.exceptions import HTTP420
@@ -135,15 +135,10 @@ class ListAPI(AbstractBaseAPI):
         self._set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
 
-        order_by = self.ordering
-        if self.request.GET.get("sort"):
-            sort = self.parse_sort(self.request.GET.getlist("sort"))
-            if set([s.lstrip("-") for s in sort]).issubset(self.sort_fields):
-                order_by = sort
-
         lookups = self.lookup_kwargs.items()
         filterset_kwargs = {k: v for k, v in lookups if not isinstance(v, list)}
         list_kwargs = {k: v for k, v in lookups if isinstance(v, list)}
+        ordering = self.get_ordering(self.request.GET.getlist("sort"))
 
         queryset = self.get_queryset()
 
@@ -162,14 +157,28 @@ class ListAPI(AbstractBaseAPI):
                         else queryset.filter(**{key: item})
                     )
 
-            if order_by:
-                queryset = queryset.order_by(*order_by)
+            if ordering:
+                queryset = queryset.order_by(*ordering)
         except TypeError as e:
             if settings.DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
             raise e
 
         return queryset
+
+    def get_ordering(self, sorts):
+        ordering = []
+
+        for sort in sorts:
+            field = "__".join(map(camel_to_snake, sort.lstrip("-").split(".")))
+            if field not in self.sort_fields:
+                continue
+            ordering.append(self.get_sort_field(field, descending=sort[0] == "-"))
+
+        return ordering or self.ordering
+
+    def get_sort_field(self, field, descending=False):
+        return OrderBy(F(field), descending=descending)
 
     def get_serializer(self):
         if self.list_serializer and self.request.method == "GET":
@@ -206,13 +215,6 @@ class ListAPI(AbstractBaseAPI):
         if fields:
             return {key: value for key, value in result.items() if key in fields}
         return result
-
-    def parse_sort(self, fields):
-        return [self.transform_sort(field) for field in fields]
-
-    def transform_sort(self, field):
-        prefix = "-" if field[0] == "-" else ""
-        return prefix + "__".join(map(camel_to_snake, field.lstrip("-").split(".")))
 
     def serialize(self):
         serializer = self.get_serializer()
