@@ -5,7 +5,7 @@ import warnings
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
-from django.db.models import Q
+from django.db.models import F, Q
 
 from worf.casing import camel_to_snake
 from worf.exceptions import HTTP420
@@ -133,12 +133,6 @@ class ListAPI(AbstractBaseAPI):
         self._set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
 
-        order_by = self.ordering
-        if self.request.GET.get("sort"):
-            sort = self.parse_sort(self.request.GET.getlist("sort"))
-            if set([s.lstrip("-") for s in sort]).issubset(self.sort_fields):
-                order_by = sort
-
         lookups = self.lookup_kwargs.items()
         filterset_kwargs = {k: v for k, v in lookups if not isinstance(v, list)}
         list_kwargs = {k: v for k, v in lookups if isinstance(v, list)}
@@ -147,7 +141,7 @@ class ListAPI(AbstractBaseAPI):
             queryset = (
                 apply_filterset(self.filter_set, queryset, filterset_kwargs)
                 .filter(self.search_query)
-                .order_by(*order_by)
+                .order_by(*self.parse_sort(self.request.GET.getlist("sort")))
                 .distinct()
             )
 
@@ -192,12 +186,17 @@ class ListAPI(AbstractBaseAPI):
             return {key: value for key, value in result.items() if key in fields}
         return result
 
-    def parse_sort(self, fields):
-        return [self.transform_sort(field) for field in fields]
+    def parse_sort(self, sorts):
+        ordering = []
 
-    def transform_sort(self, field):
-        prefix = "-" if field[0] == "-" else ""
-        return prefix + "__".join(map(camel_to_snake, field.lstrip("-").split(".")))
+        for sort in sorts:
+            field = F("__".join(map(camel_to_snake, sort.lstrip("-").split("."))))
+            if field.name not in self.sort_fields:
+                continue
+            sorted_field = field.desc if sort[0] == "-" else field.asc
+            ordering.append(sorted_field(nulls_last=True))
+
+        return ordering or self.ordering
 
     def serialize(self):
         serializer = self.get_serializer()
