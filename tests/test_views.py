@@ -1,13 +1,17 @@
 from datetime import timedelta
 
-json_type = "application/json"
 
-
-def test_profile_detail(client, db, profile_url, user):
-    response = client.get(profile_url)
+def test_profile_detail(client, db, profile, user):
+    response = client.get(f"/profiles/{profile.pk}/")
     result = response.json()
     assert response.status_code == 200, result
     assert result["username"] == user.username
+
+
+def test_profile_delete(client, db, profile, user):
+    response = client.delete(f"/profiles/{profile.pk}/")
+    assert response.status_code == 204, response.content
+    assert response.content == b""
 
 
 def test_profile_list(client, db, profile, user):
@@ -18,7 +22,7 @@ def test_profile_list(client, db, profile, user):
     assert result["profiles"][0]["username"] == user.username
 
 
-def test_profile_list_search(client, db, profile, user):
+def test_profile_list_filter(client, db, profile, user):
     response = client.get(f"/profiles/?name={user.first_name} {user.last_name}")
     result = response.json()
     assert response.status_code == 200, result
@@ -33,13 +37,6 @@ def test_profile_list_annotation_filter(client, db, profile_factory):
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 1
-
-
-def test_profile_list_subset_search(client, db, profile, user):
-    response = client.get(f"/profiles/subset/?name={user.first_name} {user.last_name}")
-    result = response.json()
-    assert response.status_code == 200, result
-    assert len(result["profiles"]) == 0
 
 
 def test_profile_list_and_filter(client, db, profile_factory, tag_factory):
@@ -68,38 +65,45 @@ def test_profile_list_or_filter(client, db, profile_factory, tag_factory):
     assert len(result["profiles"]) == 3
 
 
-def test_profile_update_fk(client, db, profile_url, role, team):
+def test_profile_list_subset_filter(client, db, profile, user):
+    response = client.get(f"/profiles/subset/?name={user.first_name} {user.last_name}")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 0
+
+
+def test_profile_update_fk(client, db, profile, role, team):
     payload = dict(role=role.pk, team=team.pk)
-    response = client.patch(profile_url, payload, content_type=json_type)
+    response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert result["role"]["name"] == role.name
     assert result["team"]["name"] == team.name
 
 
-def test_profile_update_fk_invalid_role(client, db, profile_url, role, team):
-    response = client.patch(profile_url, dict(role=123), content_type=json_type)
+def test_profile_update_fk_invalid_role(client, db, profile, role, team):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(role=123))
     result = response.json()
     assert response.status_code == 422, result
     assert result["message"] == "Invalid role"
 
 
-def test_profile_update_fk_role_is_not_nullable(client, db, profile_url, role, team):
-    response = client.patch(profile_url, dict(role=None), content_type=json_type)
+def test_profile_update_fk_role_is_not_nullable(client, db, profile, role, team):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(role=None))
     result = response.json()
     assert response.status_code == 422, result
     assert result["message"] == "Invalid role"
 
 
-def test_profile_update_fk_team_is_nullable(client, db, profile_url, role, team):
-    response = client.patch(profile_url, dict(team=None), content_type=json_type)
+def test_profile_update_fk_team_is_nullable(client, db, profile, role, team):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(team=None))
     result = response.json()
     assert response.status_code == 200, result
     assert result["team"] is None
 
 
-def test_profile_update_m2m(client, db, profile_url, tag):
-    response = client.patch(profile_url, dict(tags=[tag.pk]), content_type=json_type)
+def test_profile_update_m2m(client, db, profile, tag):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(tags=[tag.pk]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["tags"]) == 1
@@ -107,31 +111,31 @@ def test_profile_update_m2m(client, db, profile_url, tag):
     assert result["tags"][0]["name"] == tag.name
 
 
-def test_profile_update_m2m_can_be_empty(client, db, profile_url, tag):
-    response = client.patch(profile_url, dict(tags=[]), content_type=json_type)
+def test_profile_update_m2m_can_be_empty(client, db, profile, tag):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(tags=[]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["tags"]) == 0
 
 
-def test_profile_update_m2m_is_not_nullable(client, db, profile_url, tag):
-    response = client.patch(profile_url, dict(tags=None), content_type=json_type)
+def test_profile_update_m2m_is_not_nullable(client, db, profile, tag):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(tags=None))
     result = response.json()
     assert response.status_code == 422, result
     assert "tags accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-def test_profile_update_m2m_must_be_pks(client, db, profile_url, tag):
+def test_profile_update_m2m_must_be_pks(client, db, profile, tag):
     payload = dict(tags=["invalid"])
-    response = client.patch(profile_url, payload, content_type=json_type)
+    response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid tags" in result["message"]
 
 
-def test_profile_update_m2m_through(client, db, profile_url, skill):
+def test_profile_update_m2m_through(client, db, profile, skill):
     payload = dict(skills=[dict(id=skill.pk, rating=4)])
-    response = client.patch(profile_url, payload, content_type=json_type)
+    response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["skills"]) == 1
@@ -140,46 +144,46 @@ def test_profile_update_m2m_through(client, db, profile_url, skill):
     assert result["skills"][0]["rating"] == 4
 
 
-def test_profile_update_m2m_through_can_be_empty(client, db, profile_url, skill):
-    response = client.patch(profile_url, dict(skills=[]), content_type=json_type)
+def test_profile_update_m2m_through_can_be_empty(client, db, profile, skill):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(skills=[]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["skills"]) == 0
 
 
-def test_profile_update_m2m_through_is_not_nullable(client, db, profile_url, skill):
-    response = client.patch(profile_url, dict(skills=None), content_type=json_type)
+def test_profile_update_m2m_through_is_not_nullable(client, db, profile, skill):
+    response = client.patch(f"/profiles/{profile.pk}/", dict(skills=None))
     result = response.json()
     assert response.status_code == 422, result
     assert "skills accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-def test_profile_update_m2m_through_must_be_dicts(client, db, profile_url, skill):
+def test_profile_update_m2m_through_must_be_dicts(client, db, profile, skill):
     payload = dict(skills=["invalid"])
-    response = client.patch(profile_url, payload, content_type=json_type)
+    response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid skills" == result["message"]
 
 
-def test_profile_update_m2m_through_ids_must_be_pks(client, db, profile_url, skill):
+def test_profile_update_m2m_through_ids_must_be_pks(client, db, profile, skill):
     payload = dict(skills=[dict(id="invalid")])
-    response = client.patch(profile_url, payload, content_type=json_type)
+    response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid skills" in result["message"]
 
 
-def test_profile_update_m2m_through_required_fields(client, db, profile_url, skill):
+def test_profile_update_m2m_through_required_fields(client, db, profile, skill):
     payload = dict(skills=[dict(id=skill.pk)])
-    response = client.patch(profile_url, payload, content_type=json_type)
+    response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid skills" in result["message"]
 
 
-def test_user_detail(client, db, user, user_url):
-    response = client.get(user_url)
+def test_user_detail(client, db, user):
+    response = client.get(f"/users/{user.pk}/")
     result = response.json()
     assert response.status_code == 200, result
     assert result["username"] == user.username
@@ -202,21 +206,21 @@ def test_user_list_filters(client, db, user_factory):
     user2 = user_factory.create(date_joined=february)
     user3 = user_factory.create(email="test3@test.com", date_joined=march)
 
-    # search by email
+    # filter by email
     response = client.get(f"/users/?email={user1.email}")
     assert len(response.json()["users"]) == 1
 
-    # search by string
+    # filter by string
     response = client.get("/users/?q=example.com")
     assert len(response.json()["users"]) == 2
     response = client.get(f"/users/?q={user3.email}")
     assert len(response.json()["users"]) == 1
 
-    # search by username -- filter ignored, username is not in filter_fields
+    # filter by username -- filter ignored, username is not in filter_fields
     response = client.get(f"/users/?username={user2.username}")
     assert len(response.json()["users"]) == 3
 
-    # search by date joined
+    # filter by date joined
     gte, lte = "2021-02-01T00:00:00Z", "2021-02-15T00:00:00Z"
     response = client.get(f"/users/?dateJoined__gte={gte}&date_joined__lte={lte}")
     assert len(response.json()["users"]) == 1
@@ -260,9 +264,18 @@ def test_user_list_multisort(client, now, db, user_factory):
     assert result["users"][3]["username"] == "a"
 
 
-def test_user_update(client, db, user_url):
+def test_user_patch(client, db, user):
     payload = dict(username="testtest", email="something@example.com")
-    response = client.patch(user_url, payload, content_type=json_type)
+    response = client.patch(f"/users/{user.pk}/", payload)
+    result = response.json()
+    assert response.status_code == 200, result
+    assert result["username"] == "testtest"
+    assert result["email"] == "something@example.com"
+
+
+def test_user_update(client, db, user):
+    payload = dict(username="testtest", email="something@example.com")
+    response = client.put(f"/users/{user.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert result["username"] == "testtest"
