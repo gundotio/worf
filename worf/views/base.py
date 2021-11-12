@@ -11,7 +11,7 @@ from django.core.exceptions import (
     ValidationError,
 )
 from django.db import models
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.middleware.gzip import GZipMiddleware
 from django.views import View
 from django.views.decorators.cache import never_cache
@@ -42,7 +42,7 @@ class APIResponse(View):
             msg += "render_to_response, nor did its serializer method"
             raise ImproperlyConfigured(msg)
 
-        response = JsonResponse(payload)
+        response = JsonResponse(payload) if payload != "" else HttpResponse()
         # except TypeError:
         # TODO add something meaningful to the stack trace
 

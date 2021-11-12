@@ -196,6 +196,9 @@ class ValidationMixin:
         elif hasattr(self, f"validate_{key}"):
             self.bundle[key] = getattr(self, f"validate_{key}")(self.bundle[key])
 
+        elif isinstance(field, models.UUIDField):
+            self.bundle[key] = self.validate_uuid(self.bundle[key])
+
         elif isinstance(field, (models.CharField, models.TextField, models.SlugField)):
             self.bundle[key] = self._validate_string(key, field.max_length)
 

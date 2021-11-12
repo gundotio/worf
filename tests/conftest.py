@@ -1,13 +1,12 @@
 import pytest
 from pytest_factoryboy import register
 
-import django
-from django.conf import settings
-from django.utils import timezone
-
 
 def pytest_configure():
     """Initialize Django settings."""
+    import django
+    from django.conf import settings
+
     settings.configure(
         SECRET_KEY="secret",
         DEBUG=True,
@@ -61,16 +60,33 @@ def pytest_configure():
     register(UserFactory, "user")
 
 
+@pytest.fixture(name="admin_client")
+def admin_client_fixture(db, admin_user):
+    from worf.testing import ApiClient
+
+    client = ApiClient()
+    client.force_login(admin_user)
+    return client
+
+
+@pytest.fixture(name="client")
+def client_fixture():
+    from worf.testing import ApiClient
+
+    return ApiClient()
+
+
 @pytest.fixture(name="now")
 def now_fixture():
+    from django.utils import timezone
+
     return timezone.now()
 
 
-@pytest.fixture(name="profile_url")
-def profile_url_fixture(profile):
-    return f"/profiles/{profile.pk}/"
+@pytest.fixture(name="user_client")
+def user_client_fixture(db, user):
+    from worf.testing import ApiClient
 
-
-@pytest.fixture(name="user_url")
-def user_url_fixture(user):
-    return f"/users/{user.pk}/"
+    client = ApiClient()
+    client.force_login(user)
+    return client

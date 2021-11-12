@@ -4,22 +4,10 @@ from django.db.models import F, Value
 from django.db.models.functions import Concat
 
 from worf.permissions import PublicEndpoint
-from worf.views import DetailUpdateAPI, ListAPI
+from worf.views import DeleteAPI, DetailAPI, DetailUpdateAPI, ListAPI, UpdateAPI
 
-from tests.models import DummyModel, Profile
+from tests.models import Profile
 from tests.serializers import ProfileSerializer, UserSerializer
-
-
-class DummyAPI(DetailUpdateAPI):
-    model = DummyModel
-    permissions = [PublicEndpoint]
-
-    def validate_phone(self, value):
-        try:
-            assert value == "(555) 555-5555"
-        except AssertionError:
-            raise ValidationError("{value} is not a valid phone number")
-        return "+5555555555"
 
 
 class ProfileList(ListAPI):
@@ -43,10 +31,17 @@ class ProfileListSubSet(ProfileList):
     queryset = ProfileList.queryset.none()
 
 
-class ProfileDetail(DetailUpdateAPI):
+class ProfileDetail(DeleteAPI, UpdateAPI, DetailAPI):
     model = Profile
     serializer = ProfileSerializer
     permissions = [PublicEndpoint]
+
+    def validate_phone(self, value):
+        try:
+            assert value == "(555) 555-5555"
+        except AssertionError:
+            raise ValidationError("{value} is not a valid phone number")
+        return "+5555555555"
 
 
 class UserList(ListAPI):

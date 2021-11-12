@@ -1,11 +1,20 @@
+from uuid import uuid4
+
 from django.db import models
 from django.contrib.auth.models import User
 
 
-class DummyModel(models.Model):
-    id = models.CharField(max_length=64, primary_key=True)
+class Profile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+
     email = models.CharField(max_length=64)
     phone = models.CharField(max_length=64)
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.ForeignKey("Role", on_delete=models.CASCADE)
+    team = models.ForeignKey("Team", blank=True, null=True, on_delete=models.SET_NULL)
+    skills = models.ManyToManyField("Skill", through="RatedSkill")
+    tags = models.ManyToManyField("Tag")
 
     def api(self):
         return dict(id=self.id, email=self.email, phone=self.phone)
@@ -72,11 +81,3 @@ class Tag(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=64)
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    role = models.ForeignKey(Role, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, blank=True, null=True, on_delete=models.SET_NULL)
-    skills = models.ManyToManyField(Skill, through=RatedSkill)
-    tags = models.ManyToManyField(Tag)

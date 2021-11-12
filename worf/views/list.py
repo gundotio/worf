@@ -29,9 +29,6 @@ class ListAPI(AbstractBaseAPI):
     max_per_page = None
     num_pages = 1
 
-    def get(self, request, *args, **kwargs):
-        return self.render_to_response()
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -62,6 +59,9 @@ class ListAPI(AbstractBaseAPI):
                 f"Passing a dict to {codepath}.search_fields is deprecated. Pass a list instead."
             )
             self.search_fields = self.search_fields.get("or", [])
+
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response()
 
     def _set_base_lookup_kwargs(self):
         # Filters set directly on the class
@@ -243,5 +243,5 @@ class ListAPI(AbstractBaseAPI):
         return payload
 
 
-class ListCreateAPI(ListAPI, CreateAPI):
+class ListCreateAPI(CreateAPI, ListAPI):
     pass
