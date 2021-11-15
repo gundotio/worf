@@ -1,37 +1,56 @@
-from worf.serializers import Serializer
+from worf.serializers import fields, Serializer
 
 
 class UserSerializer(Serializer):
-    def read(self, model):
-        return dict(
-            username=model.username,
-            lastLogin=model.last_login,
-            dateJoined=model.date_joined,
-            email=model.email,
-        )
+    last_login = fields.DateTime(dump_only=True)
+    date_joined = fields.DateTime(dump_only=True)
 
-    def write(self):
-        return [
+    class Meta:
+        fields = [
             "username",
+            "last_login",
+            "date_joined",
             "email",
         ]
 
 
 class ProfileSerializer(Serializer):
-    def read(self, model):
-        return dict(
-            username=model.user.username,
-            email=model.user.email,
-            role=dict(name=model.role.name) if model.role else None,
-            skills=[t.api() for t in model.ratedskill_set.all()],
-            team=dict(name=model.team.name) if model.team else None,
-            tags=[t.api() for t in model.tags.all()],
-        )
+    username = fields.Function(lambda obj: obj.user.username)
+    email = fields.Function(lambda obj: obj.user.email)
+    role = fields.Nested("RoleSerializer")
+    skills = fields.Nested("RatedSkillSerializer", attribute="ratedskill_set", many=True)
+    team = fields.Nested("TeamSerializer")
+    tags = fields.Nested("TagSerializer", many=True)
 
-    def write(self):
-        return [
+    class Meta:
+        fields = [
+            "username",
+            "email",
             "role",
             "skills",
             "team",
             "tags",
         ]
+
+
+class RatedSkillSerializer(Serializer):
+    id = fields.Function(lambda obj: obj.skill.id)
+    name = fields.Function(lambda obj: obj.skill.name)
+
+    class Meta:
+        fields = ["id", "name", "rating"]
+
+
+class RoleSerializer(Serializer):
+    class Meta:
+        fields = ["id", "name"]
+
+
+class TagSerializer(Serializer):
+    class Meta:
+        fields = ["id", "name"]
+
+
+class TeamSerializer(Serializer):
+    class Meta:
+        fields = ["id", "name"]

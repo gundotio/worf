@@ -45,6 +45,7 @@ setup(
     install_requires=[
         "Django>=3.0.0,<3.3",
         "django-url-filter>=0.3.15",
+        "marshmallow>=3.14.0",
     ],
     include_package_data=True,
     keywords="django, rest, framework, api",

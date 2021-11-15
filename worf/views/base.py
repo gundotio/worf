@@ -161,7 +161,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             return self.serializer()
         if self.api_method:
             return LegacySerializer(self.model, self.api_method)
-        msg = f"{self.__name__}.get_serializer() did not return a serializer"
+        msg = f"{type(self).__name__}.get_serializer() did not return a serializer"
         raise ImproperlyConfigured(msg)
 
     def validate_lookup_field_values(self):

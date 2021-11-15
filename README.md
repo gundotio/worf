@@ -1,9 +1,11 @@
 Worf
-=========================
+====
 
-![CI](https://github.com/gundotio/worf/workflows/CI/badge.svg)
+[![build-status-image]][build-status]
+[![pypi-version]][pypi]
 
-**A more Djangonic approach to Django REST APIs.**
+Worf is a small Django API framework for building out REST APIs simply using
+class-based views and serializers.
 
 [![Worf](https://i.kym-cdn.com/photos/images/newsfeed/001/231/196/e18.jpg)][worf-docs]
 
@@ -12,64 +14,58 @@ Full documentation for the project is available at [https://memory-alpha.fandom.
 [worf-docs]: https://memory-alpha.fandom.com/wiki/Worf
 
 
-### Overview
+Table of contents
+-----------------
 
-Worf is a small Django API framework that lets you quickly build out an api using
-simple model methods. Contributions welcome.
+  - [Installation](#installation)
+  - [Requirements](#requirements)
+  - [Roadmap](#roadmap)
+  - [Usage](#usage)
+  - [Serializers](#serializers)
+  - [Permissions](#permissions)
+  - [Validators](#validators)
+  - [Views](#views)
+    - [ListAPI](#listapi)
+    - [DetailAPI](#detailapi)
+    - [CreateAPI](#createapi)
+    - [UpdateAPI](#updateapi)
+  - [Bundle loading](#bundle-loading)
+  - [Field casing](#field-casing)
+  - [Internal naming](#internal-naming)
+  - [Credits](#credits)
 
-This project is stable but will change drastically.
 
-### Roadmap
+Installation
+------------
+
+```sh
+pip install worf
+```
+
+
+Requirements
+------------
+
+- Python (3.7, 3.8, 3.9)
+- Django (3.0, 3.1, 3.2)
+
+
+Roadmap
+-------
 
 - [x] Abstracting serializers away from model methods
-- More support for different HTTP methods
-- Support for user-generated validators
-- Better file upload support
-- Better test coverage
-- Browsable API docs
+- [x] Declarative marshmallow-based serialization
+- [x] More support for different HTTP methods
+- [ ] Support for user-generated validators
+- [ ] Better file upload support
+- [ ] Better test coverage
+- [ ] Browsable API docs
 
-#### API Method
 
-Views execute the `api_method` in order to return data.
+Usage
+-----
 
-Example API Method:
-
-```py
-def api(self):
-  return [
-    'camelCaseField': self.camel_case_field,
-    ...
-  ]
-```
-
-#### Serializers
-
-`from worf.serializers import Serializer`
-
-##### Legacy Serializers
-Views append `_update_fields` to the `api_method` property. This model method will
-be executed on `PATCH` requests. `PATCH` requests are supported in `DetailUpdateAPI`.
-If you do not want to support `PATCH` on a particular endpoint, use `DetailAPI`.
-
-Only fields included in the serializer method will be used to `PATCH` models.
-
-If a `PATCH` request is made with fields that are not in the serializer, the
-response will be `HTTP 400`.
-
-Example Serializer:
-
-```py
-def api_update_fields(self):
-  return [
-    'field_for_update_1',
-    'field_for_update_2'
-    ...
-  ]
-```
-
-### Example
-
-The following example provides you with an api that does the following:
+The following examples provides you with an API that does the following:
 
 - Only allows authenticated users to access the endpoints
 - Provides a list of books, with `POST` support to create a new book
@@ -78,197 +74,205 @@ The following example provides you with an api that does the following:
 A more complete example will demonstrate the additional built-in capabilities,
 including search, pagination, ordering, and the other things Worf can do.
 
-#### Model Example
-
 ```py
+# models.py
 class Book(models.Model):
     title = models.CharField(max_length=128)
     author_name = models.CharField(max_length=128)
     published_at = models.DateField()
+```
 
-    # Legacy serializer style - don't use this
-    def api_update_fields(self):
-        return [
+```py
+# serializers.py
+from worf.serializers import Serializer
+
+class BookSerializer(Serializer):
+    class Meta:
+        fields = [
+            "id",
             "title",
             "author_name",
+            "published_at",
         ]
-
-    def api(self):
-        return dict(
-            title=self.title,
-            authorName=self.author_name,
-            published_at=self.published_at,
-        )
 ```
-
-#### View Book Example
 
 ```py
-from worf.views import ListAPI, DetailPatchAPI
+# views.py
+from worf.permissions import Authenticated
+from worf.views import DetailAPI, ListAPI, UpdateAPI
 
-class BookList(ListCreateAPI):
-  permissions = [Authenticated]
+class BookList(CreateAPI, ListAPI):
   model = Book
-  serializer = BookSerializer  # Omit to use legacy serializer
+  serializer = BookSerializer
+  permissions = [Authenticated]
 
-class BookDetail(DetailPatchAPI):
-  permissions = [Authenticated]
+class BookDetail(UpdateAPI, DetailAPI):
   model = Book
-  serializer = BookSerializer  # Omit to use legacy serializer
+  serializer = BookSerializer
+  permissions = [Authenticated]
 ```
-
-### URLs
 
 ```py
-...
-path("api/v1/", include([
-      path("books/", BookList.as_view()),
-      path("books/<int:id>/", BookDetail.as_view()),
-  ])
-),
-...
+# urls.py
+path("api/", include([
+    path("books/", BookList.as_view()),
+    path("books/<int:id>/", BookDetail.as_view()),
+])),
 ```
 
-## View Reference
+Serializers
+-----------
 
-### `worf.permissions`
+Worf serializers are basically [marshmallow schemas](https://marshmallow.readthedocs.io/)
+with some tweaks to improve support for Django models, and supply extra defaults.
 
-Permissions functions. These functions extend the API View, so they require
-`self` to be defined as a parameter. This is done in order to allow access to
-`self.request` during permission testing.
+```py
+from worf.serializers import fields, Serializer
+
+class BookSerializer(Serializer):
+    image_url = fields.Function(lambda obj: obj.get_image_url())
+    author = fields.Nested(AuthorSerializer)
+    tags = fields.Nested(TagSerializer, many=True)
+
+    class Meta:
+        fields = [
+            "id",
+            "title",
+            "content",
+            "image_url",
+            "url",
+            "author",
+            "tags",
+        ]
+```
+
+Worf serializers build on top of marshmallow to make them a little easier to use
+in Django, primarily, we add support for using the `Nested` field with related
+managers, and setting default serializer options via settings:
+
+```py
+WORF_SERIALIZER_DEFAULT_OPTIONS = {
+    "dump_only": [
+        "id",
+        "created_at",
+        "deleted_at",
+        "updated_at",
+    ]
+}
+```
+
+Permissions
+-----------
+
+Permissions functions can be found in `worf.permissions`.
+
+These functions extend the API View, so they require `self` to be defined as a
+parameter. This is done in order to allow access to `self.request` during
+permission testing.
 
 If permissions should be granted, functions should return `int(200)`.
 
-If permissions fail, they should return an `HTTPExcption`
-
-### `worf.validators`
-
-Provides `ValidationMixin` which `AbstractBaseAPI` inherits from. Will perform
-some coercion on `self.bundle`, potentially resulting in a different bundle than
-what was originally passed to the view.
-
-### `worf.views`
-
-#### `AbstractBaseAPI`
-
-Provides the basic functionality of both BaseList and BaseDetail APIs. It is not
-recommended to use this abstract view directly.
-
-Class Attributes
-
-| Name | Type | Default | Description |
-| -- | -- | -- | -- |
-| `model`       | `class` | `None` | An uninstantiated `django.db.models.model` class. |
-| `permissions` | `list`  | `[]`   | Pass a list of permissions classes. |
-
-##### HTTP Methods
-
-- GET is always supported.
+If permissions fail, they should return an `HTTPException`
 
 
-#### `ListAPI`
+Validators
+-----------
+
+Validation handling can be found in `worf.validators`.
+
+The basics come from `ValidationMixin` which `AbstractBaseAPI` inherits from, it
+performs some coercion on `self.bundle`, potentially resulting in a different
+bundle than what was originally passed to the view.
+
+
+Views
+-----
+
+### AbstractBaseAPI
+
+Provides the basic functionality of both List and Detail APIs.
+It is not recommended to use this abstract view directly.
 
 | Name | Type | Default | Description |
 | -- | -- | -- | -- |
-| `api_method`        | `str`  | `api`                 | Must refer to a `model` method. This method is used to return data for `GET` requests. |
-| `payload_key`       | `str`  | `verbose_name_plural` | Use in order to rename the key for the results array |
-| `filters`           | `dict` | `{}`                  | Pass key/value pairs that you wish to further filter the queryset beyond the `lookup_url_kwarg` |
-| `lookup_field`      | `str`  | `None`                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
-| `lookup_url_kwarg`  | `str`  | `None`                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
-| `ordering`          | `list` | `[]`                  | Pass a list of fields to default the queryset order by. |
-| `filter_fields`     | `list` | `[]`                  | Pass a list of fields to support filtering via query params. |
-| `search_fields`     | `list` | `[]`                  | Pass a list of fields to full text search via the `q` query param. |
-| `sort_fields`       | `list` | `[]`                  | Pass a list of fields to support sorting via the `sort` query param. |
-| `per_page`          | `int`  | `25`                  | Sets the number of results returned for each page. |
-| `max_per_page`      | `int`  | `per_page`            | Sets the max number of results to allow when passing the `perPage` query param. |
+| model       | class | None | An uninstantiated `django.db.models.model` class. |
+| permissions | list  | []   | Pass a list of permissions classes. |
 
-##### Search
+
+### ListAPI
+
+| Name | Type | Default | Description |
+| -- | -- | -- | -- |
+| filters           | dict | {}                  | Pass key/value pairs that you wish to further filter the queryset beyond the `lookup_url_kwarg` |
+| lookup_field      | str  | None                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
+| lookup_url_kwarg  | str  | None                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
+| payload_key       | str  | verbose_name_plural | Use in order to rename the key for the results array |
+| ordering          | list | []                  | Pass a list of fields to default the queryset order by. |
+| filter_fields     | list | []                  | Pass a list of fields to support filtering via query params. |
+| search_fields     | list | []                  | Pass a list of fields to full text search via the `q` query param. |
+| sort_fields       | list | []                  | Pass a list of fields to support sorting via the `sort` query param. |
+| per_page          | int  | 25                  | Sets the number of results returned for each page. |
+| max_per_page      | int  | per_page            | Sets the max number of results to allow when passing the `perPage` query param. |
+
+The `get_queryset` method will use `lookup_url_kwarg` and `lookup_field` to filter results.
+You _should_ not need to override get_queryset. Instead, set the optional variables
+listed above to configure the queryset.
+
+#### Filtering
 
 Parameters in the URL must be camelCase and exactly match the snake_case model field.
 
 To allow full text search, set to a list of fields for django filter lookups.
 
-##### Pagination
+#### Pagination
 
 All ListAPI views are paginated and include a `pagination` json object.
 
 Use `per_page` to set custom limit for pagination. Default 25.
 
-##### `get_queryset()` method
-
-This method will use `lookup_url_kwarg` and `lookup_field` to filter results.
-You _should_ not need to override get_queryset. Instead, set the optional variables
-listed above to configure the queryset.
-
-##### Return
-
-1. A list of the `ListAPI.{model}.{instance}.api()` method by default.
-2. If `lookup_field` and `lookup_url_kwarg` fields are set, it will return a filtered list.
-
-```py
-{
-  model_verbose_name: [
-    instance1.api(),
-    ...
-  ]
-}
-```
-
-#### `ListCreateAPI`
-
-Adds `post` method to handle creation. Otherwise identical to `ListAPI`. In most
-cases, you will need to override the post method in order to create objects
-properly. Do this by performing whatever logic you need to do, then update the
-`self.bundle` with whatever properties you need to set on the object. Then call
-`return super().post(request, *args, **kwargs)`.
-
-#### `DetailAPI`
+### DetailAPI
 
 | Name | Type | Default | Description |
 | -- | -- | -- | -- |
-| `api_method`       | `str` | `api` | Must refer to a `model` method. This method is used to return data for `GET` requests. Additionally, `{api_method}_update_fields` will be called to execute `PATCH` requests.|
-| `lookup_field`     | `str` | `id`  | Override with the lookup field used to filter the _model_. Defaults to `id`|
-| `lookup_url_kwarg` | `str` | `id`  | Override with the name of the parameter passed to the view by the URL route. Defaults to `id`  |
+| lookup_field     | str | id  | Override with the lookup field used to filter the _model_. Defaults to `id`|
+| lookup_url_kwarg | str | id  | Override with the name of the parameter passed to the view by the URL route. Defaults to `id`  |
 
-##### `get_instance()` method
-This method uses `lookup_field` and `lookup_url_kwargs` to return a model instance.
+This `get_instance()` method uses `lookup_field` and `lookup_url_kwargs` to return a model instance.
 
 You _may_ prefer to override this method, for example in a case when you are using
-request.user to return an instance.
+`request.user` to return an instance.
 
-#### `DetailUpdateAPI`
+### CreateAPI
 
-Adds `patch` method to handle updates. Otherwise identical to `DetailAPI`. Runs
-validators automatically. You _should_ not need to override update. If the
-`api_update_fields` model method returns an empty list, HTTP 422 will be raised.
-
-
-### Additional Information
-
-#### Converting 🐍 & 🐪
-Worf expects all your model fields to be defined in snake case, and your api's json objects to be camel case. This conversion is handled in `worf.casing`.
-
-**Limitations With Casing***
-We interpret camelCase, _strictly_, based on the database model. This means that
-inappropriate naming of database fields will result in confusion. A quick example:
+Adds a `post` method to handle creation, mix this into a `ListAPI` view:
 
 ```py
-# profiles.models.freelancers.Freelancer
-freelance_fulltime = models.CharField(...)
-freelancer_id = UUIDField(...)
-API_strict = ...
+class BookListAPI(CreateAPI, ListAPI):
+    model = Book
+    serializer = BookSerializer
 ```
-This will be strictly translated by the API. Acronyms are not considered:
 
-- `freelance_fulltime == freelaneFulltime`
-- `freelancer_id == freelancerId`
-- `API_strict == apiStrict`
+Validation of creates is kind of sketchy right now, but the idea is that you'd
+use the same serializer as you would for an update, unless you have `create-only`
+fields, in which case, you may want to create a `BookCreateSerializer`.
 
-At this time, we still manually define the `camelCase` names in the model `api()`
-method. This will eventually be removed in favor of automated case conversion,
-but it has and will continue to present an opportunity for error, for now.
+### UpdateAPI
 
-#### `self.bundle` is loaded from json
+Adds `patch` and `put` methods to handle updates, mix this into a `DetailAPI`.
+
+```py
+class BookDetailAPI(UpdateAPI, DetailAPI):
+    model = Book
+    serializer = BookSerializer
+```
+
+Validation of update fields is delegated to the serializer, any fields that are
+writeable should be within the `fields` definition of the serializer, and not
+marked as `dump_only` (read-only).
+
+
+Bundle loading
+--------------
 
 The `dispatch` method is run by Django when the view is called. In our version
 of dispatch, we interpret any `request.body` as JSON, and convert all values
@@ -281,9 +285,52 @@ the view. We perform type coercion during validation, so `self.bundle` will
 be changed during processing. You may also append or remove attributes to the
 bundle before saving the object via `post`, `patch`, or other methods.
 
-#### Naming Things
 
-We refer to the json object that is sent and received by the api differently in this codebase for clarity:
+Field casing
+------------
+
+Worf expects all your model fields to be defined in snake case 🐍, and JSON
+objects to be camel case 🐪 and that conversion is handled in `worf.casing`.
+
+We interpret camelCase, _strictly_, based on the database model. This means that
+inappropriate naming of database fields will result in confusion.
+
+A quick example:
+
+```py
+freelance_fulltime = models.CharField(...)
+freelancer_id = models.UUIDField(...)
+API_strict = ...
+```
+
+This will be strictly translated by the API, and acronyms are not considered:
+
+- `freelance_fulltime == freelanceFulltime`
+- `freelancer_id == freelancerId`
+- `API_strict == apiStrict`
+
+
+Internal naming
+---------------
+
+We refer to the json object that is sent and received by the API differently in
+this codebase for clarity:
 
 - `bundle` is what we send to the backend.
 - `payload` is what the backend returns.
+
+
+Credits
+-------
+
+~Wanted dead or alive~ Made with 🥃 at [Gun.io][gun.io]
+
+<a href="https://github.com/gundotio/worf/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=gundotio/worf" alt="Contributors"/>
+</a>
+
+[build-status-image]: https://github.com/gundotio/worf/actions/workflows/ci.yml/badge.svg
+[build-status]: https://github.com/gundotio/worf/actions/workflows/ci.yml
+[gun.io]: https://www.gun.io
+[pypi-version]: https://img.shields.io/pypi/v/worf.svg?color=blue
+[pypi]: https://pypi.org/project/worf/
