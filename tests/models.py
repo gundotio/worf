@@ -34,12 +34,6 @@ class Role(models.Model):
 class Skill(models.Model):
     name = models.CharField(max_length=200)
 
-    def api(self):
-        return dict(
-            id=self.pk,
-            name=self.name,
-        )
-
 
 class RatedSkill(models.Model):
     class Meta:
@@ -61,22 +55,9 @@ class RatedSkill(models.Model):
     def __str__(self):
         return f"{self.skill.name}: {self.get_rating_display()}"
 
-    def api(self):
-        return dict(
-            id=self.skill.pk,
-            name=self.skill.name,
-            rating=self.rating,
-        )
-
 
 class Tag(models.Model):
     name = models.CharField(max_length=200)
-
-    def api(self):
-        return dict(
-            id=self.pk,
-            name=self.name,
-        )
 
 
 class Team(models.Model):
