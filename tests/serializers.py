@@ -21,15 +21,19 @@ class ProfileSerializer(Serializer):
     skills = fields.Nested("RatedSkillSerializer", attribute="ratedskill_set", many=True)
     team = fields.Nested("TeamSerializer")
     tags = fields.Nested("TagSerializer", many=True)
+    user = fields.Nested("UserSerializer")
 
     class Meta:
         fields = [
             "username",
+            "avatar",
             "email",
+            "phone",
             "role",
             "skills",
             "team",
             "tags",
+            "user",
         ]
 
 

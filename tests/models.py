@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 class Profile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
 
+    avatar = models.FileField(upload_to="avatars/", blank=True)
     email = models.CharField(max_length=64)
     phone = models.CharField(max_length=64)
 

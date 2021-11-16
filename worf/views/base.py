@@ -116,24 +116,6 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
                     )
                 )
 
-    def _assemble_bundle_from_request_body(self):
-
-        if self.request.content_type == "multipart/form-data":
-            # Avoid RawPostDataException
-            # TODO investigate why test did not catch this error
-            raw_bundle = {}
-
-        elif self.request.body:  # and self.request.body != b'--BoUnDaRyStRiNg--\r\n':
-            try:
-                raw_bundle = json.loads(self.request.body)
-            except json.decoder.JSONDecodeError:
-                # print("\n\n~~~~~~~~~~~~~~~~~~~~~~", self.request.body, '\n\n')
-                raw_bundle = {}
-        else:
-            raw_bundle = {}
-
-        self.set_bundle(raw_bundle)
-
     def _get_lookup_field(self, field):
         related = field.find("__")
 
@@ -182,28 +164,43 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             ):
                 self.validate_numeric(url_kwarg)
 
-    def set_bundle_from_querystring(self):
+    def flatten_bundle(self, raw_bundle):
         # parse_qs gives us a dictionary where all values are lists
-        qs = parse_qs(self.request.META["QUERY_STRING"])
-
-        raw_bundle = {}
-
-        for key, value in qs.items():
-            raw_bundle[key] = value[0] if len(value) == 1 else value
-
-        self.set_bundle(raw_bundle)
+        return {
+            key: value[0] if len(value) == 1 else value
+            for key, value in raw_bundle.items()
+        }
 
     def set_bundle(self, raw_bundle):
         self.bundle = {}
         self.keymap = {}
 
         if not raw_bundle:
-            return  # No need to loop or set self.bundle again if it's empty
+            return
 
         for key in raw_bundle.keys():
             field = camel_to_snake(key)
             self.bundle[field] = raw_bundle[key]
             self.keymap[field] = key
+
+    def set_bundle_from_querystring(self):
+        raw_bundle = self.flatten_bundle(parse_qs(self.request.META["QUERY_STRING"]))
+
+        self.set_bundle(raw_bundle)
+
+    def set_bundle_from_request_body(self):
+        raw_bundle = {}
+
+        if self.request.content_type == "multipart/form-data":
+            raw_bundle.update(self.flatten_bundle(self.request.POST))
+            raw_bundle.update(self.flatten_bundle(self.request.FILES))
+        elif self.request.body:
+            try:
+                raw_bundle = json.loads(self.request.body)
+            except json.decoder.JSONDecodeError:
+                pass
+
+        self.set_bundle(raw_bundle)
 
     def dispatch(self, request, *args, **kwargs):
         method = request.method.lower()
@@ -214,7 +211,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
         try:
             self._check_permissions()  # only returns 200 or HTTP_EXCEPTIONS
-            self._assemble_bundle_from_request_body()  # sets self.bundle
+            self.set_bundle_from_request_body()  # sets self.bundle
             return handler(request, *args, **kwargs)  # calls self.serialize()
         except HTTP_EXCEPTIONS as e:
             return self.render_to_response(dict(message=e.message), e.status)

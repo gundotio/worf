@@ -218,6 +218,9 @@ class ValidationMixin:
         elif isinstance(field, models.BooleanField):
             self.bundle[key] = self._validate_boolean(key)
 
+        elif isinstance(field, models.FileField):
+            pass  # Django will raise an exception if handled improperly
+
         elif isinstance(field, models.ForeignKey):
             pass  # Django will raise an exception if handled improperly
 
