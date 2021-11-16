@@ -1,4 +1,22 @@
 from datetime import timedelta
+from unittest.mock import patch
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test.client import MULTIPART_CONTENT
+
+
+@patch('django.core.files.storage.FileSystemStorage.save')
+def test_profile_create(mock_save, client, db, role, user):
+    avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
+    mock_save.return_value = "avatar.jpg"
+    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
+    response = client.post(f"/profiles/", data=payload, content_type=MULTIPART_CONTENT)
+    result = response.json()
+    assert response.status_code == 201, result
+    assert result["avatar"] == "/avatar.jpg"
+    assert result["role"]["id"] == role.pk
+    assert result["role"]["name"] == role.name
+    assert result["user"]["username"] == user.username
 
 
 def test_profile_detail(client, db, profile, user):

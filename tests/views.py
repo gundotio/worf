@@ -4,13 +4,13 @@ from django.db.models import F, Value
 from django.db.models.functions import Concat
 
 from worf.permissions import PublicEndpoint
-from worf.views import DeleteAPI, DetailAPI, DetailUpdateAPI, ListAPI, UpdateAPI
+from worf.views import CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
 
 from tests.models import Profile
 from tests.serializers import ProfileSerializer, UserSerializer
 
 
-class ProfileList(ListAPI):
+class ProfileList(CreateAPI, ListAPI):
     model = Profile
     queryset = Profile.objects.annotate(
         name=Concat("user__first_name", Value(" "), "user__last_name"),
@@ -64,7 +64,7 @@ class UserList(ListAPI):
     ]
 
 
-class UserDetail(DetailUpdateAPI):
+class UserDetail(UpdateAPI, DetailAPI):
     model = User
     serializer = UserSerializer
     permissions = [PublicEndpoint]

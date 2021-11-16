@@ -2,6 +2,7 @@ import marshmallow
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models.fields.files import FieldFile
 
 from worf import fields  # noqa: F401
 from worf.casing import snake_to_camel
@@ -32,6 +33,11 @@ class Serializer(marshmallow.Schema):
     """
 
     OPTIONS_CLASS = SerializerOptions
+
+    TYPE_MAPPING = {
+        **marshmallow.Schema.TYPE_MAPPING,
+        FieldFile: fields.File,
+    }
 
     def __repr__(self):
         return f"<{self.__class__.__name__}()>"

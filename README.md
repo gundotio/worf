@@ -31,6 +31,7 @@ Table of contents
     - [UpdateAPI](#updateapi)
   - [Bundle loading](#bundle-loading)
   - [Field casing](#field-casing)
+  - [File uploads](#file-uploads)
   - [Internal naming](#internal-naming)
   - [Credits](#credits)
 
@@ -56,8 +57,9 @@ Roadmap
 - [x] Abstracting serializers away from model methods
 - [x] Declarative marshmallow-based serialization
 - [x] More support for different HTTP methods
+- [x] File upload support on POST
+- [ ] File upload support on PATCH/PUT
 - [ ] Support for user-generated validators
-- [ ] Better file upload support
 - [ ] Better test coverage
 - [ ] Browsable API docs
 
@@ -308,6 +310,14 @@ This will be strictly translated by the API, and acronyms are not considered:
 - `freelance_fulltime == freelanceFulltime`
 - `freelancer_id == freelancerId`
 - `API_strict == apiStrict`
+
+
+File uploads
+------------
+
+File uploads are supported via `POST` using `multipart/form-data` requests.
+
+Support for `PATCH`/`PUT` is on the roadmap.
 
 
 Internal naming
