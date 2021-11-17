@@ -172,6 +172,12 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             for key, value in raw_bundle.items()
         }
 
+    def get_parts(self, request):
+        if request.method == "POST":
+            return request.POST, request.FILES
+
+        return request.parse_file_upload(request.META, BytesIO(request.body))
+
     def set_bundle(self, raw_bundle):
         self.bundle = {}
         self.keymap = {}
@@ -193,7 +199,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
         raw_bundle = {}
 
         if request.content_type == "multipart/form-data":
-            post, files = request.parse_file_upload(request.META, BytesIO(request.body))
+            post, files = self.get_parts(request)
             raw_bundle.update(self.flatten_bundle(post))
             raw_bundle.update(self.flatten_bundle(files))
         elif request.body:
