@@ -41,7 +41,7 @@ setup(
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    description="Worf (Wade's Own Rest Framework): A more djangonic approach",
+    description="Worf (Wade's Own Rest Framework): A more Djangonic approach to REST APIs",
     install_requires=[
         "Django>=3.0.0,<3.3",
         "django-url-filter>=0.3.15",
