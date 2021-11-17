@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.7](https://github.com/gundotio/worf/compare/v0.4.6...v0.4.7) (2021-11-17)
+
+- Assign fk/m2m on create and support delete [#74](https://github.com/gundotio/worf/pull/74)
+- Marshmallow serialization [#75](https://github.com/gundotio/worf/pull/75)
+- File upload support [#76](https://github.com/gundotio/worf/pull/76)
+- Switch out some snake_to_camel usage for a keymap [#72](https://github.com/gundotio/worf/pull/72)
+
 ### [0.4.6](https://github.com/gundotio/worf/compare/v0.4.5...v0.4.6) (2021-11-09)
 
 - Support string list filters [#69](https://github.com/gundotio/worf/pull/69)
