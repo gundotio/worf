@@ -2,7 +2,6 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test.client import MULTIPART_CONTENT
 
 
 def test_profile_detail(client, db, profile, user):
@@ -133,7 +132,7 @@ def test_profile_multipart_create(mock_save, client, db, role, user):
     avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
     mock_save.return_value = "avatar.jpg"
     payload = dict(avatar=avatar, role=role.pk, user=user.pk)
-    response = client.post(f"/profiles/", payload, content_type=MULTIPART_CONTENT)
+    response = client.post(f"/profiles/", payload)
     result = response.json()
     assert response.status_code == 201, result
     assert result["avatar"] == "/avatar.jpg"
@@ -147,7 +146,7 @@ def test_profile_multipart_patch(mock_save, client, db, profile, role, user):
     avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
     mock_save.return_value = "avatar.jpg"
     payload = dict(avatar=avatar, role=role.pk, user=user.pk)
-    response = client.patch(f"/profiles/{profile.pk}/", payload, content_type=MULTIPART_CONTENT)
+    response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert result["avatar"] == "/avatar.jpg"
@@ -161,7 +160,7 @@ def test_profile_multipart_put(mock_save, client, db, profile, role, user):
     avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
     mock_save.return_value = "avatar.jpg"
     payload = dict(avatar=avatar, role=role.pk, user=user.pk)
-    response = client.put(f"/profiles/{profile.pk}/", payload, content_type=MULTIPART_CONTENT)
+    response = client.put(f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert result["avatar"] == "/avatar.jpg"
