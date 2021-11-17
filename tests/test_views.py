@@ -34,6 +34,14 @@ def test_profile_list_filter(client, db, profile, user):
     assert result["profiles"][0]["username"] == user.username
 
 
+def test_profile_list_icontains_filter(client, db, profile, user):
+    response = client.get(f"/profiles/?name__icontains={user.first_name}")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+    assert result["profiles"][0]["username"] == user.username
+
+
 def test_profile_list_annotation_filter(client, db, profile_factory):
     profile_factory.create(user__date_joined="2020-01-01T00:00:00Z")
     profile_factory.create(user__date_joined="2020-12-01T00:00:00Z")
@@ -56,6 +64,22 @@ def test_profile_list_and_filter(client, db, profile_factory, tag_factory):
     assert len(result["profiles"]) == 1
 
 
+def test_profile_list_in_array_filter(client, db, profile, user):
+    response = client.get(f"/profiles/?name__in={user.first_name} {user.last_name}&name__in=Din Djarin")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+    assert result["profiles"][0]["username"] == user.username
+
+
+def test_profile_list_in_string_filter(client, db, profile, user):
+    response = client.get(f"/profiles/?name__in={user.first_name} {user.last_name},Din Djarin")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+    assert result["profiles"][0]["username"] == user.username
+
+
 def test_profile_list_or_filter(client, db, profile_factory, tag_factory):
     tag1, tag2, tag3 = tag_factory.create_batch(3)
     profile_factory.create(tags=[tag1])
@@ -67,6 +91,34 @@ def test_profile_list_or_filter(client, db, profile_factory, tag_factory):
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 3
+
+
+def test_profile_list_negated_filter(client, db, profile, user):
+    response = client.get(f"/profiles/?name!={user.first_name} {user.last_name}")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 0
+
+
+def test_profile_list_negated__icontains__filter(client, db, profile, user):
+    response = client.get(f"/profiles/?name__icontains!={user.first_name}")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 0
+
+
+def test_profile_list_not_in_array_filter(client, db, profile, user):
+    response = client.get(f"/profiles/?name__in!={user.first_name} {user.last_name}&name__in!=Din Djarin")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 0
+
+
+def test_profile_list_not_in_string_filter(client, db, profile, user):
+    response = client.get(f"/profiles/?name__in!={user.first_name} {user.last_name},Din Djarin")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 0
 
 
 def test_profile_list_subset_filter(client, db, profile, user):

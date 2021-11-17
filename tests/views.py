@@ -21,6 +21,9 @@ class ProfileList(CreateAPI, ListAPI):
     permissions = [PublicEndpoint]
     search_fields = []
     filter_fields = [
+        "name",
+        "name__icontains",
+        "name__in",
         "date_joined__gte",
         "tags",
         "tags__in",

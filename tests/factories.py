@@ -51,6 +51,8 @@ class TeamFactory(DjangoModelFactory):
 class UserFactory(DjangoModelFactory):
     username = factory.Sequence(lambda i: f"user-{i}")
     email = factory.Sequence(lambda i: f"user-{i}@example.com")
+    first_name = "Boba"
+    last_name = factory.Sequence(lambda i: f"Fett {i}")
 
     class Meta:
         model = User

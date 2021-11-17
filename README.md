@@ -225,6 +225,8 @@ Parameters in the URL must be camelCase and exactly match the snake_case model f
 
 To allow full text search, set to a list of fields for django filter lookups.
 
+For a full list of supported lookups see https://django-url-filter.readthedocs.io.
+
 #### Pagination
 
 All ListAPI views are paginated and include a `pagination` json object.

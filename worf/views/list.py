@@ -105,14 +105,16 @@ class ListAPI(AbstractBaseAPI):
             return
 
         for key in self.bundle.keys():
-            if key not in self.filter_fields:
+            strip_key = key.rstrip("!")
+
+            if strip_key not in self.filter_fields:
                 continue
 
             value = self.bundle[key]
 
             # support passing in and range as lists
             if isinstance(value, list):
-                if key.endswith("__in") or key.endswith("__range"):
+                if strip_key.endswith("__in") or strip_key.endswith("__range"):
                     value = ",".join(str(item) for item in value)
 
             self.lookup_kwargs[key] = value
@@ -153,7 +155,11 @@ class ListAPI(AbstractBaseAPI):
 
             for key, value in list_kwargs.items():
                 for item in value:
-                    queryset = queryset.filter(**{key: item})
+                    queryset = (
+                        queryset.exclude(**{key.rstrip("!"): item})
+                        if key.endswith("!")
+                        else queryset.filter(**{key: item})
+                    )
         except TypeError as e:
             if settings.DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
