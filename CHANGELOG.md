@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.9](https://github.com/gundotio/worf/compare/v0.4.8...v0.4.9) (2021-11-17)
+
+- Switch back to standard request dicts on POST; allows views to access `request.POST`/`request.FILES` later after bundle loading
+
 ### [0.4.8](https://github.com/gundotio/worf/compare/v0.4.7...v0.4.8) (2021-11-17)
 
 - Support negated filters [django-url-filter#features](https://github.com/miki725/django-url-filter#features)
