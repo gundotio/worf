@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.8](https://github.com/gundotio/worf/compare/v0.4.7...v0.4.8) (2021-11-17)
+
+- Support negated filters [django-url-filter#features](https://github.com/miki725/django-url-filter#features)
+
 ### [0.4.7](https://github.com/gundotio/worf/compare/v0.4.6...v0.4.7) (2021-11-17)
 
 - Assign fk/m2m on create and support delete [#74](https://github.com/gundotio/worf/pull/74)
