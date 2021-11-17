@@ -2,6 +2,7 @@ import json
 import types
 import warnings
 
+from io import BytesIO
 from urllib.parse import parse_qs
 
 from django.conf import settings
@@ -183,20 +184,21 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             self.bundle[field] = raw_bundle[key]
             self.keymap[field] = key
 
-    def set_bundle_from_querystring(self):
-        raw_bundle = self.flatten_bundle(parse_qs(self.request.META["QUERY_STRING"]))
+    def set_bundle_from_query_string(self, request):
+        raw_bundle = self.flatten_bundle(parse_qs(request.META["QUERY_STRING"]))
 
         self.set_bundle(raw_bundle)
 
-    def set_bundle_from_request_body(self):
+    def set_bundle_from_request_body(self, request):
         raw_bundle = {}
 
-        if self.request.content_type == "multipart/form-data":
-            raw_bundle.update(self.flatten_bundle(self.request.POST))
-            raw_bundle.update(self.flatten_bundle(self.request.FILES))
-        elif self.request.body:
+        if request.content_type == "multipart/form-data":
+            post, files = request.parse_file_upload(request.META, BytesIO(request.body))
+            raw_bundle.update(self.flatten_bundle(post))
+            raw_bundle.update(self.flatten_bundle(files))
+        elif request.body:
             try:
-                raw_bundle = json.loads(self.request.body)
+                raw_bundle = json.loads(request.body)
             except json.decoder.JSONDecodeError:
                 pass
 
@@ -211,7 +213,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
         try:
             self._check_permissions()  # only returns 200 or HTTP_EXCEPTIONS
-            self.set_bundle_from_request_body()  # sets self.bundle
+            self.set_bundle_from_request_body(request)
             return handler(request, *args, **kwargs)  # calls self.serialize()
         except HTTP_EXCEPTIONS as e:
             return self.render_to_response(dict(message=e.message), e.status)

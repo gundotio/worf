@@ -5,20 +5,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test.client import MULTIPART_CONTENT
 
 
-@patch('django.core.files.storage.FileSystemStorage.save')
-def test_profile_create(mock_save, client, db, role, user):
-    avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
-    mock_save.return_value = "avatar.jpg"
-    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
-    response = client.post(f"/profiles/", data=payload, content_type=MULTIPART_CONTENT)
-    result = response.json()
-    assert response.status_code == 201, result
-    assert result["avatar"] == "/avatar.jpg"
-    assert result["role"]["id"] == role.pk
-    assert result["role"]["name"] == role.name
-    assert result["user"]["username"] == user.username
-
-
 def test_profile_detail(client, db, profile, user):
     response = client.get(f"/profiles/{profile.pk}/")
     result = response.json()
@@ -90,7 +76,49 @@ def test_profile_list_subset_filter(client, db, profile, user):
     assert len(result["profiles"]) == 0
 
 
-def test_profile_update_fk(client, db, profile, role, team):
+@patch('django.core.files.storage.FileSystemStorage.save')
+def test_profile_multipart_create(mock_save, client, db, role, user):
+    avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
+    mock_save.return_value = "avatar.jpg"
+    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
+    response = client.post(f"/profiles/", payload, content_type=MULTIPART_CONTENT)
+    result = response.json()
+    assert response.status_code == 201, result
+    assert result["avatar"] == "/avatar.jpg"
+    assert result["role"]["id"] == role.pk
+    assert result["role"]["name"] == role.name
+    assert result["user"]["username"] == user.username
+
+
+@patch('django.core.files.storage.FileSystemStorage.save')
+def test_profile_multipart_patch(mock_save, client, db, profile, role, user):
+    avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
+    mock_save.return_value = "avatar.jpg"
+    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
+    response = client.patch(f"/profiles/{profile.pk}/", payload, content_type=MULTIPART_CONTENT)
+    result = response.json()
+    assert response.status_code == 200, result
+    assert result["avatar"] == "/avatar.jpg"
+    assert result["role"]["id"] == role.pk
+    assert result["role"]["name"] == role.name
+    assert result["user"]["username"] == user.username
+
+
+@patch('django.core.files.storage.FileSystemStorage.save')
+def test_profile_multipart_put(mock_save, client, db, profile, role, user):
+    avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
+    mock_save.return_value = "avatar.jpg"
+    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
+    response = client.put(f"/profiles/{profile.pk}/", payload, content_type=MULTIPART_CONTENT)
+    result = response.json()
+    assert response.status_code == 200, result
+    assert result["avatar"] == "/avatar.jpg"
+    assert result["role"]["id"] == role.pk
+    assert result["role"]["name"] == role.name
+    assert result["user"]["username"] == user.username
+
+
+def test_profile_patch_fk(client, db, profile, role, team):
     payload = dict(role=role.pk, team=team.pk)
     response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
@@ -99,28 +127,28 @@ def test_profile_update_fk(client, db, profile, role, team):
     assert result["team"]["name"] == team.name
 
 
-def test_profile_update_fk_invalid_role(client, db, profile, role, team):
+def test_profile_patch_fk_invalid_role(client, db, profile, role, team):
     response = client.patch(f"/profiles/{profile.pk}/", dict(role=123))
     result = response.json()
     assert response.status_code == 422, result
     assert result["message"] == "Invalid role"
 
 
-def test_profile_update_fk_role_is_not_nullable(client, db, profile, role, team):
+def test_profile_patch_fk_role_is_not_nullable(client, db, profile, role, team):
     response = client.patch(f"/profiles/{profile.pk}/", dict(role=None))
     result = response.json()
     assert response.status_code == 422, result
     assert result["message"] == "Invalid role"
 
 
-def test_profile_update_fk_team_is_nullable(client, db, profile, role, team):
+def test_profile_patch_fk_team_is_nullable(client, db, profile, role, team):
     response = client.patch(f"/profiles/{profile.pk}/", dict(team=None))
     result = response.json()
     assert response.status_code == 200, result
     assert result["team"] is None
 
 
-def test_profile_update_m2m(client, db, profile, tag):
+def test_profile_patch_m2m(client, db, profile, tag):
     response = client.patch(f"/profiles/{profile.pk}/", dict(tags=[tag.pk]))
     result = response.json()
     assert response.status_code == 200, result
@@ -129,21 +157,21 @@ def test_profile_update_m2m(client, db, profile, tag):
     assert result["tags"][0]["name"] == tag.name
 
 
-def test_profile_update_m2m_can_be_empty(client, db, profile, tag):
+def test_profile_patch_m2m_can_be_empty(client, db, profile, tag):
     response = client.patch(f"/profiles/{profile.pk}/", dict(tags=[]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["tags"]) == 0
 
 
-def test_profile_update_m2m_is_not_nullable(client, db, profile, tag):
+def test_profile_patch_m2m_is_not_nullable(client, db, profile, tag):
     response = client.patch(f"/profiles/{profile.pk}/", dict(tags=None))
     result = response.json()
     assert response.status_code == 422, result
     assert "tags accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-def test_profile_update_m2m_must_be_pks(client, db, profile, tag):
+def test_profile_patch_m2m_must_be_pks(client, db, profile, tag):
     payload = dict(tags=["invalid"])
     response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
@@ -151,7 +179,7 @@ def test_profile_update_m2m_must_be_pks(client, db, profile, tag):
     assert "Invalid tags" in result["message"]
 
 
-def test_profile_update_m2m_through(client, db, profile, skill):
+def test_profile_patch_m2m_through(client, db, profile, skill):
     payload = dict(skills=[dict(id=skill.pk, rating=4)])
     response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
@@ -162,21 +190,21 @@ def test_profile_update_m2m_through(client, db, profile, skill):
     assert result["skills"][0]["rating"] == 4
 
 
-def test_profile_update_m2m_through_can_be_empty(client, db, profile, skill):
+def test_profile_patch_m2m_through_can_be_empty(client, db, profile, skill):
     response = client.patch(f"/profiles/{profile.pk}/", dict(skills=[]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["skills"]) == 0
 
 
-def test_profile_update_m2m_through_is_not_nullable(client, db, profile, skill):
+def test_profile_patch_m2m_through_is_not_nullable(client, db, profile, skill):
     response = client.patch(f"/profiles/{profile.pk}/", dict(skills=None))
     result = response.json()
     assert response.status_code == 422, result
     assert "skills accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-def test_profile_update_m2m_through_must_be_dicts(client, db, profile, skill):
+def test_profile_patch_m2m_through_must_be_dicts(client, db, profile, skill):
     payload = dict(skills=["invalid"])
     response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
@@ -184,7 +212,7 @@ def test_profile_update_m2m_through_must_be_dicts(client, db, profile, skill):
     assert "Invalid skills" == result["message"]
 
 
-def test_profile_update_m2m_through_ids_must_be_pks(client, db, profile, skill):
+def test_profile_patch_m2m_through_ids_must_be_pks(client, db, profile, skill):
     payload = dict(skills=[dict(id="invalid")])
     response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()
@@ -192,7 +220,7 @@ def test_profile_update_m2m_through_ids_must_be_pks(client, db, profile, skill):
     assert "Invalid skills" in result["message"]
 
 
-def test_profile_update_m2m_through_required_fields(client, db, profile, skill):
+def test_profile_patch_m2m_through_required_fields(client, db, profile, skill):
     payload = dict(skills=[dict(id=skill.pk)])
     response = client.patch(f"/profiles/{profile.pk}/", payload)
     result = response.json()

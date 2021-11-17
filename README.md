@@ -57,8 +57,7 @@ Roadmap
 - [x] Abstracting serializers away from model methods
 - [x] Declarative marshmallow-based serialization
 - [x] More support for different HTTP methods
-- [x] File upload support on POST
-- [ ] File upload support on PATCH/PUT
+- [x] File upload support
 - [ ] Support for user-generated validators
 - [ ] Better test coverage
 - [ ] Browsable API docs
@@ -315,9 +314,7 @@ This will be strictly translated by the API, and acronyms are not considered:
 File uploads
 ------------
 
-File uploads are supported via `POST` using `multipart/form-data` requests.
-
-Support for `PATCH`/`PUT` is on the roadmap.
+File uploads are supported via `multipart/form-data` requests.
 
 
 Internal naming
