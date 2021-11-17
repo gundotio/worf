@@ -131,7 +131,6 @@ with some tweaks to improve support for Django models, and supply extra defaults
 from worf.serializers import fields, Serializer
 
 class BookSerializer(Serializer):
-    image_url = fields.Function(lambda obj: obj.get_image_url())
     author = fields.Nested(AuthorSerializer)
     tags = fields.Nested(TagSerializer, many=True)
 
@@ -140,7 +139,7 @@ class BookSerializer(Serializer):
             "id",
             "title",
             "content",
-            "image_url",
+            "image",
             "url",
             "author",
             "tags",
