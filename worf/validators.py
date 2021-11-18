@@ -148,12 +148,13 @@ class ValidationMixin:
         """
         Handle basic type validation and coercion.
 
-        @param key _str_ the model attribute to check against.
-        @return value:
-            - If the HTTP method is not PATCH and `key` does not exist in the
-        model serializer method, return False.
-            - If an error is detected, ValidationError will be raised
-            - If all checks pass, True is returned
+        @param key: the model attribute to check against.
+
+        @raise NotImplementedInWorfYet: If the field type is not currently supported
+        @raise ValidationError: If this is a write and `key` is not serializer editable
+        @raise ValidationError: If a value fails to pass validation
+
+        @return: If all checks pass, True is returned.
 
         Side Effects:
         As various bundle objects are parsed and validated, we reset the bundle.
@@ -161,11 +162,10 @@ class ValidationMixin:
 
         We expect to set a fully validated bundle keys and values.
         """
-        # POST cannot validate b/c it allows fields not in api_update_fields
-        # self.request.method == 'POST' or
         serializer = self.get_serializer()
+        write_methods = ("PATCH", "POST", "PUT")
 
-        if self.request.method in ("PATCH", "PUT") and key not in serializer.write():
+        if self.request.method in write_methods and key not in serializer.write():
             message = f"{self.keymap[key]} is not editable"
             if settings.DEBUG:
                 message += f":: {serializer}"
