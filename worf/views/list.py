@@ -23,6 +23,7 @@ class ListAPI(AbstractBaseAPI):
     sort_fields = []
     queryset = None
     filter_set = None
+    list_serializer = None
     count = 0
     page_num = 1
     per_page = 25
@@ -166,6 +167,11 @@ class ListAPI(AbstractBaseAPI):
             raise e
 
         return queryset
+
+    def get_serializer(self):
+        if self.list_serializer and self.request.method == "GET":
+            return self.list_serializer()
+        return super().get_serializer()
 
     def paginated_results(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PAGINATION

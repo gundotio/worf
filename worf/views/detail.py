@@ -6,8 +6,15 @@ from worf.views.update import UpdateAPI
 
 
 class DetailAPI(FindInstance, AbstractBaseAPI):
+    detail_serializer = None
+
     def get(self, request, *args, **kwargs):
         return self.render_to_response()
+
+    def get_serializer(self):
+        if self.detail_serializer and self.request.method == "GET":
+            return self.detail_serializer()
+        return super().get_serializer()
 
     def serialize(self):
         """Return the model api, used for responses."""
