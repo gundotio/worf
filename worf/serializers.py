@@ -20,10 +20,9 @@ class SerializerOptions(marshmallow.SchemaOpts):
 
 class Serializer(marshmallow.Schema):
     """
-    Serializer base class with sensible defaults for typically read-only fields.
-
-    Worf serializers are basically marshmallow schemas with better support for
-    Django models, and some extra opinions around field naming and ordering.
+    Serializers are basically marshmallow schemas with extra handling for
+    Django models/managers, some tweaks to field naming/ordering and the option
+    to supply some meta defaults via Django settings.
 
     The read/write methods are relics of our interim serialization strategy
     they're analogous with marshmallow dump/load, but a bit less flexible.
