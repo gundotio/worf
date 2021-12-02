@@ -1,4 +1,4 @@
-FROM python:3.8.9-slim-buster
+FROM python:3.8.12-slim-buster
 
 RUN apt-get update -y && \
     apt-get install -y git && \
@@ -13,4 +13,4 @@ COPY Pipfile.lock Pipfile.lock
 COPY setup.py setup.py
 COPY worf/ worf/
 
-RUN pipenv install --dev --deploy --python 3.8.9
+RUN pipenv install --dev --deploy --python 3.8.12
