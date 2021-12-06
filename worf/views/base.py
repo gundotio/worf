@@ -13,7 +13,7 @@ from django.core.exceptions import (
 )
 from django.db import models
 from django.http import HttpResponse, JsonResponse
-from django.middleware.gzip import GZipMiddleware
+from django.template.response import TemplateResponse
 from django.views import View
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
@@ -23,7 +23,8 @@ from worf.exceptions import HTTP_EXCEPTIONS, HTTP404, HTTP422, PermissionsExcept
 from worf.serializers import LegacySerializer
 from worf.validators import ValidationMixin
 
-gzip_middleware = GZipMiddleware()
+api_name = getattr(settings, "WORF_API_NAME", "Worf API")
+api_root = getattr(settings, "WORF_API_ROOT", "/api/")
 
 
 @method_decorator(never_cache, name="dispatch")
@@ -35,22 +36,38 @@ class APIResponse(View):
     def serialize(self):
         raise NotImplementedError
 
-    def render_to_response(self, data=None, status_code=None):
-        payload = data if data is not None else self.serialize()
+    def render_to_response(self, data=None, status_code=200):
+        if data is None:
+            data = self.serialize()
 
-        if payload is None:
+        if data is None:
             msg = f"{self.codepath} did not pass an object to "
             msg += "render_to_response, nor did its serializer method"
             raise ImproperlyConfigured(msg)
 
-        response = JsonResponse(payload) if payload != "" else HttpResponse()
-        # except TypeError:
-        # TODO add something meaningful to the stack trace
+        is_html_request = (
+            "text/html" in self.request.headers.get("Accept", "")
+            and self.request.GET.get("format") != "json"
+        )
 
-        if status_code is not None:  # needs tests
+        json_kwargs = dict(json_dumps_params=dict(indent=2)) if is_html_request else {}
+
+        response = JsonResponse(data, **json_kwargs) if data != "" else HttpResponse()
+        response.status_code = status_code
+
+        if is_html_request:
+            template = "worf/api.html"
+            context = dict(
+                api_name=api_name,
+                api_root=api_root,
+                content=response.content.decode("utf-8"),
+                response=response,
+            )
+            response = TemplateResponse(self.request, template, context=context)
             response.status_code = status_code
+            response.render()
 
-        return gzip_middleware.process_response(self.request, response)
+        return response
 
 
 class AbstractBaseAPI(APIResponse, ValidationMixin):
