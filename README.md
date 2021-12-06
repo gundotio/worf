@@ -29,6 +29,7 @@ Table of contents
     - [DetailAPI](#detailapi)
     - [CreateAPI](#createapi)
     - [UpdateAPI](#updateapi)
+  - [Browsable API](#browsable-api)
   - [Bundle loading](#bundle-loading)
   - [Field casing](#field-casing)
   - [File uploads](#file-uploads)
@@ -39,8 +40,19 @@ Table of contents
 Installation
 ------------
 
+Install using pip:
+
 ```sh
 pip install worf
+```
+
+Add `worf` to your `INSTALLED_APPS` setting:
+
+```py
+INSTALLED_APPS = [
+    ...
+    "worf",
+]
 ```
 
 
@@ -55,12 +67,13 @@ Roadmap
 -------
 
 - [x] Abstracting serializers away from model methods
+- [x] Browsable API
 - [x] Declarative marshmallow-based serialization
-- [x] More support for different HTTP methods
 - [x] File upload support
-- [ ] Support for user-generated validators
+- [x] Support for PATCH/PUT methods
 - [ ] Better test coverage
-- [ ] Browsable API docs
+- [ ] Documentation generation
+- [ ] Support for user-generated validators
 
 
 Usage
@@ -271,6 +284,52 @@ class BookDetailAPI(UpdateAPI, DetailAPI):
 Validation of update fields is delegated to the serializer, any fields that are
 writeable should be within the `fields` definition of the serializer, and not
 marked as `dump_only` (read-only).
+
+
+Browsable API
+-------------
+
+Similar to other popular REST frameworks; Worf exposes a browsable API which adds
+syntax highlighting, linkified URLs and supports Django Debug Toolbar.
+
+### Format
+
+To override the default browser behaviour pass `?format=json`.
+
+### Theme
+
+The theme is built with [Tailwind](https://tailwindcss.com/), making it easy to customize the look-and-feel.
+
+For quick and easy branding, there are a couple of Django settings that tweak the navbar:
+
+| Name          | Default  |
+| ------------- | -------- |
+| WORF_API_NAME | Worf API |
+| WORF_API_ROOT | /api/    |
+
+To customize the markup create a template called `worf/api.html` that extends from `worf/base.html`:
+
+```django
+# templates/worf/api.html
+{% extends "worf/base.html" %}
+
+{% block branding %}
+    {{ block.super }}
+    <div>A warrior's drink!</div>
+{% endblock %}
+```
+
+All of the blocks available in the base template can be used in your `api.html`.
+
+| Name     | Description                     |
+| -------- | ------------------------------- |
+| body     | The entire html `<body>`.       |
+| branding | Branding section of the navbar. |
+| script   | JavaScript files for the page.  |
+| style    | CSS stylesheets for the page.   |
+| title    | Title of the page.              |
+
+For more advanced customization you can choose not to have `api.html` extend `base.html`.
 
 
 Bundle loading

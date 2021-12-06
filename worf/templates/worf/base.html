@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {% block head %}
+      {% block meta %}
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta name="robots" content="none,noarchive"/>
+      {% endblock %}
+
+      <title>{{ api_name }}: {{ request.get_full_path }}</title>
+
+      {% block style %}
+        <link href="https://unpkg.com/tailwindcss@2.2.16/dist/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
+        <link href="https://unpkg.com/prism-themes@1.9.0/themes/prism-atom-dark.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
+        <link href="https://unpkg.com/prism-js-fold@1.0.1/prism-js-fold.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
+        <style>
+          body { background: #131417; color: white; }
+          a { color: #58A6FF; }
+          a:hover { text-decoration: underline; }
+          nav, pre { background: #202126 !important; }
+          strong { font-weight: 500; }
+          pre[class*="language-"], :not(pre) > code[class*="language-"] { border-radius: 0; }
+          .token a { color: #58A6FF; }
+          .token.boolean { color: #FBBF24; }
+          .token.property { color: white; }
+          .token.string { color: #69F5AB; white-space: normal; word-break: break-all; }
+        </style>
+      {% endblock %}
+    {% endblock %}
+  </head>
+
+  <body>
+    {% block body %}
+      {% block nav %}
+        <nav class="p-4">
+          <div class="max-w-5xl mx-auto">
+            {% block branding %}
+              <a href="{{ api_root }}" class="font-medium text-lg text-white" rel="nofollow">
+                {{ api_name }}
+              </a>
+            {% endblock %}
+          </div>
+        </nav>
+      {% endblock %}
+
+      <div class="max-w-5xl mx-auto">
+        <main>
+          {% block content %}
+            <nav class="font-mono break-all my-4 px-4 py-2">
+              <strong>{{ request.method }}</strong> {{ request.get_full_path }}
+            </nav>
+
+            <div class="my-4">
+              <pre class="w-full p-4 overflow-auto"><strong>HTTP {{ response.status_code }} {{ response.status_text }}</strong>{% for key, value in response.headers.items %}
+<strong>{{ key }}:</strong> {{ value }}{% endfor %}
+
+<code class="language-json">{{ content }}</code></pre>
+            </div>
+          {% endblock content %}
+        </main>
+      </div>
+
+      {% block script %}
+        <script src="https://unpkg.com/prismjs@1.25.0" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://unpkg.com/prismjs@1.25.0/components/prism-json.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://unpkg.com/prismjs@1.25.0/plugins/keep-markup/prism-keep-markup.js"></script>
+        <script src="https://unpkg.com/prismjs@1.25.0/plugins/autolinker/prism-autolinker.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://unpkg.com/prism-js-fold@1.0.1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+          Prism.hooks.add("complete", () => {
+            for (const details of document.getElementsByTagName("details")) {
+              details.open = true
+            }
+          })
+        </script>
+      {% endblock %}
+    {% endblock %}
+  </body>
+</html>

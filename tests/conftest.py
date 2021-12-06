@@ -34,11 +34,18 @@ def pytest_configure():
             }
         },
         PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"],
+        TEMPLATES = [
+            {
+                "BACKEND": "django.template.backends.django.DjangoTemplates",
+                "APP_DIRS": True,
+            },
+        ],
         TIME_ZONE="UTC",
         USE_I18N=True,
         USE_L10N=True,
         USE_TZ=True,
         STATIC_URL="/static/",
+        WORF_API_NAME="Test API"
     )
 
     django.setup()
