@@ -128,7 +128,6 @@ class ListAPI(AbstractBaseAPI):
     def get_processed_queryset(self):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  URL Kwargs
         # If these aren't reset they are polluted by cache (somehow)
-        queryset = self.get_queryset()
 
         self.lookup_kwargs = {}
         self.search_query = Q()
@@ -145,6 +144,8 @@ class ListAPI(AbstractBaseAPI):
         lookups = self.lookup_kwargs.items()
         filterset_kwargs = {k: v for k, v in lookups if not isinstance(v, list)}
         list_kwargs = {k: v for k, v in lookups if isinstance(v, list)}
+
+        queryset = self.get_queryset()
 
         try:
             queryset = (
