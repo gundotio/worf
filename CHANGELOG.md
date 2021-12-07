@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.1](https://github.com/gundotio/worf/compare/v0.5.0...v0.5.1) (2021-12-07)
+
+- Swaps docker image buster-slim for buster to fix apple m1 build problem
+- Fixes an issue around null/blank field coercions that prevented setting fields to null/blank
+- Moves the list queryset build to after bundle parsing
+
 ## [0.5.0](https://github.com/gundotio/worf/compare/v0.4.9...v0.5.0) (2021-11-19)
 
 - Serializer field validation for POST requests
