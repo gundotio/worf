@@ -187,7 +187,7 @@ class ValidationMixin:
             annotation.output_field if annotation else self.model._meta.get_field(key)
         )
 
-        if field.blank and self.bundle[key] == "":
+        if field.blank and field.empty_strings_allowed and self.bundle[key] == "":
             pass
 
         elif field.null and self.bundle[key] is None:
