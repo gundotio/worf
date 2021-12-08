@@ -151,7 +151,6 @@ class ListAPI(AbstractBaseAPI):
             queryset = (
                 apply_filterset(self.filter_set, queryset, filterset_kwargs)
                 .filter(self.search_query)
-                .order_by(*order_by)
                 .distinct()
             )
 
@@ -162,6 +161,9 @@ class ListAPI(AbstractBaseAPI):
                         if key.endswith("!")
                         else queryset.filter(**{key: item})
                     )
+
+            if order_by:
+                queryset = queryset.order_by(*order_by)
         except TypeError as e:
             if settings.DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
