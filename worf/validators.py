@@ -187,11 +187,11 @@ class ValidationMixin:
             annotation.output_field if annotation else self.model._meta.get_field(key)
         )
 
-        if field.null and self.bundle[key] in ["", None]:
-            self.bundle[key] = None
+        if field.blank and self.bundle[key] == "":
+            pass
 
-        elif field.blank and self.bundle[key] in ["", None]:
-            self.bundle[key] = ""
+        elif field.null and self.bundle[key] is None:
+            pass
 
         elif hasattr(self, f"validate_{key}"):
             self.bundle[key] = getattr(self, f"validate_{key}")(self.bundle[key])
