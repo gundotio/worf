@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.2](https://github.com/gundotio/worf/compare/v0.5.1...v0.5.2) (2021-12-08)
+
+- Browsable API with syntax highlighting and linkified URLs for debugging [#81](https://github.com/gundotio/worf/pull/81)
+- Switch to skipping validation for empty strings only when the field allows empty strings; rollback the null coersion from the last release [50390c3](https://github.com/gundotio/worf/commit/50390c32e225d429528cbf5b73341e7d137f6a9a)
+- Apply model ordering by default in list views [49a5a55](https://github.com/gundotio/worf/commit/49a5a55864f203ca94d1e4b90c726d7b7b9a5c48)
+
 ### [0.5.1](https://github.com/gundotio/worf/compare/v0.5.0...v0.5.1) (2021-12-07)
 
 - Swaps docker image buster-slim for buster to fix apple m1 build problem
