@@ -7,7 +7,7 @@
         <meta name="robots" content="none,noarchive"/>
       {% endblock %}
 
-      <title>{{ api_name }}: {{ request.get_full_path }}</title>
+      <title>{{ settings.WORF_API_NAME }}: {{ request.get_full_path }}</title>
 
       {% block style %}
         <link href="https://unpkg.com/tailwindcss@2.2.16/dist/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
@@ -35,8 +35,8 @@
         <nav class="p-4">
           <div class="max-w-5xl mx-auto">
             {% block branding %}
-              <a href="{{ api_root }}" class="font-medium text-lg text-white" rel="nofollow">
-                {{ api_name }}
+              <a href="{{ settings.WORF_API_ROOT }}" class="font-medium text-lg text-white" rel="nofollow">
+                {{ settings.WORF_API_NAME }}
               </a>
             {% endblock %}
           </div>

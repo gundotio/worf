@@ -1,12 +1,12 @@
 from datetime import datetime
 from uuid import UUID
 
-from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.dateparse import parse_datetime
 
+from worf.conf import settings
 from worf.exceptions import NotImplementedInWorfYet
 
 
@@ -167,7 +167,7 @@ class ValidationMixin:
 
         if self.request.method in write_methods and key not in serializer.write():
             message = f"{self.keymap[key]} is not editable"
-            if settings.DEBUG:
+            if settings.WORF_DEBUG:
                 message += f":: {serializer}"
             raise ValidationError(message)
 
@@ -240,7 +240,7 @@ class ValidationMixin:
 
         else:
             message = f"{field.get_internal_type()} has no validation method for {key}"
-            if settings.DEBUG:
+            if settings.WORF_DEBUG:
                 message += f":: Received {self.bundle[key]}"
             raise NotImplementedInWorfYet(message)
             # TODO

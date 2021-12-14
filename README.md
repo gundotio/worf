@@ -31,9 +31,11 @@ Table of contents
     - [UpdateAPI](#updateapi)
   - [Browsable API](#browsable-api)
   - [Bundle loading](#bundle-loading)
+  - [Debugging](#debugging)
   - [Field casing](#field-casing)
   - [File uploads](#file-uploads)
   - [Internal naming](#internal-naming)
+  - [Settings](#settings)
   - [Credits](#credits)
 
 
@@ -217,8 +219,8 @@ It is not recommended to use this abstract view directly.
 | Name | Type | Default | Description |
 | -- | -- | -- | -- |
 | filters           | dict | {}                  | Pass key/value pairs that you wish to further filter the queryset beyond the `lookup_url_kwarg` |
-| lookup_field      | str  | None                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
-| lookup_url_kwarg  | str  | None                | Use these two settings in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
+| lookup_field      | str  | None                | Use these two attributes in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
+| lookup_url_kwarg  | str  | None                | Use these two attributes in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
 | payload_key       | str  | verbose_name_plural | Use in order to rename the key for the results array |
 | ordering          | list | []                  | Pass a list of fields to default the queryset order by. |
 | filter_fields     | list | []                  | Pass a list of fields to support filtering via query params. |
@@ -292,20 +294,14 @@ Browsable API
 Similar to other popular REST frameworks; Worf exposes a browsable API which adds
 syntax highlighting, linkified URLs and supports Django Debug Toolbar.
 
-### Format
-
-To override the default browser behaviour pass `?format=json`.
+To override the default browser behaviour pass `?format=json`, or [disable the
+feature entirely from settings](#settings).
 
 ### Theme
 
 The theme is built with [Tailwind](https://tailwindcss.com/), making it easy to customize the look-and-feel.
 
-For quick and easy branding, there are a couple of Django settings that tweak the navbar:
-
-| Name          | Default  |
-| ------------- | -------- |
-| WORF_API_NAME | Worf API |
-| WORF_API_ROOT | /api/    |
+For quick and easy branding, there are a couple of [settings that tweak the navbar](#settings).
 
 To customize the markup create a template called `worf/api.html` that extends from `worf/base.html`:
 
@@ -347,6 +343,13 @@ be changed during processing. You may also append or remove attributes to the
 bundle before saving the object via `post`, `patch`, or other methods.
 
 
+Debugging
+---------
+
+Worf exposes the parsed bundle, lookup kwargs, sql and skips some exception handling
+[when in debug mode](#settings).
+
+
 Field casing
 ------------
 
@@ -385,6 +388,18 @@ this codebase for clarity:
 
 - `bundle` is what we send to the backend.
 - `payload` is what the backend returns.
+
+
+Settings
+--------
+
+| Name               | Default        | Description                         |
+| ------------------ | -------------- | ----------------------------------- |
+| WORF_API_NAME      | Worf API       | See [Browsable API](#browsable-api) |
+| WORF_API_ROOT      | /api/          | See [Browsable API](#browsable-api) |
+| WORF_BROWSABLE_API | True           | See [Browsable API](#browsable-api) |
+| WORF_DEBUG         | settings.DEBUG | See [Debugging](#debugging)         |
+
 
 
 Credits

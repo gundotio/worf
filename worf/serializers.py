@@ -1,11 +1,11 @@
 import marshmallow
 
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FieldFile
 
 from worf import fields  # noqa: F401
 from worf.casing import snake_to_camel
+from worf.conf import settings
 
 
 class SerializerOptions(marshmallow.SchemaOpts):
