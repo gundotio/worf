@@ -8,32 +8,20 @@ def pytest_configure():
     from django.conf import settings
 
     settings.configure(
-        SECRET_KEY="secret",
-        DEBUG=True,
-        INSTALLED_APPS=[
-            "django.contrib.admin",
-            "django.contrib.auth",
-            "django.contrib.contenttypes",
-            "django.contrib.sessions",
-            "django.contrib.messages",
-            "django.contrib.staticfiles",
-            "tests",
-            "worf",
-        ],
-        MIDDLEWARE=[
-            "django.middleware.common.CommonMiddleware",
-            "django.contrib.sessions.middleware.SessionMiddleware",
-            "django.contrib.auth.middleware.AuthenticationMiddleware",
-            "django.contrib.messages.middleware.MessageMiddleware",
-        ],
-        ROOT_URLCONF="tests.urls",
         DATABASES={
             "default": {
                 "ENGINE": "django.db.backends.sqlite3",
                 "NAME": "db.sqlite3",
             }
         },
+        INSTALLED_APPS=[
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+            "tests",
+            "worf",
+        ],
         PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"],
+        ROOT_URLCONF="tests.urls",
         TEMPLATES = [
             {
                 "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -41,11 +29,11 @@ def pytest_configure():
             },
         ],
         TIME_ZONE="UTC",
-        USE_I18N=True,
-        USE_L10N=True,
+        USE_I18N=False,
+        USE_L10N=False,
         USE_TZ=True,
-        STATIC_URL="/static/",
-        WORF_API_NAME="Test API"
+        WORF_API_NAME="Test API",
+        WORF_DEBUG=True,
     )
 
     django.setup()

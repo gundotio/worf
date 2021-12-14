@@ -2,12 +2,12 @@ import operator
 from functools import reduce
 import warnings
 
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import EmptyResultSet, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Q
 
 from worf.casing import camel_to_snake
+from worf.conf import settings
 from worf.exceptions import HTTP420
 from worf.filters import apply_filterset, generate_filterset
 from worf.views.base import AbstractBaseAPI
@@ -165,7 +165,7 @@ class ListAPI(AbstractBaseAPI):
             if order_by:
                 queryset = queryset.order_by(*order_by)
         except TypeError as e:
-            if settings.DEBUG:
+            if settings.WORF_DEBUG:
                 raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
             raise e
 
@@ -181,8 +181,11 @@ class ListAPI(AbstractBaseAPI):
         queryset = self.get_processed_queryset()
         request = self.request
 
-        if settings.DEBUG:
-            self.query = str(queryset.query)
+        if settings.WORF_DEBUG:
+            try:
+                self.query = str(queryset.query)
+            except EmptyResultSet:
+                self.query = None
 
         default_per_page = getattr(self, "results_per_page", self.per_page)
         per_page = max(int(request.GET.get("perPage") or default_per_page), 1)
@@ -235,7 +238,7 @@ class ListAPI(AbstractBaseAPI):
                 }
             )
 
-        if not settings.DEBUG:
+        if not settings.WORF_DEBUG:
             return payload
 
         if not hasattr(self, "lookup_kwargs"):

@@ -5,7 +5,6 @@ import warnings
 from io import BytesIO
 from urllib.parse import parse_qs
 
-from django.conf import settings
 from django.core.exceptions import (
     ImproperlyConfigured,
     ObjectDoesNotExist,
@@ -18,13 +17,11 @@ from django.views import View
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 
+from worf.conf import settings
 from worf.casing import camel_to_snake, snake_to_camel
 from worf.exceptions import HTTP_EXCEPTIONS, HTTP404, HTTP422, PermissionsException
 from worf.serializers import LegacySerializer
 from worf.validators import ValidationMixin
-
-api_name = getattr(settings, "WORF_API_NAME", "Worf API")
-api_root = getattr(settings, "WORF_API_ROOT", "/api/")
 
 
 @method_decorator(never_cache, name="dispatch")
@@ -45,23 +42,23 @@ class APIResponse(View):
             msg += "render_to_response, nor did its serializer method"
             raise ImproperlyConfigured(msg)
 
-        is_html_request = (
-            "text/html" in self.request.headers.get("Accept", "")
+        is_browsable = (
+            settings.WORF_BROWSABLE_API
+            and "text/html" in self.request.headers.get("Accept", "")
             and self.request.GET.get("format") != "json"
         )
 
-        json_kwargs = dict(json_dumps_params=dict(indent=2)) if is_html_request else {}
+        json_kwargs = dict(json_dumps_params=dict(indent=2)) if is_browsable else {}
 
         response = JsonResponse(data, **json_kwargs) if data != "" else HttpResponse()
         response.status_code = status_code
 
-        if is_html_request:
+        if is_browsable:
             template = "worf/api.html"
             context = dict(
-                api_name=api_name,
-                api_root=api_root,
                 content=response.content.decode("utf-8"),
                 response=response,
+                settings=settings,
             )
             response = TemplateResponse(self.request, template, context=context)
             response.status_code = status_code
@@ -118,9 +115,9 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             if response == 200:
                 continue
 
-            if settings.DEBUG:
+            if settings.WORF_DEBUG:
                 raise PermissionsException(
-                    "Permissions function {}.{} returned {}. You'd normally see a 404 here but DEBUG=True.".format(
+                    "Permissions function {}.{} returned {}. You'd normally see a 404 here but WORF_DEBUG=True.".format(
                         method.__module__, method.__name__, response
                     )
                 )
