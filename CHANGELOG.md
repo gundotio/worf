@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.3](https://github.com/gundotio/worf/compare/v0.5.2...v0.5.3) (2021-12-15)
+
+- Adds settings for for toggling Browsable API and Debug mode [#84](https://github.com/gundotio/worf/pull/84)
+- Include the templates dir in `MANIFEST.in` so it ends up in the package [#85](https://github.com/gundotio/worf/pull/85)
+- Support customizing generated ordering e.g. to sort nulls last [#82](https://github.com/gundotio/worf/pull/82)
+
 ### [0.5.2](https://github.com/gundotio/worf/compare/v0.5.1...v0.5.2) (2021-12-08)
 
 - Browsable API with syntax highlighting and linkified URLs for debugging [#81](https://github.com/gundotio/worf/pull/81)
