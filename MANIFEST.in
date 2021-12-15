@@ -1,0 +1,7 @@
+include CHANGELOG.md
+include LICENSE.md
+include README.md
+recursive-include tests/ *
+recursive-include worf/templates *.html
+global-exclude __pycache__
+global-exclude *.py[co]
