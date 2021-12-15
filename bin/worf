@@ -1,0 +1,74 @@
+#!/bin/bash
+
+set -eou pipefail
+
+[[ -f .env ]] && source .env
+
+R=$(tput setaf 1) G=$(tput setaf 2) Y=$(tput setaf 3) W=$(tput setaf 7) X=$(tput sgr0)
+
+case ${1-default} in
+    build)                  script/build;;
+    console)                script/console;;
+    coverage)               open htmlcov/index.html;;
+    lint)                   pipenv run lint;;
+    nuke)                   worf stop && docker image rm worf;;
+    package)                script/package --build;;
+    publish)                TWINE_PASSWORD=$PYPI_PASSWORD script/package --release;;
+    publish:test)           TWINE_PASSWORD=$TESTPYPI_PASSWORD script/package --dry-run;;
+    release)                standard-version --release-as ${2:-patch} && script/release;;
+    restart)                worf stop && worf start;;
+    ship)                   worf package && worf publish;;
+    start)                  script/start;;
+    stop)                   docker stop worf;;
+    test)                   pytest;;
+    *)
+echo "
+                   /\\
+                  / |\\
+                 / /\ \\
+                / /  \ \\
+               / /    \ \\
+              /_/      \_\\
+              \    ''    /
+               )   ||   (
+               |   ||   |
+         _       __           ____
+        | |     / /___  _____/ __/
+        | | /| / / __ \/ ___/ /_
+        | |/ |/ / /_/ / /  / __/
+   /    |__/|__/\____/_/  /_/       \\
+  /(                                )\\
+  |'\_         |   ||   |         _/'|
+  |'. '-._     |   ||   |     _,-' ,'|
+  (   ' . '-._ |  _--_  | _,-' , '   )
+   '|._   ' . '-./.__.\.-' , '   _,-'
+       '-._   ' | /  \ | '   _,-'
+           '-._/ |_()_| \_,-'
+        ___.-'   ______   '-,
+       '-----.  |______|   /
+              \  ______   /
+              |  \>__  |>
+              <|   <   >|
+                '.____.'
+                  V   V
+
+${Y}Usage:
+${W}  worf [command] [arguments]
+
+${Y}Commands:
+${G}  build                 ${W} Build container
+${G}  coverage              ${W} Open coverage report
+${G}  console               ${W} Launch bash
+${G}  lint                  ${W} Run the linter
+${G}  nuke                  ${W} Destroy container
+${G}  package               ${W} Package release
+${G}  publish               ${W} Publish to pypi
+${G}  publish:test          ${W} Publish to pypi (test index)
+${G}  release               ${W} Tag a release
+${G}  restart               ${W} Restart container
+${G}  ship                  ${W} Package and publish
+${G}  start                 ${W} Start container
+${G}  stop                  ${W} Stop container
+${G}  test                  ${W} Run the tests"
+        ;;
+esac
