@@ -1,4 +1,5 @@
 import os
+
 from setuptools import setup, find_packages
 
 
@@ -21,11 +22,17 @@ def get_version(rel_path):
     raise RuntimeError("Unable to find version string.")
 
 
-long_description = read("README.md")
-
 setup(
+    name="worf",
+    version=get_version("worf/__init__.py"),
+    url="https://github.com/gundotio/worf",
+    description="Wade's own REST Framework: A more Djangonic approach to REST APIs",
+    long_description=read("README.md"),
+    long_description_content_type="text/markdown",
     author_email="wade@wadewilliams.com",
     author="Wade Williams",
+    keywords="django, rest, framework, api",
+    license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
@@ -41,21 +48,13 @@ setup(
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    description="Worf (Wade's Own Rest Framework): A more Djangonic approach to REST APIs",
+    include_package_data=True,
     install_requires=[
         "Django>=3.0.0,<3.3",
         "django-url-filter>=0.3.15",
         "marshmallow>=3.14.0",
     ],
-    include_package_data=True,
-    keywords="django, rest, framework, api",
-    license="MIT",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    name="worf",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests*"]),
     python_requires=">=3.7",
-    url="https://github.com/gundotio/worf",
-    version=get_version("worf/__init__.py"),
     zip_safe=False,
 )
