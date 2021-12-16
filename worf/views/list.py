@@ -86,8 +86,6 @@ class ListAPI(AbstractBaseAPI):
         if not self.filter_fields and not self.search_fields:
             return
 
-        self.set_bundle_from_query_string(self.request)
-
         # Whatever is not q or page as a querystring param will
         # be used for key-value search.
         query = self.bundle.pop("q", "").strip()
