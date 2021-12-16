@@ -250,7 +250,7 @@ class ListAPI(AbstractBaseAPI):
                     "lookup_kwargs": self.lookup_kwargs,
                     "query": self.query,
                     "search_query": str(self.search_query),
-                    "serializer": str(serializer),
+                    "serializer": str(serializer).strip("<>"),
                 }
             }
         )
