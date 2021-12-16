@@ -10,21 +10,34 @@
       <title>{{ settings.WORF_API_NAME }}: {{ request.get_full_path }}</title>
 
       {% block style %}
-        <link href="https://unpkg.com/tailwindcss@2.2.16/dist/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
-        <link href="https://unpkg.com/prism-themes@1.9.0/themes/prism-atom-dark.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
+        <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
         <link href="https://unpkg.com/prism-js-fold@1.0.1/prism-js-fold.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
         <style>
-          body { background: #131417; color: white; }
+          body { background: #131417; color: #fff; }
           a { color: #58A6FF; }
           a:hover { text-decoration: underline; }
-          nav, pre { background: #202126 !important; }
+          code, pre { font-family: inconsolata, monaco, consolas, courier, monospace; color: #c5c8c6; }
+          nav, pre { background: #202126; }
           strong { font-weight: 500; }
-          pre[class*="language-"], :not(pre) > code[class*="language-"] { border-radius: 0; }
-          .token a { color: #58A6FF; }
-          .token.boolean { color: #FBBF24; }
-          .token.property { color: white; }
-          .token.string { color: #69F5AB; white-space: normal; word-break: break-all; }
+          .token a { color: #58a6ff; }
+          .token.boolean { color: #fbbf24; }
+          .token.keyword { color: #96cbfe; }
+          .token.number { color: #ff73fd; }
+          .token.operator { color: #ededed; }
+          .token.property { color: #fff; }
+          .token.string  { color: #69f5ab; white-space: normal; word-break: break-all; }
+          .token.url { color: #96cbfe; }
+          .token.variable { color: #c6c5fe; }
         </style>
+      {% endblock %}
+
+      {% block script %}
+        <script src="https://unpkg.com/prismjs@1.25.0" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://unpkg.com/prismjs@1.25.0/components/prism-json.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://unpkg.com/prismjs@1.25.0/plugins/keep-markup/prism-keep-markup.js"></script>
+        <script src="https://unpkg.com/prismjs@1.25.0/plugins/autolinker/prism-autolinker.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://unpkg.com/prism-js-fold@1.0.1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>Prism.hooks.add("complete", () => { for (const el of document.getElementsByTagName("details")) el.open = true })</script>
       {% endblock %}
     {% endblock %}
   </head>
@@ -59,21 +72,6 @@
           {% endblock content %}
         </main>
       </div>
-
-      {% block script %}
-        <script src="https://unpkg.com/prismjs@1.25.0" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://unpkg.com/prismjs@1.25.0/components/prism-json.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://unpkg.com/prismjs@1.25.0/plugins/keep-markup/prism-keep-markup.js"></script>
-        <script src="https://unpkg.com/prismjs@1.25.0/plugins/autolinker/prism-autolinker.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://unpkg.com/prism-js-fold@1.0.1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script>
-          Prism.hooks.add("complete", () => {
-            for (const details of document.getElementsByTagName("details")) {
-              details.open = true
-            }
-          })
-        </script>
-      {% endblock %}
     {% endblock %}
   </body>
 </html>
