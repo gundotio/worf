@@ -204,6 +204,13 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             self.bundle[field] = raw_bundle[key]
             self.keymap[field] = key
 
+    def set_bundle_from_request(self, request):
+        if request.method == "GET":
+            self.set_bundle_from_query_string(request)
+            return
+
+        self.set_bundle_from_request_body(request)
+
     def set_bundle_from_query_string(self, request):
         raw_bundle = self.flatten_bundle(parse_qs(request.META["QUERY_STRING"]))
 
@@ -233,7 +240,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
         try:
             self._check_permissions()  # only returns 200 or HTTP_EXCEPTIONS
-            self.set_bundle_from_request_body(request)
+            self.set_bundle_from_request(request)
             return handler(request, *args, **kwargs)  # calls self.serialize()
         except HTTP_EXCEPTIONS as e:
             return self.render_to_response(dict(message=e.message), e.status)
