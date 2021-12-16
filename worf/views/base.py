@@ -214,7 +214,14 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
     def set_bundle_from_query_string(self, request):
         raw_bundle = self.flatten_bundle(parse_qs(request.META["QUERY_STRING"]))
 
-        self.set_bundle(raw_bundle)
+        strings = dict(true=True, false=False, null=None)
+
+        coerced_bundle = {
+            key: strings.get(str(value).lower(), value)
+            for key, value in raw_bundle.items()
+        }
+
+        self.set_bundle(coerced_bundle)
 
     def set_bundle_from_request_body(self, request):
         raw_bundle = {}
