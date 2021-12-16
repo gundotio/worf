@@ -22,6 +22,7 @@ def pytest_configure():
         ],
         PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"],
         ROOT_URLCONF="tests.urls",
+        SECRET_KEY="secret",
         TEMPLATES = [
             {
                 "BACKEND": "django.template.backends.django.DjangoTemplates",
