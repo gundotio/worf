@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.4](https://github.com/gundotio/worf/compare/v0.5.3...v0.5.4) (2021-12-17)
+
+- Transform bool/nulls in query param bundles [#86](https://github.com/gundotio/worf/pull/86)
+- Set bundle on detail requests [#86](https://github.com/gundotio/worf/pull/86)
+- Serializer writable meta field, for defining an list of allowed fields
+- Strip angle brackets off of serializer debug
+- Simplify Browsable API template
+
 ### [0.5.3](https://github.com/gundotio/worf/compare/v0.5.2...v0.5.3) (2021-12-15)
 
 - Adds settings for for toggling Browsable API and Debug mode [#84](https://github.com/gundotio/worf/pull/84)
