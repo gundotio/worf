@@ -6,8 +6,6 @@ class FindInstance:
     def get_instance(self):
         self.lookup_kwargs = {self.lookup_field: self.kwargs[self.lookup_url_kwarg]}
 
-        self.validate_lookup_field_values()
-
         if not hasattr(self, "instance"):
             self.instance = self.get_queryset().get(**self.lookup_kwargs)
 

@@ -126,11 +126,10 @@ class ValidationMixin:
             raise ValidationError(f"Expected numeric, got {value}")
 
     def validate_uuid(self, value):
-        if value is None:
-            raise ValidationError(f"Expected UUID, got {value}")
         try:
+            assert value is not None
             return UUID(str(value))
-        except (TypeError, ValueError):
+        except (AssertionError, TypeError, ValueError):
             raise ValidationError(f"Expected UUID, got {value}")
 
     def validate_email(self, value):

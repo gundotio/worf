@@ -10,7 +10,6 @@ from django.core.exceptions import (
     ObjectDoesNotExist,
     ValidationError,
 )
-from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.template.response import TemplateResponse
 from django.views import View
@@ -131,25 +130,6 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
                     )
                 )
 
-    def _get_lookup_field(self, field):
-        related = field.find("__")
-
-        """Support one level of related field reference."""
-        if related != -1:
-            related_field = field[:related]
-            target_field = field[related + 2 :]
-
-            if target_field in ["gt", "lt", "contains", "startswith", "gte", "lte"]:
-                return False
-
-            if target_field.find("__") != -1:
-                return False
-
-            return self.get_related_model(related_field)._meta.get_field(target_field)
-            # TODO if there is another reference, recurse
-
-        return self.model._meta.get_field(field)
-
     def get_related_model(self, field):
         return self.model._meta.get_field(field).related_model
 
@@ -160,24 +140,6 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             return LegacySerializer(self.model, self.api_method)
         msg = f"{type(self).__name__}.get_serializer() did not return a serializer"
         raise ImproperlyConfigured(msg)
-
-    def validate_lookup_field_values(self):
-        # todo check for each lookup kwarg
-        for field, url_kwarg in self.lookup_kwargs.items():
-            lookup_field = self._get_lookup_field(field)
-
-            if isinstance(lookup_field, models.UUIDField):
-                self.validate_uuid(url_kwarg)
-            elif isinstance(
-                lookup_field,
-                (
-                    models.ForeignKey,
-                    models.IntegerField,
-                    models.PositiveIntegerField,
-                    models.SmallIntegerField,
-                ),
-            ):
-                self.validate_numeric(url_kwarg)
 
     def flatten_bundle(self, raw_bundle):
         # parse_qs gives us a dictionary where all values are lists
