@@ -74,8 +74,6 @@ class ListAPI(AbstractBaseAPI):
                 {self.lookup_field: self.kwargs[self.lookup_url_kwarg]}
             )
 
-        self.validate_lookup_field_values()
-
     def set_search_lookup_kwargs(self):
         """
         Set generic lookup kwargs based on q and additional GET params.
