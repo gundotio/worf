@@ -12,12 +12,14 @@ class SerializerOptions(marshmallow.SchemaOpts):
     def __init__(self, meta, **kwargs):
         super().__init__(meta, **kwargs)
 
-        defaults = getattr(settings, "WORF_SERIALIZER_DEFAULT_OPTIONS", {})
-        fields = getattr(meta, "fields", [])
-        writable = getattr(meta, "writable", [])
+        defaults = settings.WORF_SERIALIZER_DEFAULT_OPTIONS
+        defaults["ordered"] = defaults.get("ordered", True)
 
         for key, value in defaults.items():
             setattr(self, key, getattr(meta, key, value))
+
+        fields = getattr(meta, "fields", [])
+        writable = getattr(meta, "writable", [])
 
         if writable:
             self.dump_only = list(set(fields) - set(writable))
