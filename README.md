@@ -119,7 +119,7 @@ from worf.views import DetailAPI, ListAPI, UpdateAPI
 
 class BookList(CreateAPI, ListAPI):
   model = Book
-  serializer = BookSerializer
+  serializer = BookSerializer(only=["id", "title"])
   permissions = [Authenticated]
 
 class BookDetail(UpdateAPI, DetailAPI):
@@ -205,32 +205,36 @@ Views
 
 ### AbstractBaseAPI
 
-Provides the basic functionality of both List and Detail APIs.
-It is not recommended to use this abstract view directly.
+Provides the basic functionality of API views.
 
-| Name | Type | Default | Description |
-| -- | -- | -- | -- |
-| model       | class | None | An uninstantiated `django.db.models.model` class. |
-| permissions | list  | []   | Pass a list of permissions classes. |
+| Name        | Type   | Default | Description                   |
+| ----------- | ------ | ------- | ----------------------------- |
+| model       | class  | None    | Model class.                  |
+| permissions | list   | []      | List of permissions classes.  |
+| serializer  | object | None    | Serializer class or instance. |
+
+*Note:* it is not recommended to use this abstract view directly.
 
 
 ### ListAPI
 
-| Name | Type | Default | Description |
-| -- | -- | -- | -- |
-| filters           | dict | {}                  | Pass key/value pairs that you wish to further filter the queryset beyond the `lookup_url_kwarg` |
-| lookup_field      | str  | None                | Use these two attributes in tandem in order to filter `get_queryset` based on a URL field. `lookup_url_kwarg` is required if this is set. |
-| lookup_url_kwarg  | str  | None                | Use these two attributes in tandem in order to filter `get_queryset` based on a URL field. `lookup_field` is required if this is set. |
-| payload_key       | str  | verbose_name_plural | Use in order to rename the key for the results array |
-| ordering          | list | []                  | Pass a list of fields to default the queryset order by. |
-| filter_fields     | list | []                  | Pass a list of fields to support filtering via query params. |
-| search_fields     | list | []                  | Pass a list of fields to full text search via the `q` query param. |
-| sort_fields       | list | []                  | Pass a list of fields to support sorting via the `sort` query param. |
-| per_page          | int  | 25                  | Sets the number of results returned for each page. |
-| max_per_page      | int  | per_page            | Sets the max number of results to allow when passing the `perPage` query param. |
+| Name              | Type   | Default             | Description                                                                            |
+| ----------------- | ------ | ------------------- | -------------------------------------------------------------------------------------- |
+| queryset          | object | model.objects.all() | Queryset used to retrieve the results.                                                 |
+| filters           | dict   | {}                  | Filters to apply to queryset. *Deprecated:* use `queryset` instead.                    |
+| lookup_field      | str    | None                | Filter `queryset` based on a URL param, `lookup_url_kwarg` is required if this is set. |
+| lookup_url_kwarg  | str    | None                | Filter `queryset` based on a URL param, `lookup_field` is required if this is set.     |
+| payload_key       | str    | verbose_name_plural | Use in order to rename the key for the results array.                                  |
+| list_serializer   | object | serializer          | Serializer class or instance.                                                          |
+| ordering          | list   | []                  | List of fields to default the queryset order by.                                       |
+| filter_fields     | list   | []                  | List of fields to support filtering via query params.                                  |
+| search_fields     | list   | []                  | List of fields to full text search via the `q` query param.                            |
+| sort_fields       | list   | []                  | List of fields to support sorting via the `sort` query param.                          |
+| per_page          | int    | 25                  | Sets the number of results returned for each page.                                     |
+| max_per_page      | int    | per_page            | Sets the max number of results to allow when passing the `perPage` query param.        |
 
 The `get_queryset` method will use `lookup_url_kwarg` and `lookup_field` to filter results.
-You _should_ not need to override get_queryset. Instead, set the optional variables
+You _should_ not need to override `get_queryset`. Instead, set the optional variables
 listed above to configure the queryset.
 
 #### Filtering
@@ -249,10 +253,12 @@ Use `per_page` to set custom limit for pagination. Default 25.
 
 ### DetailAPI
 
-| Name | Type | Default | Description |
-| -- | -- | -- | -- |
-| lookup_field     | str | id  | Override with the lookup field used to filter the _model_. Defaults to `id`|
-| lookup_url_kwarg | str | id  | Override with the name of the parameter passed to the view by the URL route. Defaults to `id`  |
+| Name                | Type   | Default             | Description                                                |
+| ------------------- | ------ | ------------------- | ---------------------------------------------------------- |
+| queryset            | object | model.objects.all() | Queryset used to retrieve the results.                     |
+| lookup_field        | str    | id                  | Lookup field used to filter the model.                     |
+| lookup_url_kwarg    | str    | id                  | Name of the parameter passed to the view by the URL route. |
+| detail_serializer   | object | serializer          | Serializer class or instance.                              |
 
 This `get_instance()` method uses `lookup_field` and `lookup_url_kwargs` to return a model instance.
 
@@ -260,6 +266,10 @@ You _may_ prefer to override this method, for example in a case when you are usi
 `request.user` to return an instance.
 
 ### CreateAPI
+
+| Name                | Type   | Default             | Description                                                |
+| ------------------- | ------ | ------------------- | ---------------------------------------------------------- |
+| create_serializer   | object | serializer          | Serializer class or instance.                              |
 
 Adds a `post` method to handle creation, mix this into a `ListAPI` view:
 
@@ -274,6 +284,13 @@ use the same serializer as you would for an update, unless you have `create-only
 fields, in which case, you may want to create a `BookCreateSerializer`.
 
 ### UpdateAPI
+
+| Name                | Type   | Default             | Description                                                |
+| ------------------- | ------ | ------------------- | ---------------------------------------------------------- |
+| queryset            | object | model.objects.all() | Queryset used to retrieve the results.                     |
+| lookup_field        | str    | id                  | Lookup field used to filter the model.                     |
+| lookup_url_kwarg    | str    | id                  | Name of the parameter passed to the view by the URL route. |
+| update_serializer   | object | serializer          | Serializer class or instance.                              |
 
 Adds `patch` and `put` methods to handle updates, mix this into a `DetailAPI`.
 
