@@ -50,7 +50,11 @@ class ProfileDetail(DeleteAPI, UpdateAPI, DetailAPI):
 class UserList(ListAPI):
     model = User
     ordering = ["pk"]
-    serializer = UserSerializer
+    serializer = UserSerializer(only=[
+        "username",
+        "date_joined",
+        "email",
+    ])
     permissions = [PublicEndpoint]
     filter_fields = [
         "email",
