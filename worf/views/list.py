@@ -104,16 +104,16 @@ class ListAPI(AbstractBaseAPI):
             return
 
         for key in self.bundle.keys():
-            strip_key = key.rstrip("!")
+            filter_key = key[:-1] if key.endswith("!") else key
 
-            if strip_key not in self.filter_fields:
+            if filter_key not in self.filter_fields:
                 continue
 
             value = self.bundle[key]
 
             # support passing `in` and `range` as lists
             if isinstance(value, list):
-                if strip_key.endswith("__in") or strip_key.endswith("__range"):
+                if filter_key.endswith("__in") or filter_key.endswith("__range"):
                     value = ",".join(str(item) for item in value)
 
             self.lookup_kwargs[key] = value

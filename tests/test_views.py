@@ -93,14 +93,14 @@ def test_profile_list_or_filter(client, db, profile_factory, tag_factory):
 
 
 def test_profile_list_negated_filter(client, db, profile, user):
-    response = client.get(f"/profiles/?name!={user.first_name} {user.last_name}")
+    response = client.get(f"/profiles/?firstName!={user.first_name}")
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 0
 
 
 def test_profile_list_negated__icontains__filter(client, db, profile, user):
-    response = client.get(f"/profiles/?name__icontains!={user.first_name}")
+    response = client.get(f"/profiles/?firstName__icontains!={user.first_name}")
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 0
