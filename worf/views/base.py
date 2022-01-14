@@ -192,7 +192,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
         return request.parse_file_upload(request.META, BytesIO(request.body))
 
-    def set_bundle(self, raw_bundle):
+    def set_bundle(self, raw_bundle, allow_negations=False):
         self.bundle = {}
         self.keymap = {}
 
@@ -200,7 +200,11 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             return
 
         for key in raw_bundle.keys():
-            field = camel_to_snake(key)
+            field = (
+                camel_to_snake(key[:-1]) + "!"
+                if allow_negations and key.endswith("!")
+                else camel_to_snake(key)
+            )
             self.bundle[field] = raw_bundle[key]
             self.keymap[field] = key
 
@@ -221,7 +225,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             for key, value in raw_bundle.items()
         }
 
-        self.set_bundle(coerced_bundle)
+        self.set_bundle(coerced_bundle, allow_negations=True)
 
     def set_bundle_from_request_body(self, request):
         raw_bundle = {}

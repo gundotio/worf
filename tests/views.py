@@ -13,7 +13,9 @@ from tests.serializers import ProfileSerializer, UserSerializer
 class ProfileList(CreateAPI, ListAPI):
     model = Profile
     queryset = Profile.objects.annotate(
-        name=Concat("user__first_name", Value(" "), "user__last_name"),
+        first_name=F("user__first_name"),
+        last_name=F("user__last_name"),
+        name=Concat("first_name", Value(" "), "last_name"),
         date_joined=F("user__date_joined"),
     )
     ordering = ["pk"]
@@ -21,6 +23,9 @@ class ProfileList(CreateAPI, ListAPI):
     permissions = [PublicEndpoint]
     search_fields = []
     filter_fields = [
+        "first_name",
+        "first_name__icontains",
+        "last_name",
         "name",
         "name__icontains",
         "name__in",
