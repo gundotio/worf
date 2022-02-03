@@ -48,11 +48,11 @@ class ProfileDetail(DeleteAPI, UpdateAPI, DetailAPI):
         try:
             assert value == "(555) 555-5555"
         except AssertionError:
-            raise ValidationError("{value} is not a valid phone number")
+            raise ValidationError("Field phone is not a valid phone number")
         return "+5555555555"
 
 
-class UserList(ListAPI):
+class UserList(CreateAPI, ListAPI):
     model = User
     ordering = ["pk"]
     serializer = UserSerializer(only=[

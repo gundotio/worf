@@ -80,6 +80,8 @@ class AssignAttributes:
             raise ValidationError(f"Invalid {self.keymap[key]}") from e
 
     def validate(self):
+        instance = self.get_instance()
+
         for key in self.bundle.keys():
             self.validate_bundle(key)
 
@@ -87,3 +89,9 @@ class AssignAttributes:
 
             if self.bundle[key] is None and not field.null:
                 raise ValidationError(f"Invalid {self.keymap[key]}")
+
+            if field.unique:
+                other_records = self.model.objects.exclude(pk=instance.pk)
+
+                if other_records.filter(**{key: self.bundle[key]}).exists():
+                    raise ValidationError(f"Field {self.keymap[key]} must be unique")

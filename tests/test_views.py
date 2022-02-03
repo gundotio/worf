@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 from unittest.mock import patch
 
@@ -142,11 +144,12 @@ def test_profile_multipart_create(mock_save, client, db, role, user):
 
 
 @patch('django.core.files.storage.FileSystemStorage.save')
-def test_profile_multipart_patch(mock_save, client, db, profile, role, user):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_multipart_update(mock_save, client, db, method, profile, role, user):
     avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
     mock_save.return_value = "avatar.jpg"
     payload = dict(avatar=avatar, role=role.pk, user=user.pk)
-    response = client.patch(f"/profiles/{profile.pk}/", payload)
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert result["avatar"] == "/avatar.jpg"
@@ -155,52 +158,43 @@ def test_profile_multipart_patch(mock_save, client, db, profile, role, user):
     assert result["user"]["username"] == user.username
 
 
-@patch('django.core.files.storage.FileSystemStorage.save')
-def test_profile_multipart_put(mock_save, client, db, profile, role, user):
-    avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
-    mock_save.return_value = "avatar.jpg"
-    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
-    response = client.put(f"/profiles/{profile.pk}/", payload)
-    result = response.json()
-    assert response.status_code == 200, result
-    assert result["avatar"] == "/avatar.jpg"
-    assert result["role"]["id"] == role.pk
-    assert result["role"]["name"] == role.name
-    assert result["user"]["username"] == user.username
-
-
-def test_profile_patch_fk(client, db, profile, role, team):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_fk(client, db, method, profile, role, team):
     payload = dict(role=role.pk, team=team.pk)
-    response = client.patch(f"/profiles/{profile.pk}/", payload)
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert result["role"]["name"] == role.name
     assert result["team"]["name"] == team.name
 
 
-def test_profile_patch_fk_invalid_role(client, db, profile, role, team):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(role=123))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_fk_invalid_role(client, db, method, profile, role, team):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(role=123))
     result = response.json()
     assert response.status_code == 422, result
     assert result["message"] == "Invalid role"
 
 
-def test_profile_patch_fk_role_is_not_nullable(client, db, profile, role, team):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(role=None))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_fk_role_is_not_nullable(client, db, method, profile, role, team):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(role=None))
     result = response.json()
     assert response.status_code == 422, result
     assert result["message"] == "Invalid role"
 
 
-def test_profile_patch_fk_team_is_nullable(client, db, profile, role, team):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(team=None))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_fk_team_is_nullable(client, db, method, profile, role, team):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(team=None))
     result = response.json()
     assert response.status_code == 200, result
     assert result["team"] is None
 
 
-def test_profile_patch_m2m(client, db, profile, tag):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(tags=[tag.pk]))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m(client, db, method, profile, tag):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(tags=[tag.pk]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["tags"]) == 1
@@ -208,31 +202,35 @@ def test_profile_patch_m2m(client, db, profile, tag):
     assert result["tags"][0]["name"] == tag.name
 
 
-def test_profile_patch_m2m_can_be_empty(client, db, profile, tag):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(tags=[]))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_can_be_empty(client, db, method, profile, tag):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(tags=[]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["tags"]) == 0
 
 
-def test_profile_patch_m2m_is_not_nullable(client, db, profile, tag):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(tags=None))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_is_not_nullable(client, db, method, profile, tag):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(tags=None))
     result = response.json()
     assert response.status_code == 422, result
     assert "tags accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-def test_profile_patch_m2m_must_be_pks(client, db, profile, tag):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_must_be_pks(client, db, method, profile, tag):
     payload = dict(tags=["invalid"])
-    response = client.patch(f"/profiles/{profile.pk}/", payload)
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid tags" in result["message"]
 
 
-def test_profile_patch_m2m_through(client, db, profile, skill):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_through(client, db, method, profile, skill):
     payload = dict(skills=[dict(id=skill.pk, rating=4)])
-    response = client.patch(f"/profiles/{profile.pk}/", payload)
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["skills"]) == 1
@@ -241,39 +239,44 @@ def test_profile_patch_m2m_through(client, db, profile, skill):
     assert result["skills"][0]["rating"] == 4
 
 
-def test_profile_patch_m2m_through_can_be_empty(client, db, profile, skill):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(skills=[]))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_through_can_be_empty(client, db, method, profile, skill):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(skills=[]))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["skills"]) == 0
 
 
-def test_profile_patch_m2m_through_is_not_nullable(client, db, profile, skill):
-    response = client.patch(f"/profiles/{profile.pk}/", dict(skills=None))
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_through_is_not_nullable(client, db, method, profile, skill):
+    response = client.generic(method, f"/profiles/{profile.pk}/", dict(skills=None))
     result = response.json()
     assert response.status_code == 422, result
     assert "skills accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-def test_profile_patch_m2m_through_must_be_dicts(client, db, profile, skill):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_through_must_be_dicts(client, db, method, profile, skill):
     payload = dict(skills=["invalid"])
-    response = client.patch(f"/profiles/{profile.pk}/", payload)
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid skills" == result["message"]
 
 
-def test_profile_patch_m2m_through_ids_must_be_pks(client, db, profile, skill):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_through_ids_must_be_pks(client, db, method, profile, skill):
     payload = dict(skills=[dict(id="invalid")])
-    response = client.patch(f"/profiles/{profile.pk}/", payload)
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid skills" in result["message"]
 
 
-def test_profile_patch_m2m_through_required_fields(client, db, profile, skill):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_through_required_fields(client, db, method, profile, skill):
     payload = dict(skills=[dict(id=skill.pk)])
-    response = client.patch(f"/profiles/{profile.pk}/", payload)
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 422, result
     assert "Invalid skills" in result["message"]
@@ -361,18 +364,38 @@ def test_user_list_multisort(client, now, db, user_factory):
     assert result["users"][3]["username"] == "a"
 
 
-def test_user_patch(client, db, user):
-    payload = dict(username="testtest", email="something@example.com")
-    response = client.patch(f"/users/{user.pk}/", payload)
+def test_user_unique_create_with_existing_value(client, db, user, user_factory):
+    user_factory.create(username="already_taken")
+    payload = dict(username="already_taken")
+    response = client.post("/users/", payload)
+    result = response.json()
+    assert response.status_code == 422, result
+    assert result["message"] == "Field username must be unique"
+
+
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_user_unique_update_with_current_value(client, db, method, user, user_factory):
+    payload = dict(username=user.username)
+    response = client.generic(method, f"/users/{user.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
-    assert result["username"] == "testtest"
-    assert result["email"] == "something@example.com"
+    assert result["username"] == user.username
 
 
-def test_user_update(client, db, user):
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_user_unique_update_with_existing_value(client, db, method, user, user_factory):
+    user_factory.create(username="already_taken")
+    payload = dict(username="already_taken")
+    response = client.generic(method, f"/users/{user.pk}/", payload)
+    result = response.json()
+    assert response.status_code == 422, result
+    assert result["message"] == "Field username must be unique"
+
+
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_user_update(client, db, method, user):
     payload = dict(username="testtest", email="something@example.com")
-    response = client.put(f"/users/{user.pk}/", payload)
+    response = client.generic(method, f"/users/{user.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
     assert result["username"] == "testtest"
