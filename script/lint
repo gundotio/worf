@@ -3,13 +3,16 @@
 set -eou pipefail
 cd "$(dirname "$0")/.."
 
-Y=$(tput setaf 3) X=$(tput sgr0)
+ARROW="\033[93m==>\033[0m"
 
-echo -e "${Y}==>${X} Autoflake"
+echo -e "$ARROW autoflake --in-place --recursive --remove-all-unused-imports worf"
 autoflake --in-place --recursive --remove-all-unused-imports worf
 
-echo -e "${Y}==>${X} Black"
+echo -e "$ARROW black worf"
 black worf
 
-echo -e "${Y}==>${X} Flake8"
+echo -e "$ARROW flake8 worf"
 flake8 worf
+
+echo -e "$ARROW isort worf"
+isort worf

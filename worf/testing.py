@@ -1,7 +1,7 @@
 from functools import partialmethod
 
 from django.core.files import File
-from django.test.client import Client, MULTIPART_CONTENT
+from django.test.client import MULTIPART_CONTENT, Client
 
 JSON_CONTENT = "application/json"
 

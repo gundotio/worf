@@ -1,2 +1,9 @@
 [tool.black]
 line-length = 88
+
+[tool.isort]
+combine_as_imports = true
+known_django = "django"
+known_firstparty = "worf"
+profile = "black"
+sections = "FUTURE,STDLIB,THIRDPARTY,DJANGO,FIRSTPARTY,LOCALFOLDER"

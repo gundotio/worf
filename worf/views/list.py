@@ -1,9 +1,9 @@
 import operator
-from functools import reduce
 import warnings
+from functools import reduce
 
 from django.core.exceptions import EmptyResultSet, ImproperlyConfigured
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import EmptyPage, Paginator
 from django.db.models import F, OrderBy, Q
 
 from worf.casing import camel_to_snake

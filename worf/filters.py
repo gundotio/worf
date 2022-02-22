@@ -1,10 +1,10 @@
 from urllib.parse import urlencode
 
+from url_filter.exceptions import SkipFilter
+from url_filter.filtersets import ModelFilterSet
+
 from django.db.models.fields.related import ForeignObjectRel, RelatedField
 from django.http import QueryDict
-
-from url_filter.filtersets import ModelFilterSet
-from url_filter.exceptions import SkipFilter
 
 
 class AnnotatedModelFilterSet(ModelFilterSet):

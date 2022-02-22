@@ -1,4 +1,4 @@
-from worf.views.base import APIResponse, AbstractBaseAPI  # noqa
+from worf.views.base import AbstractBaseAPI, APIResponse  # noqa
 from worf.views.create import CreateAPI  # noqa
 from worf.views.delete import DeleteAPI  # noqa
 from worf.views.detail import DetailAPI, DetailUpdateAPI  # noqa

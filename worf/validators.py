@@ -1,9 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.db import models
 from django.utils.dateparse import parse_datetime
 
 from worf.conf import settings

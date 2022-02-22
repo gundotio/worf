@@ -1,7 +1,7 @@
-from django.db.models import Manager
-
 import marshmallow.fields
 from marshmallow.fields import *  # noqa: F401, F403
+
+from django.db.models import Manager
 
 
 class File(marshmallow.fields.Field):
