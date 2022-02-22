@@ -8,10 +8,10 @@ from urllib.parse import parse_qs
 from django.core.exceptions import (
     ImproperlyConfigured,
     ObjectDoesNotExist,
+    RequestDataTooBig,
     ValidationError,
 )
-from django.http import HttpResponse, JsonResponse
-from django.template.response import TemplateResponse
+from django.template.defaultfilters import filesizeformat
 from django.views import View
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
@@ -19,6 +19,7 @@ from django.utils.decorators import method_decorator
 from worf.conf import settings
 from worf.casing import camel_to_snake, snake_to_camel
 from worf.exceptions import HTTP_EXCEPTIONS, HTTP404, HTTP422, PermissionsException
+from worf.renderers import render_response
 from worf.serializers import LegacySerializer
 from worf.validators import ValidationMixin
 
@@ -41,29 +42,7 @@ class APIResponse(View):
             msg += "render_to_response, nor did its serializer method"
             raise ImproperlyConfigured(msg)
 
-        is_browsable = (
-            settings.WORF_BROWSABLE_API
-            and "text/html" in self.request.headers.get("Accept", "")
-            and self.request.GET.get("format") != "json"
-        )
-
-        json_kwargs = dict(json_dumps_params=dict(indent=2)) if is_browsable else {}
-
-        response = JsonResponse(data, **json_kwargs) if data != "" else HttpResponse()
-        response.status_code = status_code
-
-        if is_browsable:
-            template = "worf/api.html"
-            context = dict(
-                content=response.content.decode("utf-8"),
-                response=response,
-                settings=settings,
-            )
-            response = TemplateResponse(self.request, template, context=context)
-            response.status_code = status_code
-            response.render()
-
-        return response
+        return render_response(self.request, data, status_code)
 
 
 class AbstractBaseAPI(APIResponse, ValidationMixin):
@@ -221,5 +200,9 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             return self.render_to_response(
                 dict(message=HTTP404.message), HTTP404.status
             )
+        except RequestDataTooBig:
+            self.request._body = self.request.read(None)  # prevent further raises
+            message = f"Max upload size is {filesizeformat(settings.DATA_UPLOAD_MAX_MEMORY_SIZE)}"
+            return self.render_to_response(dict(message=message), HTTP422.status)
         except ValidationError as e:
             return self.render_to_response(dict(message=e.message), HTTP422.status)
