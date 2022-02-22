@@ -1,7 +1,6 @@
 import json
 import types
 import warnings
-
 from io import BytesIO
 from urllib.parse import parse_qs
 
@@ -12,13 +11,13 @@ from django.core.exceptions import (
     ValidationError,
 )
 from django.template.defaultfilters import filesizeformat
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import never_cache
-from django.utils.decorators import method_decorator
 
-from worf.conf import settings
 from worf.casing import camel_to_snake, snake_to_camel
-from worf.exceptions import HTTP_EXCEPTIONS, HTTP404, HTTP422, PermissionsException
+from worf.conf import settings
+from worf.exceptions import HTTP404, HTTP422, HTTP_EXCEPTIONS, PermissionsException
 from worf.renderers import render_response
 from worf.serializers import LegacySerializer
 from worf.validators import ValidationMixin
