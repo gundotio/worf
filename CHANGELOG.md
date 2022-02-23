@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.7](https://github.com/gundotio/worf/compare/v0.5.6...v0.5.7) (2022-02-23)
+
+- Support RequestDataTooBig exceptions [#92](https://github.com/gundotio/worf/pull/92)
+
 ### [0.5.6](https://github.com/gundotio/worf/compare/v0.5.5...v0.5.6) (2022-02-07)
 
 - Support unique field validation [#91](https://github.com/gundotio/worf/pull/91)
