@@ -34,10 +34,8 @@
       {% block script %}
         <script src="https://unpkg.com/prismjs@1.28.0" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://unpkg.com/prismjs@1.28.0/components/prism-json.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://unpkg.com/prismjs@1.28.0/plugins/keep-markup/prism-keep-markup.js"></script>
+        <script src="https://unpkg.com/prismjs@1.28.0/plugins/keep-markup/prism-keep-markup.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://unpkg.com/prismjs@1.28.0/plugins/autolinker/prism-autolinker.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://unpkg.com/prism-js-fold@1.0.1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script>Prism.hooks.add("complete", () => { for (const el of document.getElementsByTagName("details")) el.open = true })</script>
       {% endblock %}
     {% endblock %}
   </head>
