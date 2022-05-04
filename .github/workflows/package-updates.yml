@@ -1,0 +1,54 @@
+name: Package updates
+
+on:
+  workflow_dispatch: ~
+  schedule:
+    - cron: "0 0 * * 1"
+
+jobs:
+  package-updates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8.12
+
+      - run: cp Pipfile.lock{,.bak}
+      - run: pip install pipenv wheel --upgrade
+      - run: pipenv update
+
+      - id: pipfile-lock-diff
+        run: |
+          wget https://gist.githubusercontent.com/ddahan/215472a4aa1805160aba0a77902e40da/raw/83da35ad413b0d1bb437e2d78f5381100cd5b80e/pipenvdiff.py
+          diff=$(python pipenvdiff.py Pipfile.lock{.bak,})
+          diff="${diff//'%'/'%25'}"
+          diff="${diff//$'\n'/'%0A'}"
+          diff="${diff//$'\r'/'%0D'}"
+          echo ::set-output name=diff::$diff
+
+      - run: rm pipenvdiff.py Pipfile.lock.bak
+
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          title: Package updates
+          body: |
+            ```
+            ${{ steps.pipfile-lock-diff.outputs.diff }}
+            ```
+          author: GitHub <noreply@github.com>
+          base: master
+          branch: package-updates
+          committer: GitHub <noreply@github.com>
+          commit-message: |
+            Package updates
+
+            ${{ steps.pipfile-lock-diff.outputs.diff }}
+          delete-branch: true
+          reviewers: |
+            stevelacey
+            wadewilliams
