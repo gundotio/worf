@@ -17,26 +17,26 @@ Full documentation for the project is available at [https://memory-alpha.fandom.
 Table of contents
 -----------------
 
-  - [Installation](#installation)
-  - [Requirements](#requirements)
-  - [Roadmap](#roadmap)
-  - [Usage](#usage)
-  - [Serializers](#serializers)
-  - [Permissions](#permissions)
-  - [Validators](#validators)
-  - [Views](#views)
-    - [ListAPI](#listapi)
-    - [DetailAPI](#detailapi)
-    - [CreateAPI](#createapi)
-    - [UpdateAPI](#updateapi)
-  - [Browsable API](#browsable-api)
-  - [Bundle loading](#bundle-loading)
-  - [Debugging](#debugging)
-  - [Field casing](#field-casing)
-  - [File uploads](#file-uploads)
-  - [Internal naming](#internal-naming)
-  - [Settings](#settings)
-  - [Credits](#credits)
+- [Installation](#installation)
+- [Requirements](#requirements)
+- [Roadmap](#roadmap)
+- [Usage](#usage)
+- [Serializers](#serializers)
+- [Permissions](#permissions)
+- [Validators](#validators)
+- [Views](#views)
+  - [ListAPI](#listapi)
+  - [DetailAPI](#detailapi)
+  - [CreateAPI](#createapi)
+  - [UpdateAPI](#updateapi)
+- [Browsable API](#browsable-api)
+- [Bundle loading](#bundle-loading)
+- [Debugging](#debugging)
+- [Field casing](#field-casing)
+- [File uploads](#file-uploads)
+- [Internal naming](#internal-naming)
+- [Settings](#settings)
+- [Credits](#credits)
 
 
 Installation
@@ -425,7 +425,7 @@ Credits
 ~Wanted dead or alive~ Made with 🥃 at [Gun.io][gun.io]
 
 <a href="https://github.com/gundotio/worf/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=gundotio/worf" alt="Contributors"/>
+  <img src="https://contrib.rocks/image?repo=gundotio/worf" alt="Contributors">
 </a>
 
 [build-status-image]: https://github.com/gundotio/worf/actions/workflows/ci.yml/badge.svg
