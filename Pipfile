@@ -20,7 +20,7 @@ isort = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
-pytest-factoryboy = "*"
+pytest-factoryboy = "==2.1.0"
 pytest-watch = "*"
 pytest-xdist = {extras = ["psutil"], version = "*"}
 twine = "*"
