@@ -10,7 +10,7 @@ worf = {editable = true, path = "."}
 [dev-packages]
 autoflake = "*"
 autopep8 = "*"
-black = "==20.8b1"
+black = "==22.3.0"
 build = "*"
 coverage = "*"
 factory-boy = "*"
