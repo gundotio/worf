@@ -6,7 +6,7 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-RUN pip3 install pipenv
+RUN pip3 install pipenv==2020.11.15
 
 COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
