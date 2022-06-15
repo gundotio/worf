@@ -14,3 +14,10 @@ class Nested(marshmallow.fields.Nested):
         if isinstance(nested_obj, Manager):
             nested_obj = nested_obj.all()
         return super()._serialize(nested_obj, attr, obj, **kwargs)
+
+
+class Pluck(marshmallow.fields.Pluck):
+    def _serialize(self, nested_obj, attr, obj, **kwargs):
+        if isinstance(nested_obj, Manager):
+            nested_obj = nested_obj.all()
+        return super()._serialize(nested_obj, attr, obj, **kwargs)
