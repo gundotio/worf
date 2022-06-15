@@ -29,9 +29,9 @@ def profile_view_fixture(db, profile_factory):
 
 
 def test_validate_bundle(profile_view):
-    assert profile_view.validate_bundle("id")
-    assert profile_view.validate_bundle("email")
-    assert profile_view.validate_bundle("phone")
+    profile_view.validate_bundle("id")
+    profile_view.validate_bundle("email")
+    profile_view.validate_bundle("phone")
 
 
 def test_validate_uuid_accepts_str(profile_view):

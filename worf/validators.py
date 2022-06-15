@@ -153,8 +153,6 @@ class ValidationMixin:
         @raise ValidationError: If this is a write and `key` is not serializer editable
         @raise ValidationError: If a value fails to pass validation
 
-        @return: If all checks pass, True is returned.
-
         Side Effects:
         As various bundle objects are parsed and validated, we reset the bundle.
         This may result in self.bundle changes.
@@ -176,75 +174,73 @@ class ValidationMixin:
             else None
         )
 
-        if not hasattr(self.model, key) and not annotation:
-            raise ValidationError(f"{self.keymap[key]} does not exist")
-
         if key not in self.secure_fields and isinstance(self.bundle[key], str):
             self.bundle[key] = self.bundle[key].strip()
+
+        if not hasattr(self.model, key) and not annotation:
+            raise ValidationError(f"{self.keymap[key]} does not exist")
 
         field = (
             annotation.output_field if annotation else self.model._meta.get_field(key)
         )
 
         if field.blank and field.empty_strings_allowed and self.bundle[key] == "":
-            pass
+            return
 
-        elif field.null and self.bundle[key] is None:
-            pass
+        if field.null and self.bundle[key] is None:
+            return
 
-        elif hasattr(self, f"validate_{key}"):
+        if hasattr(self, f"validate_{key}"):
             self.bundle[key] = getattr(self, f"validate_{key}")(self.bundle[key])
+            return
 
-        elif isinstance(field, models.UUIDField):
+        if isinstance(field, models.UUIDField):
             self.bundle[key] = self.validate_uuid(self.bundle[key])
+            return
 
-        elif isinstance(field, (models.CharField, models.TextField, models.SlugField)):
+        if isinstance(field, (models.CharField, models.TextField, models.SlugField)):
             self.bundle[key] = self._validate_string(key, field.max_length)
+            return
 
-        elif isinstance(field, models.EmailField):
+        if isinstance(field, models.EmailField):
             self.bundle[key] = self.validate_email(self.bundle[key])
+            return
 
-        elif isinstance(field, (models.IntegerField, models.SmallIntegerField)):
+        if isinstance(field, (models.IntegerField, models.SmallIntegerField)):
             # TODO check size of SmallIntegerField
             self.bundle[key] = self._validate_int(key)
+            return
 
-        elif isinstance(field, models.PositiveIntegerField):
+        if isinstance(field, models.PositiveIntegerField):
             self.bundle[key] = self._validate_positive_int(key)
+            return
 
-        elif isinstance(field, models.ManyToManyField):
-            self._validate_many_to_many(key)
-
-        elif isinstance(field, models.BooleanField):
+        if isinstance(field, models.BooleanField):
             self.bundle[key] = self._validate_boolean(key)
+            return
 
-        elif isinstance(field, models.FileField):
-            pass  # Django will raise an exception if handled improperly
-
-        elif isinstance(field, models.ForeignKey):
-            pass  # Django will raise an exception if handled improperly
-
-        elif isinstance(field, models.DateTimeField):
+        if isinstance(field, models.DateTimeField):
             self.bundle[key] = self._validate_datetime(key)
+            return
 
-        elif isinstance(field, models.DateField):
+        if isinstance(field, models.DateField):
             self.bundle[key] = self._validate_date(key)
+            return
 
-        elif isinstance(field, models.JSONField):
-            pass
-            # TODO check the type of json object we're expecting
-            # try:
-            #     json.loads(self.bundle[key])
-            # except ValueError:
-            #     raise ValidationError(f"Field {self.keymap[key]} requires valid JSON")
+        if isinstance(field, models.ManyToManyField):
+            self._validate_many_to_many(key)
+            return
 
-        else:
-            message = f"{field.get_internal_type()} has no validation method for {key}"
-            if settings.WORF_DEBUG:
-                message += f":: Received {self.bundle[key]}"
-            raise NotImplementedInWorfYet(message)
-            # TODO
-            # FileField
-            # UUIDField
-            # We don't handle 1:1 or FKs.
+        if isinstance(field, models.FileField):
+            return  # Django will raise an exception if handled improperly
 
-        return True
+        if isinstance(field, models.ForeignKey):
+            return  # Django will raise an exception if handled improperly
+
+        if isinstance(field, models.JSONField):
+            return  # Django will raise an exception if handled improperly
+
+        message = f"{field.get_internal_type()} has no validation method for {key}"
+        if settings.WORF_DEBUG:
+            message += f":: Received {self.bundle[key]}"
+        raise NotImplementedInWorfYet(message)
