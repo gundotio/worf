@@ -49,6 +49,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
     permissions = []
     api_method = "api"
     serializer = None
+    staff_serializer = None
     payload_key = None
 
     def __init__(self, *args, **kwargs):
@@ -113,6 +114,8 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
     def get_serializer(self):
         context = dict(request=self.request, **self.get_serializer_context())
+        if self.staff_serializer and self.request.user.is_staff:
+            return self.staff_serializer(context=context)
         if self.serializer:
             return self.serializer(context=context)
         if self.api_method:
