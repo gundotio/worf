@@ -199,7 +199,9 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
             return handler(request, *args, **kwargs)  # calls self.serialize()
         except HTTP_EXCEPTIONS as e:
             return self.render_to_response(dict(message=e.message), e.status)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist as e:
+            if self.model and not isinstance(e, self.model.DoesNotExist):
+                raise e
             return self.render_to_response(
                 dict(message=HTTP404.message), HTTP404.status
             )
