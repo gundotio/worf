@@ -45,8 +45,17 @@ class Serializer(marshmallow.Schema):
         FieldFile: fields.File,
     }
 
-    def __call__(self):
-        return self
+    def __call__(self, **kwargs):
+        return type(self)(
+            context=kwargs.get("context", self.context),
+            dump_only=kwargs.get("dump_only", self.dump_only),
+            exclude=kwargs.get("exclude", self.exclude),
+            load_only=kwargs.get("load_only", self.load_only),
+            many=kwargs.get("many", self.many),
+            only=kwargs.get("only", self.only),
+            partial=kwargs.get("partial", self.partial),
+            unknown=kwargs.get("unknown", self.unknown),
+        )
 
     def __repr__(self):
         return f"<{self.__class__.__name__}()>"

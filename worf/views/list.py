@@ -175,7 +175,7 @@ class ListAPI(AbstractBaseAPI):
 
     def get_serializer(self):
         if self.list_serializer and self.request.method == "GET":
-            return self.list_serializer()
+            return self.list_serializer(context=self.get_serializer_context())
         return super().get_serializer()
 
     def paginated_results(self):

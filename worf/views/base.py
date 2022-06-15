@@ -112,12 +112,16 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
         return self.model._meta.get_field(field).related_model
 
     def get_serializer(self):
+        context = dict(request=self.request, **self.get_serializer_context())
         if self.serializer:
-            return self.serializer()
+            return self.serializer(context=context)
         if self.api_method:
             return LegacySerializer(self.model, self.api_method)
         msg = f"{type(self).__name__}.get_serializer() did not return a serializer"
         raise ImproperlyConfigured(msg)
+
+    def get_serializer_context(self):
+        return {}
 
     def flatten_bundle(self, raw_bundle):
         # parse_qs gives us a dictionary where all values are lists

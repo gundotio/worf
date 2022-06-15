@@ -8,7 +8,7 @@ class UpdateAPI(AssignAttributes, FindInstance, AbstractBaseAPI):
 
     def get_serializer(self):
         if self.update_serializer and self.request.method in ("PATCH", "PUT"):
-            return self.update_serializer()
+            return self.update_serializer(context=self.get_serializer_context())
         return super().get_serializer()
 
     def patch(self, request, *args, **kwargs):

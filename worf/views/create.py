@@ -17,7 +17,7 @@ class CreateAPI(AssignAttributes, AbstractBaseAPI):
 
     def get_serializer(self):
         if self.create_serializer and self.request.method == "POST":
-            return self.create_serializer()
+            return self.create_serializer(context=self.get_serializer_context())
         return super().get_serializer()
 
     def post(self, request, *args, **kwargs):

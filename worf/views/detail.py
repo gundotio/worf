@@ -13,7 +13,7 @@ class DetailAPI(FindInstance, AbstractBaseAPI):
 
     def get_serializer(self):
         if self.detail_serializer and self.request.method == "GET":
-            return self.detail_serializer()
+            return self.detail_serializer(context=self.get_serializer_context())
         return super().get_serializer()
 
     def serialize(self):
