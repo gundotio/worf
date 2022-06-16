@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.8](https://github.com/gundotio/worf/compare/v0.5.7...v0.5.8) (2022-06-16)
+
+- Add queryset support to `Pluck` field
+- Flatten validation checks and don't return `True`
+- Raise `DoesNotExist` for related models
+- Rename `CreateAPI` method `get_instance` to `new_instance`
+- Serializer context support via `get_serializer_context()`
+- Staff serializer support via `staff_serializer`
+- Update to PrismJS 1.28.0 and drop `prism-js-fold` from template
+- Validator test coverage improvements
+
 ### [0.5.7](https://github.com/gundotio/worf/compare/v0.5.6...v0.5.7) (2022-02-23)
 
 - Support RequestDataTooBig exceptions [#92](https://github.com/gundotio/worf/pull/92)
