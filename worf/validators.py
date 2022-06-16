@@ -198,21 +198,21 @@ class ValidationMixin:
             self.bundle[key] = self.validate_uuid(self.bundle[key])
             return
 
+        if isinstance(field, models.EmailField):
+            self.bundle[key] = self.validate_email(self.bundle[key])
+            return
+
         if isinstance(field, (models.CharField, models.TextField, models.SlugField)):
             self.bundle[key] = self._validate_string(key, field.max_length)
             return
 
-        if isinstance(field, models.EmailField):
-            self.bundle[key] = self.validate_email(self.bundle[key])
+        if isinstance(field, models.PositiveIntegerField):
+            self.bundle[key] = self._validate_positive_int(key)
             return
 
         if isinstance(field, (models.IntegerField, models.SmallIntegerField)):
             # TODO check size of SmallIntegerField
             self.bundle[key] = self._validate_int(key)
-            return
-
-        if isinstance(field, models.PositiveIntegerField):
-            self.bundle[key] = self._validate_positive_int(key)
             return
 
         if isinstance(field, models.BooleanField):

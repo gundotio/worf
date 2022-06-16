@@ -198,8 +198,7 @@ def test_profile_update_m2m(client, db, method, profile, tag):
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["tags"]) == 1
-    assert result["tags"][0]["id"] == tag.pk
-    assert result["tags"][0]["name"] == tag.name
+    assert result["tags"][0] == tag.name
 
 
 @pytest.mark.parametrize("method", ["PATCH", "PUT"])
