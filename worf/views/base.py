@@ -109,6 +109,9 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
                     )
                 )
 
+    def get_instance(self):
+        return self.instance if hasattr(self, "instance") else None
+
     def get_related_model(self, field):
         return self.model._meta.get_field(field).related_model
 

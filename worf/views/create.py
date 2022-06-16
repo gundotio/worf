@@ -6,21 +6,19 @@ class CreateAPI(AssignAttributes, AbstractBaseAPI):
     create_serializer = None
 
     def create(self):
-        instance = self.get_instance()
+        self.instance = self.new_instance()
         self.validate()
-        self.save(instance, self.bundle)
-        instance.refresh_from_db()
-        return instance
-
-    def get_instance(self):
-        return self.model()
+        self.save(self.instance, self.bundle)
+        self.instance.refresh_from_db()
+        return self.instance
 
     def get_serializer(self):
         if self.create_serializer and self.request.method == "POST":
             return self.create_serializer(context=self.get_serializer_context())
         return super().get_serializer()
 
+    def new_instance(self):
+        return self.model()
+
     def post(self, request, *args, **kwargs):
-        new_instance = self.create()
-        serializer = self.get_serializer()
-        return self.render_to_response(serializer.read(new_instance), 201)
+        return self.render_to_response(self.get_serializer().read(self.create()), 201)
