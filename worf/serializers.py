@@ -60,9 +60,9 @@ class Serializer(marshmallow.Schema):
     def __repr__(self):
         name = self.__class__.__name__
         kwargs = dict(
-            exclude=list(self.exclude or []),
+            exclude=sorted(self.exclude or []),
             many=self.many,
-            only=list(self.only or []),
+            only=sorted(self.only or []),
         )
         return f"<{name}({', '.join(f'{k}={v}' for k, v in kwargs.items() if v)})>"
 
