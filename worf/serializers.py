@@ -58,7 +58,13 @@ class Serializer(marshmallow.Schema):
         )
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}()>"
+        name = self.__class__.__name__
+        kwargs = dict(
+            exclude=list(self.exclude or []),
+            many=self.many,
+            only=list(self.only or []),
+        )
+        return f"<{name}({', '.join(f'{k}={v}' for k, v in kwargs.items() if v)})>"
 
     @property
     def dict_class(self):
