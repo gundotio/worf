@@ -1,3 +1,4 @@
+from hashlib import md5
 from uuid import uuid4
 
 from django.db import models
@@ -26,31 +27,19 @@ class Profile(models.Model):
 
     recovery_email = models.EmailField(blank=True, max_length=320, null=True)
     recovery_phone = models.CharField(blank=True, max_length=32, null=True)
+    resume = models.FileField(upload_to="resumes/", blank=True)
 
     last_active = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
 
-    def api(self):
-        return dict(id=self.id, email=self.email, phone=self.phone)
+    def get_avatar_url(self):
+        return self.avatar.url if self.avatar else self.get_gravatar_url()
 
-    def api_update_fields(self):
-        return [
-            "id",
-            "email",
-            "phone",
+    def get_gravatar_hash(self):
+        return md5(self.user.email.lower().encode()).hexdigest()
 
-            "boolean",
-            "integer",
-            "json",
-            "positive_integer",
-            "slug",
-            "small_integer",
-
-            "recovery_email",
-
-            "last_active",
-            "created_at",
-        ]
+    def get_gravatar_url(self, default="identicon", size=512):
+        return f"https://www.gravatar.com/avatar/{self.get_gravatar_hash()}?d={default}&s={size}"
 
 
 class Role(models.Model):

@@ -10,7 +10,7 @@ from worf.conf import settings
 from worf.exceptions import NotImplementedInWorfYet
 
 
-class ValidationMixin:
+class ValidateFields:
     boolean_values = {
         "1": True,
         "0": False,
@@ -159,10 +159,11 @@ class ValidationMixin:
 
         We expect to set a fully validated bundle keys and values.
         """
-        serializer = self.get_serializer()
+        serializer = self.load_serializer()
+        write_fields = list(serializer.load_fields.keys())
         write_methods = ("PATCH", "POST", "PUT")
 
-        if self.request.method in write_methods and key not in serializer.write():
+        if self.request.method in write_methods and key not in write_fields:
             message = f"{self.keymap[key]} is not editable"
             if settings.WORF_DEBUG:
                 message += f":: {serializer}"

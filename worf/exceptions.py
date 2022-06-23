@@ -1,8 +1,7 @@
 class HTTPException(Exception):
     def __init__(self, message=None):
         super().__init__(message)
-        if message is not None:
-            self.message = message
+        self.message = message or self.message
 
 
 class HTTP400(HTTPException):
@@ -47,9 +46,13 @@ class NamingThingsError(ValueError):
     pass
 
 
-class PermissionsException(Exception):
+class PermissionsError(Exception):
     pass
 
 
 class NotImplementedInWorfYet(NotImplementedError):
+    pass
+
+
+class SerializerError(ValueError):
     pass

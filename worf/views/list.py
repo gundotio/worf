@@ -61,7 +61,7 @@ class ListAPI(AbstractBaseAPI):
             )
             self.search_fields = self.search_fields.get("or", [])
 
-    def get(self, request, *args, **kwargs):
+    def get(self, *args, **kwargs):
         return self.render_to_response()
 
     def _set_base_lookup_kwargs(self):
@@ -175,7 +175,7 @@ class ListAPI(AbstractBaseAPI):
 
     def get_serializer(self):
         if self.list_serializer and self.request.method == "GET":
-            return self.list_serializer(context=self.get_serializer_context())
+            return self.list_serializer(**self.get_serializer_kwargs())
         return super().get_serializer()
 
     def paginated_results(self):
@@ -205,21 +205,10 @@ class ListAPI(AbstractBaseAPI):
         except EmptyPage:
             return []
 
-    def specific_fields(self, result):
-        fields = self.bundle.get("fields", [])
-        if fields:
-            return {key: value for key, value in result.items() if key in fields}
-        return result
-
     def serialize(self):
-        serializer = self.get_serializer()
+        serializer = self.load_serializer()
 
-        payload = {
-            str(self.name): [
-                self.specific_fields(serializer.read(instance))
-                for instance in self.paginated_results()
-            ]
-        }
+        payload = {str(self.name): serializer(many=True).dump(self.paginated_results())}
 
         if self.per_page:
             payload.update(
@@ -232,24 +221,14 @@ class ListAPI(AbstractBaseAPI):
                 }
             )
 
-        if not settings.WORF_DEBUG:
-            return payload
-
-        if not hasattr(self, "lookup_kwargs"):
-            # Debug throws an error in the event there are no lookup_kwargs
-            self.lookup_kwargs = {}
-
-        payload.update(
-            {
-                "debug": {
-                    "bundle": self.bundle,
-                    "lookup_kwargs": self.lookup_kwargs,
-                    "query": self.query,
-                    "search_query": str(self.search_query),
-                    "serializer": str(serializer).strip("<>"),
-                }
+        if settings.WORF_DEBUG:
+            payload["debug"] = {
+                "bundle": self.bundle,
+                "lookup_kwargs": getattr(self, "lookup_kwargs", {}),
+                "query": self.query,
+                "search_query": str(self.search_query),
+                "serializer": str(serializer).strip("<>"),
             }
-        )
 
         return payload
 

@@ -56,6 +56,7 @@ class UserList(CreateAPI, ListAPI):
     model = User
     ordering = ["pk"]
     serializer = UserSerializer(only=[
+        "id",
         "username",
         "date_joined",
         "email",
@@ -78,5 +79,5 @@ class UserList(CreateAPI, ListAPI):
 
 class UserDetail(UpdateAPI, DetailAPI):
     model = User
-    serializer = UserSerializer
+    serializer = UserSerializer(exclude=["date_joined"])
     permissions = [PublicEndpoint]

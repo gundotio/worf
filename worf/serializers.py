@@ -3,9 +3,53 @@ import marshmallow
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FieldFile
 
-from worf import fields  # noqa: F401
-from worf.casing import snake_to_camel
+from worf import fields
+from worf.casing import camel_to_snake, snake_to_camel
 from worf.conf import settings
+from worf.exceptions import SerializerError
+
+
+class SerializeModels:
+    serializer = None
+    staff_serializer = None
+
+    def get_serializer(self):
+        serializer = self.serializer
+
+        if self.staff_serializer and self.request.user.is_staff:  # pragma: no cover
+            serializer = self.staff_serializer
+
+        if not serializer:  # pragma: no cover
+            msg = f"{type(self).__name__}.get_serializer() did not return a serializer"
+            raise ImproperlyConfigured(msg)
+
+        return serializer(**self.get_serializer_kwargs())
+
+    def get_serializer_context(self):
+        return {}
+
+    def get_serializer_kwargs(self):
+        return dict(
+            context=dict(request=self.request, **self.get_serializer_context()),
+            only=self.get_serializer_only(),
+        )
+
+    def get_serializer_only(self):
+        only = self.bundle.get("fields")
+        if isinstance(only, str):
+            only = only.split(",")
+        if isinstance(only, list):
+            only = [".".join(map(camel_to_snake, field.split("."))) for field in only]
+        return only
+
+    def load_serializer(self):
+        try:
+            return self.get_serializer()
+        except ValueError as e:
+            if str(e).startswith("Invalid fields"):
+                invalid_fields = str(e).partition(": ")[2].strip(".")
+                raise SerializerError(f"Invalid fields: {invalid_fields}")
+            raise e  # pragma: no cover
 
 
 class SerializerOptions(marshmallow.SchemaOpts):
@@ -46,13 +90,28 @@ class Serializer(marshmallow.Schema):
     }
 
     def __call__(self, **kwargs):
+        only = self.only
+        if self.only and kwargs.get("only"):
+            invalid_fields = set(kwargs.get("only")) - self.only
+            if invalid_fields:
+                raise SerializerError(f"Invalid fields: {invalid_fields}")
+            only = set(kwargs.get("only"))
+        elif kwargs.get("only"):
+            only = kwargs.get("only")
+
+        exclude = self.exclude
+        if self.exclude and kwargs.get("exclude"):
+            exclude = self.exclude | set(kwargs.get("exclude"))
+        elif kwargs.get("exclude"):
+            exclude = kwargs.get("exclude")
+
         return type(self)(
             context=kwargs.get("context", self.context),
             dump_only=kwargs.get("dump_only", self.dump_only),
-            exclude=kwargs.get("exclude", self.exclude),
+            exclude=exclude,
             load_only=kwargs.get("load_only", self.load_only),
             many=kwargs.get("many", self.many),
-            only=kwargs.get("only", self.only),
+            only=only,
             partial=kwargs.get("partial", self.partial),
             unknown=kwargs.get("unknown", self.unknown),
         )
@@ -70,39 +129,8 @@ class Serializer(marshmallow.Schema):
     def dict_class(self):
         return dict
 
-    def list(self, items):
-        return [self.read(item) for item in items]
-
     def on_bind_field(self, field_name, field_obj):
         field_obj.data_key = snake_to_camel(field_obj.data_key or field_name)
 
-    def read(self, obj):
-        return self.dump(obj)
-
-    def write(self):
-        return list(self.load_fields.keys())
-
     class Meta:
         ordered = True
-
-
-class LegacySerializer:
-    def __init__(self, model_class, api_method):
-        self.api_method = api_method
-        self.model_class = model_class
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__}(model_class={self.model_class.__name__}, api_method="{self.api_method}")>'
-
-    def list(self, items):
-        return [self.read(item) for item in items]
-
-    def read(self, obj):
-        payload = getattr(obj, self.api_method)()
-        if not isinstance(payload, dict):
-            msg = f"{obj.__name__}.{self.api_method}() did not return a dictionary"
-            raise ImproperlyConfigured(msg)
-        return payload
-
-    def write(self):
-        return getattr(self.model_class(), f"{self.api_method}_update_fields")()

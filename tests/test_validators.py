@@ -34,7 +34,6 @@ def profile_view_fixture(db, now, profile_factory):
     ))
     view.request = RequestFactory().patch(f"/{uuid}/")
     view.kwargs = dict(id=str(uuid))
-    view.serializer = None
     return view
 
 

@@ -195,7 +195,7 @@ Validators
 
 Validation handling can be found in `worf.validators`.
 
-The basics come from `ValidationMixin` which `AbstractBaseAPI` inherits from, it
+The basics come from `ValidateFields` which `AbstractBaseAPI` inherits from, it
 performs some coercion on `self.bundle`, potentially resulting in a different
 bundle than what was originally passed to the view.
 

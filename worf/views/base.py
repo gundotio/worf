@@ -17,10 +17,17 @@ from django.views.decorators.cache import never_cache
 
 from worf.casing import camel_to_snake, snake_to_camel
 from worf.conf import settings
-from worf.exceptions import HTTP404, HTTP422, HTTP_EXCEPTIONS, PermissionsException
+from worf.exceptions import (
+    HTTP400,
+    HTTP404,
+    HTTP422,
+    HTTP_EXCEPTIONS,
+    PermissionsError,
+    SerializerError,
+)
 from worf.renderers import render_response
-from worf.serializers import LegacySerializer
-from worf.validators import ValidationMixin
+from worf.serializers import SerializeModels
+from worf.validators import ValidateFields
 
 
 @method_decorator(never_cache, name="dispatch")
@@ -44,12 +51,9 @@ class APIResponse(View):
         return render_response(self.request, data, status_code)
 
 
-class AbstractBaseAPI(APIResponse, ValidationMixin):
+class AbstractBaseAPI(APIResponse, SerializeModels, ValidateFields):
     model = None
     permissions = []
-    api_method = "api"
-    serializer = None
-    staff_serializer = None
     payload_key = None
 
     def __init__(self, *args, **kwargs):
@@ -85,6 +89,38 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
         verbose_name_plural = self.model._meta.verbose_name_plural
         return snake_to_camel(verbose_name_plural.replace(" ", "_").lower())
 
+    def dispatch(self, request, *args, **kwargs):
+        method = request.method.lower()
+        handler = self.http_method_not_allowed
+
+        if method in self.http_method_names:
+            handler = getattr(self, method, self.http_method_not_allowed)
+
+        try:
+            self._check_permissions()  # only returns 200 or HTTP_EXCEPTIONS
+            self.set_bundle_from_request(request)
+            return handler(request, *args, **kwargs)  # calls self.serialize()
+        except HTTP_EXCEPTIONS as e:
+            message = e.message
+            status = e.status
+        except ObjectDoesNotExist as e:
+            if self.model and not isinstance(e, self.model.DoesNotExist):
+                raise e
+            message = HTTP404.message
+            status = HTTP404.status
+        except RequestDataTooBig:
+            self.request._body = self.request.read(None)  # prevent further raises
+            message = f"Max upload size is {filesizeformat(settings.DATA_UPLOAD_MAX_MEMORY_SIZE)}"
+            status = HTTP422.status
+        except SerializerError as e:
+            message = str(e)
+            status = HTTP400.status
+        except ValidationError as e:
+            message = e.message
+            status = HTTP422.status
+
+        return self.render_to_response(dict(message=message), status)
+
     def _check_permissions(self):
         """Return a permissions exception when in debug mode instead of 404."""
         for method in self.permissions:
@@ -94,7 +130,7 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
                 continue
 
             if settings.WORF_DEBUG:
-                raise PermissionsException(
+                raise PermissionsError(
                     "Permissions function {}.{} returned {}. You'd normally see a 404 here but WORF_DEBUG=True.".format(
                         method.__module__, method.__name__, response
                     )
@@ -114,20 +150,6 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
 
     def get_related_model(self, field):
         return self.model._meta.get_field(field).related_model
-
-    def get_serializer(self):
-        context = dict(request=self.request, **self.get_serializer_context())
-        if self.staff_serializer and self.request.user.is_staff:
-            return self.staff_serializer(context=context)
-        if self.serializer:
-            return self.serializer(context=context)
-        if self.api_method:
-            return LegacySerializer(self.model, self.api_method)
-        msg = f"{type(self).__name__}.get_serializer() did not return a serializer"
-        raise ImproperlyConfigured(msg)
-
-    def get_serializer_context(self):
-        return {}
 
     def flatten_bundle(self, raw_bundle):
         # parse_qs gives us a dictionary where all values are lists
@@ -191,29 +213,3 @@ class AbstractBaseAPI(APIResponse, ValidationMixin):
                 pass
 
         self.set_bundle(raw_bundle)
-
-    def dispatch(self, request, *args, **kwargs):
-        method = request.method.lower()
-        handler = self.http_method_not_allowed
-
-        if method in self.http_method_names:
-            handler = getattr(self, method, self.http_method_not_allowed)
-
-        try:
-            self._check_permissions()  # only returns 200 or HTTP_EXCEPTIONS
-            self.set_bundle_from_request(request)
-            return handler(request, *args, **kwargs)  # calls self.serialize()
-        except HTTP_EXCEPTIONS as e:
-            return self.render_to_response(dict(message=e.message), e.status)
-        except ObjectDoesNotExist as e:
-            if self.model and not isinstance(e, self.model.DoesNotExist):
-                raise e
-            return self.render_to_response(
-                dict(message=HTTP404.message), HTTP404.status
-            )
-        except RequestDataTooBig:
-            self.request._body = self.request.read(None)  # prevent further raises
-            message = f"Max upload size is {filesizeformat(settings.DATA_UPLOAD_MAX_MEMORY_SIZE)}"
-            return self.render_to_response(dict(message=message), HTTP422.status)
-        except ValidationError as e:
-            return self.render_to_response(dict(message=e.message), HTTP422.status)

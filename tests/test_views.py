@@ -146,13 +146,13 @@ def test_profile_multipart_create(mock_save, client, db, role, user):
 @patch('django.core.files.storage.FileSystemStorage.save')
 @pytest.mark.parametrize("method", ["PATCH", "PUT"])
 def test_profile_multipart_update(mock_save, client, db, method, profile, role, user):
-    avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
-    mock_save.return_value = "avatar.jpg"
-    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
+    resume = SimpleUploadedFile("resume.pdf", b"", content_type="application/pdf")
+    mock_save.return_value = "resume.pdf"
+    payload = dict(resume=resume, role=role.pk, user=user.pk)
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
     result = response.json()
     assert response.status_code == 200, result
-    assert result["avatar"] == "/avatar.jpg"
+    assert result["resume"] == "/resume.pdf"
     assert result["role"]["id"] == role.pk
     assert result["role"]["name"] == role.name
     assert result["user"]["username"] == user.username
@@ -285,7 +285,15 @@ def test_user_detail(client, db, user):
     response = client.get(f"/users/{user.pk}/")
     result = response.json()
     assert response.status_code == 200, result
+    assert result["id"] == user.pk
     assert result["username"] == user.username
+
+
+def test_user_detail_fields(client, db, user):
+    response = client.get(f"/users/{user.pk}/?fields=username")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert result == dict(username=user.username)
 
 
 def test_user_list(client, db, user):
@@ -293,7 +301,19 @@ def test_user_list(client, db, user):
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["users"]) == 1
+    assert result["users"][0]["id"] == user.pk
     assert result["users"][0]["username"] == user.username
+
+
+def test_user_list_fields(client, db, user):
+    response = client.get("/users/?fields=username")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert result["users"] == [dict(username=user.username)]
+    response = client.get("/users/?fields=invalid")
+    result = response.json()
+    assert response.status_code == 400, result
+    assert result == dict(message="Invalid fields: OrderedSet(['invalid'])")
 
 
 def test_user_list_filters(client, db, user_factory):
