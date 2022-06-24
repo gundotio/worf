@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.9](https://github.com/gundotio/worf/compare/v0.5.8...v0.5.9) (2022-06-24)
+
+- Strip support for legacy serializers [#96](https://github.com/gundotio/worf/pull/96)
+- Pass request + args + kwargs to view CRUD methods
+- Support fields param on detail endpoints in addition to lists
+- Apply fields param filtering in the serialization step
+- Serializer `__call__` now honors only/exclude rules from its predecessors
+
 ### [0.5.8](https://github.com/gundotio/worf/compare/v0.5.7...v0.5.8) (2022-06-16)
 
 - Add queryset support to `Pluck` field
