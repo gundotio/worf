@@ -10,6 +10,7 @@ from worf.casing import camel_to_snake
 from worf.conf import settings
 from worf.exceptions import HTTP420
 from worf.filters import apply_filterset, generate_filterset
+from worf.shortcuts import list_param
 from worf.views.base import AbstractBaseAPI
 from worf.views.create import CreateAPI
 
@@ -131,7 +132,7 @@ class ListAPI(AbstractBaseAPI):
         lookups = self.lookup_kwargs.items()
         filterset_kwargs = {k: v for k, v in lookups if not isinstance(v, list)}
         list_kwargs = {k: v for k, v in lookups if isinstance(v, list)}
-        ordering = self.get_ordering(self.request.GET.getlist("sort"))
+        ordering = self.get_ordering()
 
         queryset = self.get_queryset()
 
@@ -159,10 +160,10 @@ class ListAPI(AbstractBaseAPI):
 
         return queryset
 
-    def get_ordering(self, sorts):
+    def get_ordering(self):
         ordering = []
 
-        for sort in sorts:
+        for sort in list_param(self.bundle.get("sort", [])):
             field = "__".join(map(camel_to_snake, sort.lstrip("-").split(".")))
             if field not in self.sort_fields:
                 continue

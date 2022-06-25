@@ -7,6 +7,7 @@ from worf import fields
 from worf.casing import camel_to_snake, snake_to_camel
 from worf.conf import settings
 from worf.exceptions import SerializerError
+from worf.shortcuts import list_param
 
 
 class SerializeModels:
@@ -31,16 +32,11 @@ class SerializeModels:
     def get_serializer_kwargs(self):
         return dict(
             context=dict(request=self.request, **self.get_serializer_context()),
-            only=self.get_serializer_only(),
+            only=[
+                ".".join(map(camel_to_snake, field.split(".")))
+                for field in list_param(self.bundle.get("fields", []))
+            ],
         )
-
-    def get_serializer_only(self):
-        only = self.bundle.get("fields")
-        if isinstance(only, str):
-            only = only.split(",")
-        if isinstance(only, list):
-            only = [".".join(map(camel_to_snake, field.split("."))) for field in only]
-        return only
 
     def load_serializer(self):
         try:
@@ -88,6 +84,9 @@ class Serializer(marshmallow.Schema):
         **marshmallow.Schema.TYPE_MAPPING,
         FieldFile: fields.File,
     }
+
+    def __init__(self, only=(), *args, **kwargs):
+        super().__init__(only=only or None, *args, **kwargs)
 
     def __call__(self, **kwargs):
         only = self.only
