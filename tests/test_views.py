@@ -279,11 +279,12 @@ def test_user_detail(client, db, user):
     assert result["username"] == user.username
 
 
+@pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
 def test_user_detail_fields(client, db, url, user):
-    response = client.get(url(f"/users/{user.pk}/", {"fields": ["username"]}))
+    response = client.get(url(f"/users/{user.pk}/", {"fields": ["id", "username"]}))
     result = response.json()
     assert response.status_code == 200, result
-    assert result == dict(username=user.username)
+    assert result == dict(id=user.pk, username=user.username)
 
 
 def test_user_list(client, db, user):
@@ -369,8 +370,7 @@ def test_user_list_multisort(client, now, db, url, user_factory):
     user_factory.create(username="b", date_joined=now - timedelta(hours=1))
     user_factory.create(username="c", date_joined=now)
     user_factory.create(username="d", date_joined=now)
-    sort = ["dateJoined", "-id", "x"]
-    response = client.get(url("/users/", {"sort": sort}))
+    response = client.get(url("/users/", {"sort": ["dateJoined", "-id", "x"]}))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["users"]) == 4
