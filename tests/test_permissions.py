@@ -3,8 +3,8 @@ import pytest
 from django.contrib.auth.models import AnonymousUser, User
 from django.test import RequestFactory
 
-from worf.permissions import Authenticated, Staff
 from worf.exceptions import HTTP401, HTTP404
+from worf.permissions import Authenticated, Staff
 
 factory = RequestFactory()
 

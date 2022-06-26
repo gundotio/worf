@@ -1,4 +1,4 @@
-from worf.serializers import fields, Serializer
+from worf.serializers import Serializer, fields
 
 
 class UserSerializer(Serializer):
@@ -20,7 +20,7 @@ class ProfileSerializer(Serializer):
     email = fields.String(attribute="user.email")
     avatar = fields.File(lambda profile: profile.get_avatar_url())
     role = fields.Nested("RoleSerializer")
-    skills = fields.Nested("RatedSkillSerializer", attribute="ratedskill_set", many=True)
+    skills = fields.Nested("SkillSerializer", attribute="ratedskill_set", many=True)
     team = fields.Nested("TeamSerializer")
     tags = fields.Pluck("TagSerializer", "name", many=True)
     user = fields.Nested("UserSerializer")
@@ -71,17 +71,17 @@ class ProfileSerializer(Serializer):
         ]
 
 
-class RatedSkillSerializer(Serializer):
+class RoleSerializer(Serializer):
+    class Meta:
+        fields = ["id", "name"]
+
+
+class SkillSerializer(Serializer):
     id = fields.Integer(attribute="skill.id")
     name = fields.String(attribute="skill.name")
 
     class Meta:
         fields = ["id", "name", "rating"]
-
-
-class RoleSerializer(Serializer):
-    class Meta:
-        fields = ["id", "name"]
 
 
 class TagSerializer(Serializer):

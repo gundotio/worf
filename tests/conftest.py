@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import pytest
 from pytest_factoryboy import register
 
@@ -23,7 +25,7 @@ def pytest_configure():
         PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"],
         ROOT_URLCONF="tests.urls",
         SECRET_KEY="secret",
-        TEMPLATES = [
+        TEMPLATES=[
             {
                 "BACKEND": "django.template.backends.django.DjangoTemplates",
                 "APP_DIRS": True,
@@ -77,6 +79,32 @@ def now_fixture():
     from django.utils import timezone
 
     return timezone.now()
+
+
+@pytest.fixture(name="url")
+def url_fixture(url_params):
+    def url(url, data={}):
+        return f"{url}?{url_params(data)}" if data else url
+
+    return url
+
+
+@pytest.fixture(name="url_params")
+def url_params_fixture(url_params__array_format):
+    def url_params(data):
+        if url_params__array_format == "comma":
+            data = {
+                key: ",".join(map(str, value)) if isinstance(value, list) else value
+                for key, value in data.items()
+            }
+        return urlencode(data, True)
+
+    return url_params
+
+
+@pytest.fixture(name="url_params__array_format")
+def url_params__array_format_fixture():
+    return "repeat"
 
 
 @pytest.fixture(name="user_client")

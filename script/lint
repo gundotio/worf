@@ -5,14 +5,14 @@ cd "$(dirname "$0")/.."
 
 ARROW="\033[93m==>\033[0m"
 
-echo -e "$ARROW autoflake --in-place --recursive --remove-all-unused-imports worf"
-autoflake --in-place --recursive --remove-all-unused-imports worf
+echo -e "$ARROW autoflake --in-place --recursive --remove-all-unused-imports worf tests"
+autoflake --in-place --recursive --remove-all-unused-imports worf tests
 
-echo -e "$ARROW black worf"
-black worf
+echo -e "$ARROW black worf tests"
+black worf tests
 
-echo -e "$ARROW flake8 worf"
-flake8 worf
+echo -e "$ARROW flake8 worf tests"
+flake8 worf tests
 
-echo -e "$ARROW isort worf"
-isort worf
+echo -e "$ARROW isort worf tests"
+isort worf tests

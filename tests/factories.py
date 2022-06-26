@@ -1,7 +1,7 @@
-from django.contrib.auth.models import User
-
 import factory
 from factory.django import DjangoModelFactory
+
+from django.contrib.auth.models import User
 
 from tests.models import Profile, Role, Skill, Tag, Team
 

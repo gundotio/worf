@@ -1,13 +1,12 @@
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db.models import F, Value
 from django.db.models.functions import Concat
 
-from worf.permissions import PublicEndpoint
-from worf.views import CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
-
 from tests.models import Profile
 from tests.serializers import ProfileSerializer, UserSerializer
+from worf.permissions import PublicEndpoint
+from worf.views import CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
 
 
 class ProfileList(CreateAPI, ListAPI):
@@ -55,12 +54,14 @@ class ProfileDetail(DeleteAPI, UpdateAPI, DetailAPI):
 class UserList(CreateAPI, ListAPI):
     model = User
     ordering = ["pk"]
-    serializer = UserSerializer(only=[
-        "id",
-        "username",
-        "date_joined",
-        "email",
-    ])
+    serializer = UserSerializer(
+        only=[
+            "id",
+            "username",
+            "date_joined",
+            "email",
+        ]
+    )
     permissions = [PublicEndpoint]
     filter_fields = [
         "email",

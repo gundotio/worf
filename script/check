@@ -5,11 +5,11 @@ cd "$(dirname "$0")/.."
 
 ARROW="\033[93m==>\033[0m"
 
-echo -e "$ARROW black worf --check"
-black worf --check
+echo -e "$ARROW black worf tests --check"
+black worf tests --check
 
-echo -e "$ARROW flake8 worf"
-flake8 worf
+echo -e "$ARROW flake8 worf tests"
+flake8 worf tests
 
-echo -e "$ARROW isort worf --check"
-isort worf --check
+echo -e "$ARROW isort worf tests --check"
+isort worf tests --check

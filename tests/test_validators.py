@@ -1,6 +1,6 @@
-import pytest
-
 from uuid import uuid4
+
+import pytest
 
 from django.core.exceptions import ValidationError
 
@@ -17,21 +17,23 @@ def profile_view_fixture(db, now, profile_factory):
 
     profile_factory.create(email=email, phone=phone)
     view = ProfileDetail()
-    view.set_bundle(dict(
-        id=str(uuid),
-        email=email,
-        phone=phone,
-        boolean=True,
-        integer=123,
-        json=dict(something=True),
-        positive_integer=123,
-        slug="something",
-        small_integer=123,
-        recovery_email=email,
-        recovery_phone=phone,
-        last_active=now.date().isoformat(),
-        created_at=now.isoformat(),
-    ))
+    view.set_bundle(
+        dict(
+            id=str(uuid),
+            email=email,
+            phone=phone,
+            boolean=True,
+            integer=123,
+            json=dict(something=True),
+            positive_integer=123,
+            slug="something",
+            small_integer=123,
+            recovery_email=email,
+            recovery_phone=phone,
+            last_active=now.date().isoformat(),
+            created_at=now.isoformat(),
+        )
+    )
     view.request = RequestFactory().patch(f"/{uuid}/")
     view.kwargs = dict(id=str(uuid))
     return view

@@ -1,8 +1,8 @@
 from hashlib import md5
 from uuid import uuid4
 
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class Profile(models.Model):
@@ -77,3 +77,12 @@ class Tag(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=100)
+
+
+class UserMixin:
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}".strip() or "Unknown User"
+
+
+User.__bases__ += (UserMixin,)
