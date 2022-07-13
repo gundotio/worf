@@ -10,9 +10,7 @@ phone = "(555) 555-5555"
 
 
 @pytest.fixture(name="profile_view")
-def profile_view_fixture(db, now, profile_factory):
-    from django.test import RequestFactory
-
+def profile_view_fixture(db, now, profile_factory, rf):
     from tests.views import ProfileDetail
 
     profile_factory.create(email=email, phone=phone)
@@ -30,11 +28,11 @@ def profile_view_fixture(db, now, profile_factory):
             small_integer=123,
             recovery_email=email,
             recovery_phone=phone,
-            last_active=now.date().isoformat(),
-            created_at=now.isoformat(),
+            last_active=now().date().isoformat(),
+            created_at=now().isoformat(),
         )
     )
-    view.request = RequestFactory().patch(f"/{uuid}/")
+    view.request = rf.patch(f"/{uuid}/")
     view.kwargs = dict(id=str(uuid))
     return view
 
@@ -74,7 +72,16 @@ def test_validate_bundle_accepts_nulls(profile_view):
     profile_view.validate_bundle("recovery_email")
 
 
-def test_validate_bundle_raises_invalid_field_writes(profile_view):
+def test_validate_bundle_raises_invalid_booleans(profile_view):
+    profile_view.set_bundle(dict(boolean="nooo"))
+
+    with pytest.raises(ValidationError) as e:
+        profile_view.validate_bundle("boolean")
+
+    assert "Field boolean accepts a boolean, got nooo" in str(e.value)
+
+
+def test_validate_bundle_raises_invalid_fields(profile_view):
     profile_view.set_bundle(dict(invalid_field=email))
 
     with pytest.raises(ValidationError) as e:
@@ -83,7 +90,7 @@ def test_validate_bundle_raises_invalid_field_writes(profile_view):
     assert "invalid_field is not editable" in str(e.value)
 
 
-def test_validate_bundle_raises_read_only_field_writes(profile_view):
+def test_validate_bundle_raises_read_only_fields(profile_view):
     with pytest.raises(ValidationError) as e:
         profile_view.validate_bundle("recovery_phone")
 

@@ -19,8 +19,13 @@ def pytest_configure():
         INSTALLED_APPS=[
             "django.contrib.auth",
             "django.contrib.contenttypes",
+            "django.contrib.sessions",
             "tests",
             "worf",
+        ],
+        MIDDLEWARE=[
+            "django.contrib.sessions.middleware.SessionMiddleware",
+            "django.contrib.auth.middleware.AuthenticationMiddleware",
         ],
         PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"],
         ROOT_URLCONF="tests.urls",
@@ -36,7 +41,7 @@ def pytest_configure():
         USE_L10N=False,
         USE_TZ=True,
         WORF_API_NAME="Test API",
-        WORF_DEBUG=True,
+        WORF_DEBUG=False,
     )
 
     django.setup()
@@ -80,7 +85,7 @@ def client_fixture():
 def now_fixture():
     from django.utils import timezone
 
-    return timezone.now()
+    return timezone.now
 
 
 @pytest.fixture(name="url")

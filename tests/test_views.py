@@ -1,5 +1,6 @@
 from datetime import timedelta
 from unittest.mock import patch
+from uuid import uuid4
 
 import pytest
 
@@ -11,6 +12,13 @@ def test_profile_detail(client, db, profile, user):
     result = response.json()
     assert response.status_code == 200, result
     assert result["username"] == user.username
+
+
+def test_profile_not_found(client, db, profile, user):
+    response = client.get(f"/profiles/{uuid4()}/")
+    result = response.json()
+    assert response.status_code == 404, result
+    assert result["message"] == "Not Found"
 
 
 def test_profile_delete(client, db, profile, user):
@@ -281,6 +289,27 @@ def test_profile_update_m2m_through_required_fields(client, db, method, profile,
     assert "Invalid skills" in result["message"]
 
 
+def test_staff_detail(admin_client, profile, user):
+    response = admin_client.get(f"/profiles/{profile.pk}/staff/")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert result["username"] == user.username
+
+
+def test_staff_detail_is_not_found_for_user(user_client, profile, user):
+    response = user_client.get(f"/profiles/{profile.pk}/staff/")
+    result = response.json()
+    assert response.status_code == 404, result
+    assert result["message"] == "Not Found"
+
+
+def test_staff_detail_is_unauthorized_for_guest(client, db, profile, user):
+    response = client.get(f"/profiles/{profile.pk}/staff/")
+    result = response.json()
+    assert response.status_code == 401, result
+    assert result["message"] == "Unauthorized"
+
+
 def test_user_detail(client, db, user):
     response = client.get(f"/users/{user.pk}/")
     result = response.json()
@@ -375,11 +404,12 @@ def test_user_list_sort_desc(client, db, url, user_factory):
 
 
 @pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
-def test_user_list_multisort(client, now, db, url, user_factory):
-    user_factory.create(username="a", date_joined=now)
-    user_factory.create(username="b", date_joined=now - timedelta(hours=1))
-    user_factory.create(username="c", date_joined=now)
-    user_factory.create(username="d", date_joined=now)
+def test_user_list_multisort(client, db, now, url, user_factory):
+    date_joined = now()
+    user_factory.create(username="a", date_joined=date_joined)
+    user_factory.create(username="b", date_joined=date_joined - timedelta(hours=1))
+    user_factory.create(username="c", date_joined=date_joined)
+    user_factory.create(username="d", date_joined=date_joined)
     response = client.get(url("/users/", {"sort": ["dateJoined", "-id", "x"]}))
     result = response.json()
     assert response.status_code == 200, result
@@ -388,6 +418,14 @@ def test_user_list_multisort(client, now, db, url, user_factory):
     assert result["users"][1]["username"] == "d"
     assert result["users"][2]["username"] == "c"
     assert result["users"][3]["username"] == "a"
+
+
+def test_user_self(client, user_client, user):
+    response = client.get("/user/")
+    assert response.status_code == 401
+
+    response = user_client.get("/user/")
+    assert response.status_code == 200
 
 
 def test_user_unique_create_with_existing_value(client, db, user, user_factory):

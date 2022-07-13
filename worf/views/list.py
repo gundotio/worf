@@ -36,19 +36,19 @@ class ListAPI(AbstractBaseAPI):
 
         codepath = self.codepath
 
-        if not isinstance(self.filters, dict):
+        if not isinstance(self.filters, dict):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.filters must be type: dict")
 
-        if not isinstance(self.ordering, list):
+        if not isinstance(self.ordering, list):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.ordering must be type: list")
 
-        if not isinstance(self.filter_fields, list):
+        if not isinstance(self.filter_fields, list):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.filter_fields must be type: list")
 
-        if not isinstance(self.search_fields, (dict, list)):
+        if not isinstance(self.search_fields, (dict, list)):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.search_fields must be type: list")
 
-        if not isinstance(self.sort_fields, list):
+        if not isinstance(self.sort_fields, list):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.sort_fields must be type: list")
 
         # generate a default filterset if a custom one was not provided
