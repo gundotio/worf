@@ -1,35 +1,45 @@
 import pytest
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.test import RequestFactory
 
 from worf.exceptions import HTTP401, HTTP404
-from worf.permissions import Authenticated, Staff
-
-factory = RequestFactory()
+from worf.permissions import Authenticated, PublicEndpoint, Staff
 
 
-@pytest.mark.django_db
-def test_authenticated():
-    request = factory.get("/")
-
+def test_authenticated(db, rf):
+    permission = Authenticated()
+    request = rf.get("/")
     request.user = AnonymousUser()
-    assert isinstance(Authenticated(None, request), HTTP401)
+
+    with pytest.raises(HTTP401):
+        assert permission(request) is None
 
     request.user = User.objects.create(username="test", password="test")
-    assert Authenticated(None, request) == 200
+    assert permission(request) is None
 
 
-@pytest.mark.django_db
-def test_staff():
-    request = factory.get("/")
-
+def test_public_endpoint(db, rf):
+    permission = PublicEndpoint()
+    request = rf.get("/")
     request.user = AnonymousUser()
-    assert isinstance(Staff(None, request), HTTP404)
+    assert permission(request) is None
+    request.user = User.objects.create(username="test", password="test")
+    assert permission(request) is None
+
+
+def test_staff(db, rf):
+    permission = Staff()
+    request = rf.get("/")
+    request.user = AnonymousUser()
+
+    with pytest.raises(HTTP404):
+        assert permission(request) is None
 
     request.user = User.objects.create(username="test", password="test")
-    assert isinstance(Staff(None, request), HTTP404)
+
+    with pytest.raises(HTTP404):
+        assert permission(request) is None
 
     request.user.is_staff = True
     request.user.save()
-    assert Staff(None, request) == 200
+    permission(request)

@@ -1,5 +1,4 @@
 import json
-import types
 import warnings
 from io import BytesIO
 from urllib.parse import parse_qs
@@ -18,10 +17,8 @@ from django.views.decorators.cache import never_cache
 from worf.casing import camel_to_snake, snake_to_camel
 from worf.conf import settings
 from worf.exceptions import (
-    HTTP400,
-    HTTP404,
-    HTTP422,
     HTTP_EXCEPTIONS,
+    AuthenticationError,
     PermissionsError,
     SerializerError,
 )
@@ -59,10 +56,10 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
     def __init__(self, *args, **kwargs):
         self.codepath = f"{self.__module__}.{self.__class__.__name__}"
 
-        if self.model is None:
+        if self.model is None:  # pragma: no cover
             raise ImproperlyConfigured(f"Model is not set on {self.codepath}")
 
-        if not isinstance(self.permissions, list):
+        if not isinstance(self.permissions, list):  # pragma: no cover
             raise ImproperlyConfigured(
                 f"{self.codepath}.permissions must be type: list"
             )
@@ -75,10 +72,6 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
                         self.codepath,
                     ),
                 )
-
-        for method in self.permissions:
-            # append authorization functions to this class
-            setattr(self, method.__name__, types.MethodType(method, self))
 
         super().__init__(*args, **kwargs)
 
@@ -97,53 +90,44 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
             handler = getattr(self, method, self.http_method_not_allowed)
 
         try:
-            self._check_permissions()  # only returns 200 or HTTP_EXCEPTIONS
+            self.check_permissions()
             self.set_bundle_from_request(request)
-            return handler(request, *args, **kwargs)  # calls self.serialize()
+            return handler(request, *args, **kwargs)
         except HTTP_EXCEPTIONS as e:
             message = e.message
             status = e.status
+        except AuthenticationError as e:
+            message = e.message
+            status = 401
         except ObjectDoesNotExist as e:
             if self.model and not isinstance(e, self.model.DoesNotExist):
                 raise e
-            message = HTTP404.message
-            status = HTTP404.status
+            message = "Not Found"
+            status = 404
         except RequestDataTooBig:
             self.request._body = self.request.read(None)  # prevent further raises
             message = f"Max upload size is {filesizeformat(settings.DATA_UPLOAD_MAX_MEMORY_SIZE)}"
-            status = HTTP422.status
+            status = 422
         except SerializerError as e:
-            message = str(e)
-            status = HTTP400.status
+            message = e.message
+            status = 400
         except ValidationError as e:
             message = e.message
-            status = HTTP422.status
+            status = 422
 
         return self.render_to_response(dict(message=message), status)
 
-    def _check_permissions(self):
-        """Return a permissions exception when in debug mode instead of 404."""
-        for method in self.permissions:
-            permission_func = getattr(self, method.__name__)
-            response = permission_func(self.request)
-            if response == 200:
-                continue
-
-            if settings.WORF_DEBUG:
-                raise PermissionsError(
-                    "Permissions function {}.{} returned {}. You'd normally see a 404 here but WORF_DEBUG=True.".format(
-                        method.__module__, method.__name__, response
-                    )
-                )
-
+    def check_permissions(self):
+        for perm in self.permissions:
             try:
-                raise response
-            except TypeError:
-                raise ImproperlyConfigured(
-                    "Permissions function {}.{} must return 200 or an HTTPException".format(
-                        method.__module__, method.__name__
-                    )
-                )
+                perm()(self.request, **self.kwargs)
+            except HTTP_EXCEPTIONS as e:
+                if settings.WORF_DEBUG:
+                    raise PermissionsError(
+                        f"Permission check {perm.__module__}.{perm.__name__} raised {e.__class__.__name__}. "
+                        f"You'd normally see a {e.status} here but WORF_DEBUG=True."
+                    ) from e
+                raise e
 
     def get_instance(self):
         return self.instance if hasattr(self, "instance") else None

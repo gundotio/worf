@@ -42,6 +42,12 @@ class HTTP422(HTTPException):
 HTTP_EXCEPTIONS = (HTTP400, HTTP401, HTTP404, HTTP409, HTTP410, HTTP420, HTTP422)
 
 
+class AuthenticationError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 class NamingThingsError(ValueError):
     pass
 
@@ -55,4 +61,6 @@ class NotImplementedInWorfYet(NotImplementedError):
 
 
 class SerializerError(ValueError):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
