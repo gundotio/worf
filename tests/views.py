@@ -5,7 +5,8 @@ from django.db.models.functions import Concat
 
 from tests.models import Profile
 from tests.serializers import ProfileSerializer, UserSerializer
-from worf.permissions import PublicEndpoint
+from worf.exceptions import AuthenticationError
+from worf.permissions import Authenticated, PublicEndpoint, Staff
 from worf.views import CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
 
 
@@ -51,6 +52,10 @@ class ProfileDetail(DeleteAPI, UpdateAPI, DetailAPI):
         return "+5555555555"
 
 
+class StaffDetail(ProfileDetail):
+    permissions = [Authenticated, Staff]
+
+
 class UserList(CreateAPI, ListAPI):
     model = User
     ordering = ["pk"]
@@ -82,3 +87,14 @@ class UserDetail(UpdateAPI, DetailAPI):
     model = User
     serializer = UserSerializer(exclude=["date_joined"])
     permissions = [PublicEndpoint]
+
+
+class UserSelf(DetailAPI):
+    model = User
+    serializer = UserSerializer
+    permissions = [PublicEndpoint]
+
+    def get_instance(self):
+        if not self.request.user.is_authenticated:
+            raise AuthenticationError("Log in with your username and password")
+        return self.request.user

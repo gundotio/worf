@@ -1,17 +1,22 @@
 from worf.exceptions import HTTP401, HTTP404
 
 
-def Authenticated(self, request):
-    if not request.user.is_authenticated:
-        return HTTP401()
-    return 200
+class Authenticated:
+    def __call__(self, request, **kwargs):
+        if request.user.is_authenticated:
+            return
+
+        raise HTTP401()
 
 
-def Staff(self, request):
-    if not request.user.is_authenticated or not request.user.is_staff:
-        return HTTP404()
-    return 200
+class PublicEndpoint:
+    def __call__(self, request, **kwargs):
+        pass
 
 
-def PublicEndpoint(self, request):
-    return 200
+class Staff:
+    def __call__(self, request, **kwargs):
+        if request.user.is_authenticated and request.user.is_staff:
+            return
+
+        raise HTTP404()

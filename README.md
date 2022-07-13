@@ -179,15 +179,8 @@ WORF_SERIALIZER_DEFAULT_OPTIONS = {
 Permissions
 -----------
 
-Permissions functions can be found in `worf.permissions`.
-
-These functions extend the API View, so they require `self` to be defined as a
-parameter. This is done in order to allow access to `self.request` during
-permission testing.
-
-If permissions should be granted, functions should return `int(200)`.
-
-If permissions fail, they should return an `HTTPException`
+Permissions are callable classes that can be found in `worf.permissions`, they're passed
+the `request` and `kwargs` from the view, and raise an exception if the check fails.
 
 
 Validators

@@ -15,12 +15,12 @@ class AnnotatedModelFilterSet(ModelFilterSet):
             state = self._build_state()
 
             for name in self.queryset.query.annotations.keys():
-                if name in self.Meta.exclude or name in filters:
+                if name in self.Meta.exclude or name in filters:  # pragma: no cover
                     continue
 
                 try:
                     annotation_filter = self._build_annotation_filter(name, state)
-                except SkipFilter:
+                except SkipFilter:  # pragma: no cover
                     continue
 
                 if annotation_filter is not None:
@@ -31,11 +31,11 @@ class AnnotatedModelFilterSet(ModelFilterSet):
     def _build_annotation_filter(self, name, state):
         field = self.queryset.query.annotations.get(name).output_field
 
-        if isinstance(field, RelatedField):
+        if isinstance(field, RelatedField):  # pragma: no cover
             if not self.Meta.allow_related:
                 raise SkipFilter
             return self._build_filterset_from_related_field(name, field)
-        elif isinstance(field, ForeignObjectRel):
+        elif isinstance(field, ForeignObjectRel):  # pragma: no cover
             if not self.Meta.allow_related_reverse:
                 raise SkipFilter
             return self._build_filterset_from_reverse_field(name, field)
