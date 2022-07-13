@@ -22,5 +22,5 @@ class CreateAPI(AssignAttributes, AbstractBaseAPI):
 
     def post(self, *args, **kwargs):
         instance = self.create(*args, **kwargs)
-        result = self.load_serializer().dump(instance)
+        result = self.load_serializer().dump(instance) if instance else ""
         return self.render_to_response(result, 201)
