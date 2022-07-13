@@ -51,7 +51,7 @@ class APIResponse(View):
         return render_response(self.request, data, status_code)
 
 
-class AbstractBaseAPI(APIResponse, SerializeModels, ValidateFields):
+class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
     model = None
     permissions = []
     payload_key = None

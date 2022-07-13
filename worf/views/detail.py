@@ -14,9 +14,6 @@ class DetailAPI(FindInstance, AbstractBaseAPI):
             return self.detail_serializer(**self.get_serializer_kwargs())
         return super().get_serializer()
 
-    def serialize(self):
-        return self.load_serializer().dump(self.get_instance())
-
 
 class DetailUpdateAPI(UpdateAPI, DetailAPI):
     pass

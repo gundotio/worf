@@ -47,6 +47,9 @@ class SerializeModels:
                 raise SerializerError(f"Invalid fields: {invalid_fields}")
             raise e  # pragma: no cover
 
+    def serialize(self):
+        return self.load_serializer().dump(self.get_instance())
+
 
 class SerializerOptions(marshmallow.SchemaOpts):
     def __init__(self, meta, **kwargs):
