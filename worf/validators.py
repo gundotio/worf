@@ -176,7 +176,7 @@ class ValidateFields:
         )
 
         if key not in self.secure_fields and isinstance(self.bundle[key], str):
-            self.bundle[key] = self.bundle[key].strip()
+            self.bundle[key] = self.bundle[key].replace("\x00", "").strip()
 
         if not hasattr(self.model, key) and not annotation:
             raise ValidationError(f"{self.keymap[key]} does not exist")
