@@ -39,6 +39,16 @@ def profile_view_fixture(db, now, profile_factory):
     return view
 
 
+def test_strip_fields(profile_view):
+    profile_view.set_bundle(dict(slug="te\x00st "))
+    profile_view.validate_bundle("slug") == "test"
+
+    profile_view.secure_fields = ["slug"]
+
+    profile_view.set_bundle(dict(slug="te\x00st "))
+    profile_view.validate_bundle("slug") == "te\x00st "
+
+
 def test_validate_bundle(profile_view):
     profile_view.validate_bundle("id")
     profile_view.validate_bundle("email")
