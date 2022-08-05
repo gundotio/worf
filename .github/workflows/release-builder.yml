@@ -31,6 +31,8 @@ jobs:
         with:
           tag-annotation-template: |
             chore(release): {VERSION}
+          tag-template: |
+            {VERSION}
           version-command: |
             python -c "import worf; print(worf.__version__)"
 
