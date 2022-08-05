@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.10](https://github.com/gundotio/worf/compare/v0.5.9...v0.5.10) (2022-08-05)
+
+- Strip null chars from bundle [#99](https://github.com/gundotio/worf/pull/99)
+- Support standalone DeleteAPI and UpdateAPI without DetailAPI [#97](https://github.com/gundotio/worf/pull/97)
+- Switch CreateAPI to empty response when no instance is returned [#97](https://github.com/gundotio/worf/pull/97)
+- Switch creates to empty response if no instance [99dc420](https://github.com/gundotio/worf/commit/99dc420)
+- Support comma-separated sorts [6b35678](https://github.com/gundotio/worf/commit/6b35678)
+
 ### [0.5.9](https://github.com/gundotio/worf/compare/v0.5.8...v0.5.9) (2022-06-24)
 
 - Strip support for legacy serializers [#96](https://github.com/gundotio/worf/pull/96)
