@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.11](https://github.com/gundotio/worf/compare/v0.5.10...v0.5.11) (2022-08-05)
+
+- No changes
+
 ### [0.5.10](https://github.com/gundotio/worf/compare/v0.5.9...v0.5.10) (2022-08-05)
 
 - Strip null chars from bundle [#99](https://github.com/gundotio/worf/pull/99)
