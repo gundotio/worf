@@ -1,0 +1,85 @@
+name: Release builder
+
+on:
+  push:
+    branches:
+      - master
+
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Release
+        default: patch
+        options: [major, minor, patch]
+        type: choice
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - uses: salsify/action-detect-and-tag-new-version@v2
+        with:
+          tag-annotation-template: |
+            chore(release): {VERSION}
+          version-command: |
+            python -c "import worf; print(worf.__version__)"
+
+      - id: builder
+        uses: mikepenz/release-changelog-builder-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          configuration: .github/workflows/changelog-builder.json
+          toTag: HEAD
+
+      - id: commit
+        uses: pr-mpt/actions-commit-hash@v1
+
+      - id: semvers
+        uses: wyrihaximus/github-action-next-semvers@v1
+        with:
+          version: ${{ steps.builder.outputs.fromTag }}
+
+      - id: vars
+        run: |
+          echo "::set-output name=heading::${{ (inputs.release || 'patch') == 'patch' && '###' || '##' }}"
+          echo "::set-output name=version::${{ steps.semvers.outputs[inputs.release || 'patch'] }}"
+
+      - run: echo -e "# Changelog\n" > NEXT.md
+      - run: echo -e "All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
+      - run: echo -e "${{ steps.vars.outputs.heading }} [${{ steps.vars.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...v${{ steps.vars.outputs.version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
+      - run: echo -e "${{ steps.builder.outputs.changelog }}" >> NEXT.md
+      - run: cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md
+      - run: mv NEXT.md CHANGELOG.md
+
+      - run: echo '__version__ = "v${{ steps.vars.outputs.version }}"' > worf/__init__.py
+
+      - uses: peter-evans/create-pull-request@v4
+        with:
+          title: Release ${{ steps.vars.outputs.version }}
+          body: |
+            ## Release [${{ steps.vars.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...${{ steps.commit.outputs.short }})
+
+            ${{ steps.builder.outputs.changelog }}
+
+            <details>
+              <summary>View source</summary>
+              <pre><code>${{ steps.builder.outputs.changelog }}</code></pre>
+            </details>
+          author: GitHub <noreply@github.com>
+          base: master
+          branch: release
+          committer: GitHub <noreply@github.com>
+          commit-message: |
+            chore(release): ${{ steps.vars.outputs.version }}
+          delete-branch: true

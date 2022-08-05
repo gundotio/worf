@@ -1,0 +1,7 @@
+{
+    "categories": [],
+    "empty_template": "- No changes\n",
+    "pr_template": "- ${{TITLE}} [#${{NUMBER}}](https://github.com/gundotio/worf/pull/${{NUMBER}})",
+    "sort": {"on_property": "title", "order": "ASC"},
+    "template": "${{UNCATEGORIZED}}"
+}
