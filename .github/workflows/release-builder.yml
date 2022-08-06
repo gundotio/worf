@@ -27,7 +27,8 @@ jobs:
         with:
           python-version: 3.9
 
-      - uses: salsify/action-detect-and-tag-new-version@v2
+      - id: tagger
+        uses: salsify/action-detect-and-tag-new-version@v2
         with:
           tag-annotation-template: |
             chore(release): {VERSION}
@@ -44,33 +45,37 @@ jobs:
           configuration: .github/workflows/changelog-builder.json
           toTag: HEAD
 
-      - id: commit
+      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
+        id: commit
         uses: pr-mpt/actions-commit-hash@v1
 
-      - id: semvers
+      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
+        id: semver
         uses: wyrihaximus/github-action-next-semvers@v1
         with:
           version: ${{ steps.builder.outputs.fromTag }}
 
-      - id: vars
+      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
+        id: next
         run: |
           echo "::set-output name=heading::${{ (inputs.release || 'patch') == 'patch' && '###' || '##' }}"
-          echo "::set-output name=version::${{ steps.semvers.outputs[inputs.release || 'patch'] }}"
+          echo "::set-output name=version::${{ steps.semver.outputs[inputs.release || 'patch'] }}"
 
-      - run: echo -e "# Changelog\n" > NEXT.md
-      - run: echo -e "All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
-      - run: echo -e "${{ steps.vars.outputs.heading }} [${{ steps.vars.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...v${{ steps.vars.outputs.version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
-      - run: echo -e "${{ steps.builder.outputs.changelog }}" >> NEXT.md
-      - run: cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md
-      - run: mv NEXT.md CHANGELOG.md
+      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
+        run: |
+          echo -e "# Changelog\n" > NEXT.md
+          echo -e "All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
+          echo -e "${{ steps.next.outputs.heading }} [${{ steps.next.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...v${{ steps.next.outputs.version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
+          echo -e "${{ steps.builder.outputs.changelog }}" >> NEXT.md
+          cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md && mv NEXT.md CHANGELOG.md
+          echo '__version__ = "v${{ steps.next.outputs.version }}"' > worf/__init__.py
 
-      - run: echo '__version__ = "v${{ steps.vars.outputs.version }}"' > worf/__init__.py
-
-      - uses: peter-evans/create-pull-request@v4
+      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
+        uses: peter-evans/create-pull-request@v4
         with:
-          title: Release ${{ steps.vars.outputs.version }}
+          title: Release ${{ steps.next.outputs.version }}
           body: |
-            ## Release [${{ steps.vars.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...${{ steps.commit.outputs.short }})
+            ## Release [${{ steps.next.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...${{ steps.commit.outputs.short }})
 
             ${{ steps.builder.outputs.changelog }}
 
@@ -83,5 +88,5 @@ jobs:
           branch: release
           committer: GitHub <noreply@github.com>
           commit-message: |
-            chore(release): ${{ steps.vars.outputs.version }}
+            chore(release): ${{ steps.next.outputs.version }}
           delete-branch: true
