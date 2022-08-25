@@ -46,6 +46,7 @@ def pytest_configure():
         RoleFactory,
         SkillFactory,
         TagFactory,
+        TaskFactory,
         TeamFactory,
         UserFactory,
     )
@@ -54,6 +55,7 @@ def pytest_configure():
     register(RoleFactory, "role")
     register(SkillFactory, "skill")
     register(TagFactory, "tag")
+    register(TaskFactory, "task")
     register(TeamFactory, "team")
     register(UserFactory, "user")
 

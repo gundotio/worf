@@ -37,18 +37,27 @@ class AssignAttributes:
 
     def set_foreign_key(self, instance, key, value):
         related_model = self.get_related_model(key)
-        try:
-            related_instance = (
-                related_model.objects.get(pk=value) if value is not None else None
-            )
-        except related_model.DoesNotExist as e:
-            raise ValidationError(f"Invalid {self.keymap[key]}") from e
-        setattr(instance, key, related_instance)
+        related_model_meta = getattr(related_model, "Api", None)
+        lookup_field = getattr(related_model_meta, "lookup_field", "pk")
+        if value is not None:
+            try:
+                value = related_model.objects.get(**{lookup_field: value})
+            except related_model.DoesNotExist as e:
+                raise ValidationError(f"Invalid {self.keymap[key]}") from e
+        setattr(instance, key, value)
 
     def set_many_to_many(self, instance, key, value):
+        related_manager = getattr(instance, key)
+        related_model = related_manager.model
+        related_model_meta = getattr(related_model, "Api", None)
+        lookup_field = getattr(related_model_meta, "lookup_field", "pk")
         try:
-            getattr(instance, key).set(value)
-        except (IntegrityError, ValueError) as e:
+            if lookup_field != "pk":
+                results = related_model.objects.filter(**{f"{lookup_field}__in": value})
+                assert len(results) == len(value)
+                value = results
+            related_manager.set(value)
+        except (AssertionError, IntegrityError, ValueError) as e:
             raise ValidationError(f"Invalid {self.keymap[key]}") from e
 
     def set_many_to_many_with_through(self, instance, key, value):

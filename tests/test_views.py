@@ -200,6 +200,16 @@ def test_profile_update_m2m_can_be_empty(client, db, method, profile, tag):
 
 
 @pytest.mark.parametrize("method", ["PATCH", "PUT"])
+def test_profile_update_m2m_lookup_field(client, db, method, profile, task):
+    payload = dict(tasks=[task.custom_id])
+    response = client.generic(method, f"/profiles/{profile.pk}/", payload)
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["tasks"]) == 1
+    assert result["tasks"][0] == task.name
+
+
+@pytest.mark.parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_is_not_nullable(client, db, method, profile, tag):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(tags=None))
     result = response.json()

@@ -23,6 +23,7 @@ class ProfileSerializer(Serializer):
     skills = fields.Nested("SkillSerializer", attribute="ratedskill_set", many=True)
     team = fields.Nested("TeamSerializer")
     tags = fields.Pluck("TagSerializer", "name", many=True)
+    tasks = fields.Pluck("TaskSerializer", "name", many=True)
     user = fields.Nested("UserSerializer")
 
     class Meta:
@@ -44,6 +45,7 @@ class ProfileSerializer(Serializer):
             "skills",
             "team",
             "tags",
+            "tasks",
             "user",
             "last_active",
             "created_at",
@@ -65,6 +67,7 @@ class ProfileSerializer(Serializer):
             "skills",
             "team",
             "tags",
+            "tasks",
             "user",
             "last_active",
             "created_at",
@@ -85,6 +88,13 @@ class SkillSerializer(Serializer):
 
 
 class TagSerializer(Serializer):
+    class Meta:
+        fields = ["id", "name"]
+
+
+class TaskSerializer(Serializer):
+    id = fields.UUID(attribute="custom_id")
+
     class Meta:
         fields = ["id", "name"]
 
