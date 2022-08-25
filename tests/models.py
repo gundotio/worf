@@ -23,6 +23,7 @@ class Profile(models.Model):
     role = models.ForeignKey("Role", on_delete=models.CASCADE)
     team = models.ForeignKey("Team", blank=True, null=True, on_delete=models.SET_NULL)
     skills = models.ManyToManyField("Skill", through="RatedSkill")
+    tasks = models.ManyToManyField("Task")
     tags = models.ManyToManyField("Tag")
 
     recovery_email = models.EmailField(blank=True, max_length=320, null=True)
@@ -73,6 +74,14 @@ class RatedSkill(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=200)
+
+
+class Task(models.Model):
+    custom_id = models.UUIDField(default=uuid4)
+    name = models.CharField(max_length=200)
+
+    class Api:
+        lookup_field = "custom_id"
 
 
 class Team(models.Model):

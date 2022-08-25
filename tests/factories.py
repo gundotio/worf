@@ -3,7 +3,7 @@ from factory.django import DjangoModelFactory
 
 from django.contrib.auth.models import User
 
-from tests.models import Profile, Role, Skill, Tag, Team
+from tests.models import Profile, Role, Skill, Tag, Task, Team
 
 
 class ProfileFactory(DjangoModelFactory):
@@ -39,6 +39,13 @@ class TagFactory(DjangoModelFactory):
 
     class Meta:
         model = Tag
+
+
+class TaskFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda i: f"Task {i}")
+
+    class Meta:
+        model = Task
 
 
 class TeamFactory(DjangoModelFactory):
