@@ -27,7 +27,9 @@ class AssignAttributes:
 
         for key, attr, value in items:
             if isinstance(attr.field, models.ManyToManyField):
-                if not attr.through._meta.auto_created:
+                has_through = not attr.through._meta.auto_created
+
+                if has_through and any(isinstance(item, dict) for item in value):
                     self.set_many_to_many_with_through(instance, key, value)
                     continue
 
