@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.11](https://github.com/gundotio/worf/compare/v0.5.10...v0.5.11) (2022-08-29)
+
+- (Improvement) Support assigning pivotless through m2m relations [#103](https://github.com/gundotio/worf/pull/103)
+- (Improvement) Support assigning relations via custom lookup fields [#105](https://github.com/gundotio/worf/pull/105)
+- Release 0.5.11 [#104](https://github.com/gundotio/worf/pull/104)
+
 ### [0.5.11](https://github.com/gundotio/worf/compare/v0.5.10...v0.5.11) (2022-08-25)
 
 - (Improvement) Support assigning pivotless through m2m relations [#103](https://github.com/gundotio/worf/pull/103)
