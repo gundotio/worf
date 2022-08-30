@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.12](https://github.com/gundotio/worf/compare/v0.5.11...v0.5.12) (2022-08-30)
+
+- Switch permissions to classes and raise rather than return [#98](https://github.com/gundotio/worf/pull/98)
+
 ### [0.5.11](https://github.com/gundotio/worf/compare/v0.5.10...v0.5.11) (2022-08-25)
 
 - (Improvement) Support assigning pivotless through m2m relations [#103](https://github.com/gundotio/worf/pull/103)
