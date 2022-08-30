@@ -1,9 +1,14 @@
 name: Package updates
 
 on:
-  workflow_dispatch: ~
   schedule:
     - cron: "0 0 * * 1"
+
+  workflow_dispatch: ~
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   package-updates:

@@ -8,26 +8,32 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: Release
+        description: Next release
         default: patch
         options: [major, minor, patch]
         type: choice
+      force_publish:
+        description: Force publish
+        type: boolean
+      force_pr:
+        description: Force pull request
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
-  release:
+  detect_release:
+    name: Detect release
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 2
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-
-      - id: tagger
+      - id: tag
         uses: salsify/action-detect-and-tag-new-version@v2
         with:
           tag-annotation-template: |
@@ -37,6 +43,101 @@ jobs:
           version-command: |
             cat worf/__init__.py | cut -d = -f 2 | xargs
 
+    outputs:
+      created_tag: ${{ steps.tag.outputs.tag }}
+      current_version: ${{ steps.tag.outputs.current-version }}
+      previous_version: ${{ steps.tag.outputs.previous-version }}
+
+  publish_release:
+    if: inputs.force_publish || needs.detect_release.outputs.created_tag
+    name: Publish release
+    runs-on: ubuntu-latest
+    needs: detect_release
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "::set-output name=actor_image::https://res.cloudinary.com/gun/image/fetch/c_fill,w_512,h_512,f_jpg,q_100/${{ github.server_url }}/${{ github.actor }}.png"
+          echo "::set-output name=actor_name::$(gh api users/${{ github.actor }} -q .name)"
+          echo "::set-output name=actor_url::${{ github.server_url }}/${{ github.actor }}"
+          echo "::set-output name=compare_url::${{ github.server_url }}/${{ github.repository }}/compare/v${{ needs.detect_release.outputs.previous_version }}...v${{ needs.detect_release.outputs.current_version }}"
+          echo "::set-output name=notes::$(cat CHANGELOG.md | sed -e '1,6d' | head -n 20 | perl -0pe 's/(?s)\n\n.*/\n/' | sed 's/^-/•/g' | sed -r 's/\[#(.*)\]\((.*)\)/<\2|#\1>/g' | perl -0pe 's/(?s)\n/\\n/g')"
+          echo "::set-output name=package_name::worf"
+          echo "::set-output name=project_name::pypi.org"
+          echo "::set-output name=project_url::https://pypi.org/project/worf/"
+          echo "::set-output name=run_url::${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - if: always()
+        id: slack
+        uses: slackapi/slack-github-action@v1.21.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
+        with:
+          channel-id: C0306G288J0
+          payload: |
+            {
+              "username": "${{ steps.notes.outputs.actor_name }}",
+              "icon_url": "${{ steps.notes.outputs.actor_image }}",
+              "text": "🚀 ${{ steps.notes.outputs.actor_name }} released ${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }} to ${{ steps.notes.outputs.project_name }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ steps.notes.outputs.run_url }}|:buffering:> <${{ steps.notes.outputs.actor_url }}|${{ steps.notes.outputs.actor_name }}> released <${{ steps.notes.outputs.compare_url }}|${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }}> to <${{ steps.notes.outputs.project_url }}|${{ steps.notes.outputs.project_name }}>\n${{ steps.notes.outputs.notes }}"
+                  }
+                }
+              ]
+            }
+
+      - id: build
+        run: script/package --build
+
+      - run: script/package --dry-run
+        env:
+          TWINE_PASSWORD: ${{ secrets.PYPI_TEST_TOKEN }}
+
+      - id: release
+        run: script/package --release
+        env:
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
+      - if: always()
+        uses: slackapi/slack-github-action@v1.21.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
+        with:
+          channel-id: C0306G288J0
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": "${{ steps.build.conclusion == steps.release.conclusion == 'success' && '🚀' || ':cross:' }} ${{ steps.notes.outputs.actor_name }} released ${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }} to ${{ steps.notes.outputs.project_name }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ steps.notes.outputs.run_url }}|${{ steps.build.conclusion == steps.release.conclusion == 'success' && '🚀' || ':cross:' }}> <${{ steps.notes.outputs.actor_url }}|${{ steps.notes.outputs.actor_name }}> released <${{ steps.notes.outputs.compare_url }}|${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }}> to <${{ steps.notes.outputs.project_url }}|${{ steps.notes.outputs.project_name }}>\n${{ steps.notes.outputs.notes }}"
+                  }
+                }
+              ]
+            }
+
+  build_changelog:
+    if: always() && needs.publish_release.result != 'failure'
+    name: Build changelog
+    runs-on: ubuntu-latest
+    needs: publish_release
+
+    steps:
+      - uses: actions/checkout@v3
+
       - id: builder
         uses: mikepenz/release-changelog-builder-action@v3
         env:
@@ -45,48 +146,56 @@ jobs:
           configuration: .github/workflows/changelog-builder.json
           toTag: HEAD
 
-      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
-        id: commit
-        uses: pr-mpt/actions-commit-hash@v1
-
-      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
-        id: semver
+      - id: semver
         uses: wyrihaximus/github-action-next-semvers@v1
         with:
           version: ${{ steps.builder.outputs.fromTag }}
 
-      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
-        id: next
-        run: |
-          echo "::set-output name=heading::${{ (inputs.release || 'patch') == 'patch' && '###' || '##' }}"
-          echo "::set-output name=version::${{ steps.semver.outputs[inputs.release || 'patch'] }}"
+    outputs:
+      has_prs: ${{ steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs }}
+      previous_version: ${{ steps.builder.outputs.fromTag }}
+      next_version: ${{ steps.semver.outputs[inputs.release || 'patch'] }}
+      notes: ${{ steps.builder.outputs.changelog }}
+      release: ${{ inputs.release || 'patch' }}
 
-      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
-        run: |
+  create_pr:
+    if: always() && inputs.force_pr || needs.build_changelog.outputs.has_prs
+    name: Create pull request
+    runs-on: ubuntu-latest
+    needs: build_changelog
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - id: commit
+        uses: pr-mpt/actions-commit-hash@v1
+
+      - run: |
           echo -e "# Changelog\n" > NEXT.md
-          echo -e "All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
-          echo -e "${{ steps.next.outputs.heading }} [${{ steps.next.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...v${{ steps.next.outputs.version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
-          echo -e "${{ steps.builder.outputs.changelog }}" >> NEXT.md
+          echo -e "All notable changes to this project will be documented in this file. See [standard-version](${{ github.server_url }}/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
+          echo -e "${{ needs.build_changelog.outputs.release == 'patch' && '###' || '##' }} [${{ needs.build_changelog.outputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ needs.build_changelog.outputs.previous_version }}...v${{ needs.build_changelog.outputs.next_version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
+          echo -e "${{ needs.build_changelog.outputs.notes }}" >> NEXT.md
           cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md && mv NEXT.md CHANGELOG.md
           echo '__version__ = "v${{ steps.next.outputs.version }}"' > worf/__init__.py
 
-      - if: inputs.release || steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs
-        uses: peter-evans/create-pull-request@v4
+      - uses: peter-evans/create-pull-request@v4
         with:
-          title: Release ${{ steps.next.outputs.version }}
+          title: Release ${{ needs.build_changelog.outputs.next_version }}
           body: |
-            ## Release [${{ steps.next.outputs.version }}](https://github.com/gundotio/worf/compare/${{ steps.builder.outputs.fromTag }}...${{ steps.commit.outputs.short }})
+            ## Release [${{ needs.build_changelog.outputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ needs.build_changelog.outputs.previous_version }}...${{ steps.commit.outputs.short }})
 
-            ${{ steps.builder.outputs.changelog }}
+            ${{ needs.build_changelog.outputs.notes }}
 
             <details>
               <summary>View source</summary>
-              <pre><code>${{ steps.builder.outputs.changelog }}</code></pre>
+              <pre><code>${{ needs.build_changelog.outputs.notes }}</code></pre>
             </details>
           author: GitHub <noreply@github.com>
           base: master
           branch: release
           committer: GitHub <noreply@github.com>
           commit-message: |
-            chore(release): ${{ steps.next.outputs.version }}
+            chore(release): ${{ needs.build_changelog.outputs.next_version }}
           delete-branch: true
