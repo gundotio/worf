@@ -38,10 +38,8 @@ jobs:
         with:
           tag-annotation-template: |
             chore(release): {VERSION}
-          tag-template: |
-            {VERSION}
           version-command: |
-            cat worf/__init__.py | cut -d = -f 2 | xargs
+            cat worf/__init__.py | cut -d = -f 2 | xargs | cut -d v -f 2
 
     outputs:
       created_tag: ${{ steps.tag.outputs.tag }}
@@ -121,13 +119,13 @@ jobs:
           update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "${{ steps.build.conclusion == steps.release.conclusion == 'success' && '🚀' || ':cross:' }} ${{ steps.notes.outputs.actor_name }} released ${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }} to ${{ steps.notes.outputs.project_name }}",
+              "text": "${{ steps.build.conclusion == 'success' && steps.release.conclusion == 'success' && '🚀' || ':cross:' }} ${{ steps.notes.outputs.actor_name }} released ${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }} to ${{ steps.notes.outputs.project_name }}",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ steps.notes.outputs.run_url }}|${{ steps.build.conclusion == steps.release.conclusion == 'success' && '🚀' || ':cross:' }}> <${{ steps.notes.outputs.actor_url }}|${{ steps.notes.outputs.actor_name }}> released <${{ steps.notes.outputs.compare_url }}|${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }}> to <${{ steps.notes.outputs.project_url }}|${{ steps.notes.outputs.project_name }}>\n${{ steps.notes.outputs.notes }}"
+                    "text": "<${{ steps.notes.outputs.run_url }}|${{ steps.build.conclusion == 'success' && steps.release.conclusion == 'success' && '🚀' || ':cross:' }}> <${{ steps.notes.outputs.actor_url }}|${{ steps.notes.outputs.actor_name }}> released <${{ steps.notes.outputs.compare_url }}|${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }}> to <${{ steps.notes.outputs.project_url }}|${{ steps.notes.outputs.project_name }}>\n${{ steps.notes.outputs.notes }}"
                   }
                 }
               ]
