@@ -35,7 +35,7 @@ jobs:
           tag-template: |
             {VERSION}
           version-command: |
-            python -c "import worf; print(worf.__version__)"
+            cat worf/__init__.py | cut -d = -f 2 | xargs
 
       - id: builder
         uses: mikepenz/release-changelog-builder-action@v3
