@@ -1,4 +1,5 @@
 import marshmallow
+from marshmallow.decorators import *  # noqa: F401, F403
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FieldFile
