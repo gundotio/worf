@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.14](https://github.com/gundotio/worf/compare/v0.5.13...v0.5.14) (2022-09-16)
+
+- (Improvement) Support assigning through via custom lookup fields [#111](https://github.com/gundotio/worf/pull/111)
+
 ### [0.5.13](https://github.com/gundotio/worf/compare/v0.5.12...v0.5.13) (2022-09-10)
 
 - (Improvement) Import marshmallow decorators into serializers [#109](https://github.com/gundotio/worf/pull/109)
