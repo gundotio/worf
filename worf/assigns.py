@@ -35,27 +35,31 @@ class AssignAttributes:
 
                 self.set_many_to_many(instance, key, value)
 
+    def resolve_relation(self, key, value):
+        related_model = getattr(self.model, key).field.related_model
+        lookup_field = getattr(getattr(related_model, "Api", ""), "lookup_field", "pk")
+        try:
+            value = related_model.objects.get(**{lookup_field: value})
+        except related_model.DoesNotExist as e:
+            raise ValueError from e
+        return value
+
     def set_foreign_key(self, instance, key, value):
-        related_model = self.get_related_model(key)
-        related_model_meta = getattr(related_model, "Api", None)
-        lookup_field = getattr(related_model_meta, "lookup_field", "pk")
-        if value is not None:
-            try:
-                value = related_model.objects.get(**{lookup_field: value})
-            except related_model.DoesNotExist as e:
-                raise ValidationError(f"Invalid {self.keymap[key]}") from e
+        try:
+            value = self.resolve_relation(key, value) if value is not None else None
+        except ValueError as e:
+            raise ValidationError(f"Invalid {self.keymap[key]}") from e
         setattr(instance, key, value)
 
     def set_many_to_many(self, instance, key, value):
         related_manager = getattr(instance, key)
         related_model = related_manager.model
-        related_model_meta = getattr(related_model, "Api", None)
-        lookup_field = getattr(related_model_meta, "lookup_field", "pk")
+        lookup_field = getattr(getattr(related_model, "Api", ""), "lookup_field", "pk")
         try:
             if lookup_field != "pk":
-                results = related_model.objects.filter(**{f"{lookup_field}__in": value})
-                assert len(results) == len(value)
-                value = results
+                items = related_model.objects.filter(**{f"{lookup_field}__in": value})
+                assert len(items) == len(value)
+                value = items
             related_manager.set(value)
         except (AssertionError, IntegrityError, ValueError) as e:
             raise ValidationError(f"Invalid {self.keymap[key]}") from e
@@ -63,11 +67,10 @@ class AssignAttributes:
     def set_many_to_many_with_through(self, instance, key, value):
         try:
             attr = getattr(self.model, key)
-
             through_model = attr.through
             model_name = self.model._meta.model_name
-            target_field_name = attr.field.m2m_target_field_name()
-            reverse_name = attr.field.m2m_reverse_name()
+            target_key = attr.field.m2m_target_field_name()
+            relation_name = attr.field.m2m_reverse_field_name()
 
             getattr(instance, key).clear()
 
@@ -77,11 +80,11 @@ class AssignAttributes:
                         **{
                             item_key: item_value
                             for item_key, item_value in item.items()
-                            if item_key != target_field_name
+                            if item_key != target_key
                         },
                         **{
                             model_name: instance,
-                            reverse_name: item[target_field_name],
+                            relation_name: self.resolve_relation(key, item[target_key]),
                         },
                     )
                     for item in value

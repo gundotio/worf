@@ -132,9 +132,6 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
     def get_instance(self):
         return self.instance if hasattr(self, "instance") else None
 
-    def get_related_model(self, field):
-        return self.model._meta.get_field(field).related_model
-
     def flatten_bundle(self, raw_bundle):
         # parse_qs gives us a dictionary where all values are lists
         return {
