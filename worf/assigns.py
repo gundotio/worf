@@ -72,24 +72,23 @@ class AssignAttributes:
             target_key = attr.field.m2m_target_field_name()
             relation_name = attr.field.m2m_reverse_field_name()
 
-            getattr(instance, key).clear()
+            def pivot_data(item):
+                return {k: v for k, v in item.items() if k != target_key}
 
-            through_model.objects.bulk_create(
-                [
-                    through_model(
-                        **{
-                            item_key: item_value
-                            for item_key, item_value in item.items()
-                            if item_key != target_key
-                        },
-                        **{
-                            model_name: instance,
-                            relation_name: self.resolve_relation(key, item[target_key]),
-                        },
-                    )
-                    for item in value
-                ]
-            )
+            def target_lookup(item):
+                return {relation_name: self.resolve_relation(key, item[target_key])}
+
+            def save_through(defaults, **kwargs):
+                return through_model.objects.update_or_create(defaults, **kwargs)[0]
+
+            model_lookup = {model_name: instance}
+
+            items = [
+                save_through(pivot_data(item), **model_lookup, **target_lookup(item)).pk
+                for item in value
+            ]
+
+            through_model.objects.filter(**model_lookup).exclude(pk__in=items).delete()
         except (AttributeError, IntegrityError, ValueError) as e:
             raise ValidationError(f"Invalid {self.keymap[key]}") from e
 
