@@ -65,7 +65,7 @@ jobs:
           echo "::set-output name=actor_name::$(gh api users/${{ github.actor }} -q .name)"
           echo "::set-output name=actor_url::${{ github.server_url }}/${{ github.actor }}"
           echo "::set-output name=compare_url::${{ github.server_url }}/${{ github.repository }}/compare/v${{ needs.detect_release.outputs.previous_version }}...v${{ needs.detect_release.outputs.current_version }}"
-          echo "::set-output name=notes::$(cat CHANGELOG.md | sed -e '1,6d' | head -n 20 | perl -0pe 's/(?s)\n\n.*/\n/' | sed 's/^-/•/g' | sed -r 's/\[#(.*)\]\((.*)\)/<\2|#\1>/g' | perl -0pe 's/(?s)\n/\\n/g')"
+          echo "::set-output name=notes::$(cat CHANGELOG.md | sed -e '1,6d' | head -n 20 | perl -0pe 's/(?s)\n\n.*/\n/' | sed 's/^- /   *•*   /g' | sed -r 's/\[#(.*)\]\((.*)\)/<\2|#\1>/g' | perl -0pe 's/(?s)\n/\\n/g')"
           echo "::set-output name=package_name::worf"
           echo "::set-output name=project_name::pypi.org"
           echo "::set-output name=project_url::https://pypi.org/project/worf/"
