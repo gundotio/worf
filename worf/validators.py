@@ -7,7 +7,6 @@ from django.db import models
 from django.utils.dateparse import parse_datetime
 
 from worf.conf import settings
-from worf.exceptions import NotImplementedInWorfYet
 
 
 class ValidateFields:
@@ -149,7 +148,7 @@ class ValidateFields:
 
         @param key: the model attribute to check against.
 
-        @raise NotImplementedInWorfYet: If the field type is not currently supported
+        @raise NotImplementedError: If the field type is not currently supported
         @raise ValidationError: If this is a write and `key` is not serializer editable
         @raise ValidationError: If a value fails to pass validation
 
@@ -244,4 +243,4 @@ class ValidateFields:
         message = f"{field.get_internal_type()} has no validation method for {key}"
         if settings.WORF_DEBUG:
             message += f":: Received {self.bundle[key]}"
-        raise NotImplementedInWorfYet(message)
+        raise NotImplementedError(message)

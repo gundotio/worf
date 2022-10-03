@@ -7,7 +7,7 @@ from tests.models import Profile
 from tests.serializers import ProfileSerializer, UserSerializer
 from worf.exceptions import AuthenticationError
 from worf.permissions import Authenticated, PublicEndpoint, Staff
-from worf.views import CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
+from worf.views import ActionAPI, CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
 
 
 class ProfileList(CreateAPI, ListAPI):
@@ -35,14 +35,20 @@ class ProfileList(CreateAPI, ListAPI):
     ]
 
 
-class ProfileListSubSet(ProfileList):
-    queryset = ProfileList.queryset.none()
-
-
-class ProfileDetail(DeleteAPI, UpdateAPI, DetailAPI):
+class ProfileDetail(ActionAPI, DeleteAPI, UpdateAPI, DetailAPI):
     model = Profile
     serializer = ProfileSerializer
     permissions = [PublicEndpoint]
+    actions = [
+        "resubscribe",
+        "subscribe",
+        "unsubscribe",
+    ]
+
+    def resubscribe(self, request, *args, **kwargs):
+        profile = self.get_instance()
+        profile.subscribe(user=request.user)
+        return profile
 
     def validate_phone(self, value):
         try:

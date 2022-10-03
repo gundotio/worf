@@ -2,7 +2,7 @@ import pytest
 
 from django.contrib.auth.models import AnonymousUser, User
 
-from worf.exceptions import HTTP401, HTTP404
+from worf.exceptions import AuthenticationError, NotFound
 from worf.permissions import Authenticated, PublicEndpoint, Staff
 
 
@@ -11,7 +11,7 @@ def test_authenticated(db, rf):
     request = rf.get("/")
     request.user = AnonymousUser()
 
-    with pytest.raises(HTTP401):
+    with pytest.raises(AuthenticationError):
         assert permission(request) is None
 
     request.user = User.objects.create(username="test", password="test")
@@ -32,12 +32,12 @@ def test_staff(db, rf):
     request = rf.get("/")
     request.user = AnonymousUser()
 
-    with pytest.raises(HTTP404):
+    with pytest.raises(NotFound):
         assert permission(request) is None
 
     request.user = User.objects.create(username="test", password="test")
 
-    with pytest.raises(HTTP404):
+    with pytest.raises(NotFound):
         assert permission(request) is None
 
     request.user.is_staff = True

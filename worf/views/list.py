@@ -8,7 +8,6 @@ from django.db.models import F, OrderBy, Q
 
 from worf.casing import camel_to_snake
 from worf.conf import settings
-from worf.exceptions import HTTP420
 from worf.filters import apply_filterset, generate_filterset
 from worf.shortcuts import list_param
 from worf.views.base import AbstractBaseAPI
@@ -17,14 +16,12 @@ from worf.views.create import CreateAPI
 
 class ListAPI(AbstractBaseAPI):
     lookup_url_kwarg = "id"  # default incase lookup_field is set
-    filters = {}
     ordering = []
     filter_fields = []
     search_fields = []
     sort_fields = []
     queryset = None
     filter_set = None
-    list_serializer = None
     count = 0
     page_num = 1
     per_page = 25
@@ -35,9 +32,6 @@ class ListAPI(AbstractBaseAPI):
         super().__init__(*args, **kwargs)
 
         codepath = self.codepath
-
-        if not isinstance(self.filters, dict):  # pragma: no cover
-            raise ImproperlyConfigured(f"{codepath}.filters must be type: dict")
 
         if not isinstance(self.ordering, list):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.ordering must be type: list")
@@ -65,15 +59,9 @@ class ListAPI(AbstractBaseAPI):
     def get(self, *args, **kwargs):
         return self.render_to_response()
 
-    def _set_base_lookup_kwargs(self):
-        # Filters set directly on the class
-        self.lookup_kwargs.update(self.filters)
-
-        # Filters set via URL
+    def set_base_lookup_kwargs(self):
         if hasattr(self, "lookup_field") and hasattr(self, "lookup_url_kwarg"):
-            self.lookup_kwargs.update(
-                {self.lookup_field: self.kwargs[self.lookup_url_kwarg]}
-            )
+            self.lookup_kwargs[self.lookup_field] = self.kwargs[self.lookup_url_kwarg]
 
     def set_search_lookup_kwargs(self):
         """
@@ -99,7 +87,7 @@ class ListAPI(AbstractBaseAPI):
             )
             self.search_query = reduce(operator.or_, search_icontains)
 
-        if not self.filter_fields or not self.bundle:
+        if not self.filter_fields or not self.bundle:  # pragma: no cover
             return
 
         for key in self.bundle.keys():
@@ -126,7 +114,7 @@ class ListAPI(AbstractBaseAPI):
         self.lookup_kwargs = {}
         self.search_query = Q()
 
-        self._set_base_lookup_kwargs()
+        self.set_base_lookup_kwargs()
         self.set_search_lookup_kwargs()
 
         lookups = self.lookup_kwargs.items()
@@ -134,29 +122,22 @@ class ListAPI(AbstractBaseAPI):
         list_kwargs = {k: v for k, v in lookups if isinstance(v, list)}
         ordering = self.get_ordering()
 
-        queryset = self.get_queryset()
+        queryset = (
+            apply_filterset(self.filter_set, self.get_queryset(), filterset_kwargs)
+            .filter(self.search_query)
+            .distinct()
+        )
 
-        try:
-            queryset = (
-                apply_filterset(self.filter_set, queryset, filterset_kwargs)
-                .filter(self.search_query)
-                .distinct()
-            )
+        for key, value in list_kwargs.items():
+            for item in value:
+                queryset = (
+                    queryset.exclude(**{key.rstrip("!"): item})
+                    if key.endswith("!")
+                    else queryset.filter(**{key: item})
+                )
 
-            for key, value in list_kwargs.items():
-                for item in value:
-                    queryset = (
-                        queryset.exclude(**{key.rstrip("!"): item})
-                        if key.endswith("!")
-                        else queryset.filter(**{key: item})
-                    )
-
-            if ordering:
-                queryset = queryset.order_by(*ordering)
-        except TypeError as e:  # pragma: no cover - debugging
-            if settings.WORF_DEBUG:
-                raise HTTP420(f"Error, {self.lookup_kwargs}, {e.__cause__}")
-            raise e
+        if ordering:
+            queryset = queryset.order_by(*ordering)
 
         return queryset
 
@@ -174,16 +155,11 @@ class ListAPI(AbstractBaseAPI):
     def get_sort_field(self, field, descending=False):
         return OrderBy(F(field), descending=descending)
 
-    def get_serializer(self):
-        if self.list_serializer and self.request.method == "GET":
-            return self.list_serializer(**self.get_serializer_kwargs())
-        return super().get_serializer()
-
     def paginated_results(self):
         queryset = self.get_processed_queryset()
         request = self.request
 
-        if settings.WORF_DEBUG:
+        if settings.WORF_DEBUG:  # pragma: no cover
             try:
                 self.query = str(queryset.query)
             except EmptyResultSet:
@@ -212,17 +188,13 @@ class ListAPI(AbstractBaseAPI):
         payload = {str(self.name): serializer(many=True).dump(self.paginated_results())}
 
         if self.per_page:
-            payload.update(
-                {
-                    "pagination": dict(
-                        count=self.count,
-                        pages=self.num_pages,
-                        page=self.page_num,
-                    )
-                }
+            payload["pagination"] = dict(
+                count=self.count,
+                pages=self.num_pages,
+                page=self.page_num,
             )
 
-        if settings.WORF_DEBUG:
+        if settings.WORF_DEBUG:  # pragma: no cover
             payload["debug"] = {
                 "bundle": self.bundle,
                 "lookup_kwargs": getattr(self, "lookup_kwargs", {}),

@@ -29,6 +29,8 @@ Table of contents
   - [DetailAPI](#detailapi)
   - [CreateAPI](#createapi)
   - [UpdateAPI](#updateapi)
+  - [ActionAPI](#actionapi)
+  - [DeleteAPI](#deleteapi)
 - [Browsable API](#browsable-api)
 - [Bundle loading](#bundle-loading)
 - [Debugging](#debugging)
@@ -115,17 +117,18 @@ class BookSerializer(Serializer):
 ```py
 # views.py
 from worf.permissions import Authenticated
-from worf.views import DetailAPI, ListAPI, UpdateAPI
+from worf.views import ActionAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
 
 class BookList(CreateAPI, ListAPI):
   model = Book
   serializer = BookSerializer(only=["id", "title"])
   permissions = [Authenticated]
 
-class BookDetail(UpdateAPI, DetailAPI):
+class BookDetail(ActionAPI, DeleteAPI, UpdateAPI, DetailAPI):
   model = Book
   serializer = BookSerializer
   permissions = [Authenticated]
+  actions = ["publish"]
 ```
 
 ```py
@@ -133,6 +136,7 @@ class BookDetail(UpdateAPI, DetailAPI):
 path("api/", include([
     path("books/", BookList.as_view()),
     path("books/<int:id>/", BookDetail.as_view()),
+    path("books/<int:id>/<str:action>/", BookDetail.as_view()),
 ])),
 ```
 
@@ -206,7 +210,7 @@ Provides the basic functionality of API views.
 | permissions | list   | []      | List of permissions classes.  |
 | serializer  | object | None    | Serializer class or instance. |
 
-*Note:* it is not recommended to use this abstract view directly.
+**Note:** it is not recommended to use this abstract view directly.
 
 
 ### ListAPI
@@ -214,11 +218,9 @@ Provides the basic functionality of API views.
 | Name              | Type   | Default             | Description                                                                            |
 | ----------------- | ------ | ------------------- | -------------------------------------------------------------------------------------- |
 | queryset          | object | model.objects.all() | Queryset used to retrieve the results.                                                 |
-| filters           | dict   | {}                  | Filters to apply to queryset. *Deprecated:* use `queryset` instead.                    |
 | lookup_field      | str    | None                | Filter `queryset` based on a URL param, `lookup_url_kwarg` is required if this is set. |
 | lookup_url_kwarg  | str    | None                | Filter `queryset` based on a URL param, `lookup_field` is required if this is set.     |
 | payload_key       | str    | verbose_name_plural | Use in order to rename the key for the results array.                                  |
-| list_serializer   | object | serializer          | Serializer class or instance.                                                          |
 | ordering          | list   | []                  | List of fields to default the queryset order by.                                       |
 | filter_fields     | list   | []                  | List of fields to support filtering via query params.                                  |
 | search_fields     | list   | []                  | List of fields to full text search via the `q` query param.                            |
@@ -251,7 +253,6 @@ Use `per_page` to set custom limit for pagination. Default 25.
 | queryset            | object | model.objects.all() | Queryset used to retrieve the results.                     |
 | lookup_field        | str    | id                  | Lookup field used to filter the model.                     |
 | lookup_url_kwarg    | str    | id                  | Name of the parameter passed to the view by the URL route. |
-| detail_serializer   | object | serializer          | Serializer class or instance.                              |
 
 This `get_instance()` method uses `lookup_field` and `lookup_url_kwargs` to return a model instance.
 
@@ -296,6 +297,45 @@ class BookDetailAPI(UpdateAPI, DetailAPI):
 Validation of update fields is delegated to the serializer, any fields that are
 writeable should be within the `fields` definition of the serializer, and not
 marked as `dump_only` (read-only).
+
+### ActionAPI
+
+| Name                | Type   | Default             | Description                                                |
+| ------------------- | ------ | ------------------- | ---------------------------------------------------------- |
+| queryset            | object | model.objects.all() | Queryset used to retrieve the results.                     |
+| lookup_field        | str    | id                  | Lookup field used to filter the model.                     |
+| lookup_url_kwarg    | str    | id                  | Name of the parameter passed to the view by the URL route. |
+| actions             | list   | []                  | List of action methods to support.                         |
+
+Adds `put` endpoints keyed by a route param, mix this into a `DetailAPI` view:
+
+```py
+class BookDetailAPI(ActionAPI, DetailAPI):
+    model = Book
+    serializer = BookSerializer
+    actions = ["publish"]
+```
+
+Actions must exist as a method on either the model or the view, they are passed the
+contents of the bundle as kwargs, and if the method accepts a `user` kwarg then
+`request.user` will be passed through too.
+
+### DeleteAPI
+
+| Name                | Type   | Default             | Description                                                |
+| ------------------- | ------ | ------------------- | ---------------------------------------------------------- |
+| queryset            | object | model.objects.all() | Queryset used to retrieve the results.                     |
+| lookup_field        | str    | id                  | Lookup field used to filter the model.                     |
+| lookup_url_kwarg    | str    | id                  | Name of the parameter passed to the view by the URL route. |
+
+Adds a `delete` method to handle deletes, mix this into a `DetailAPI`.
+
+```py
+class BookDetailAPI(DeleteAPI, DetailAPI):
+    model = Book
+```
+
+Deletes return a 204 no content response, no serializer is required.
 
 
 Browsable API

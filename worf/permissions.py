@@ -1,12 +1,10 @@
-from worf.exceptions import HTTP401, HTTP404
+from worf.exceptions import AuthenticationError, NotFound
 
 
 class Authenticated:
     def __call__(self, request, **kwargs):
-        if request.user.is_authenticated:
-            return
-
-        raise HTTP401()
+        if not request.user.is_authenticated:
+            raise AuthenticationError()
 
 
 class PublicEndpoint:
@@ -16,7 +14,5 @@ class PublicEndpoint:
 
 class Staff:
     def __call__(self, request, **kwargs):
-        if request.user.is_authenticated and request.user.is_staff:
-            return
-
-        raise HTTP404()
+        if not request.user.is_authenticated or not request.user.is_staff:
+            raise NotFound()
