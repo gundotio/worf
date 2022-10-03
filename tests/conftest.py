@@ -1,7 +1,6 @@
 from urllib.parse import urlencode
 
-import pytest
-from pytest_factoryboy import register
+from tests import fixture, register
 
 
 def pytest_configure():
@@ -65,7 +64,7 @@ def pytest_configure():
     register(UserFactory, "user")
 
 
-@pytest.fixture(name="admin_client")
+@fixture(name="admin_client")
 def admin_client_fixture(db, admin_user):
     from worf.testing import ApiClient
 
@@ -74,21 +73,21 @@ def admin_client_fixture(db, admin_user):
     return client
 
 
-@pytest.fixture(name="client")
+@fixture(name="client")
 def client_fixture():
     from worf.testing import ApiClient
 
     return ApiClient()
 
 
-@pytest.fixture(name="now")
+@fixture(name="now")
 def now_fixture():
     from django.utils import timezone
 
     return timezone.now
 
 
-@pytest.fixture(name="url")
+@fixture(name="url")
 def url_fixture(url_params):
     def url(url, data={}):
         return f"{url}?{url_params(data)}" if data else url
@@ -96,7 +95,7 @@ def url_fixture(url_params):
     return url
 
 
-@pytest.fixture(name="url_params")
+@fixture(name="url_params")
 def url_params_fixture(url_params__array_format):
     def url_params(data):
         if url_params__array_format == "comma":
@@ -109,12 +108,12 @@ def url_params_fixture(url_params__array_format):
     return url_params
 
 
-@pytest.fixture(name="url_params__array_format")
+@fixture(name="url_params__array_format")
 def url_params__array_format_fixture():
     return "repeat"
 
 
-@pytest.fixture(name="user_client")
+@fixture(name="user_client")
 def user_client_fixture(db, user):
     from worf.testing import ApiClient
 

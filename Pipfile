@@ -21,6 +21,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
 pytest-factoryboy = "==2.1.0"
+pytest-kwparametrize = "*"
 pytest-watch = "*"
 pytest-xdist = {extras = ["psutil"], version = "*"}
 twine = "*"

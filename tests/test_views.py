@@ -2,9 +2,9 @@ from datetime import timedelta
 from unittest.mock import patch
 from uuid import uuid4
 
-import pytest
-
 from django.core.files.uploadedfile import SimpleUploadedFile
+
+from tests import parametrize
 
 
 def test_profile_detail(client, db, profile, user):
@@ -61,7 +61,7 @@ def test_profile_list_annotation_filters(client, db, profile_factory, url):
     assert len(result["profiles"]) == 1
 
 
-@pytest.mark.parametrize("url_params__array_format", ["repeat"])  # comma fails on ands
+@parametrize("url_params__array_format", ["repeat"])  # comma fails on ands
 def test_profile_list_and_filters(client, db, profile_factory, tag_factory, url):
     tag1, tag2, tag3 = tag_factory.create_batch(3)
     profile_factory.create(tags=[tag1])
@@ -75,7 +75,7 @@ def test_profile_list_and_filters(client, db, profile_factory, tag_factory, url)
     assert len(result["profiles"]) == 1
 
 
-@pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
+@parametrize("url_params__array_format", ["comma", "repeat"])
 def test_profile_list_in_filters(client, db, profile, url, user):
     response = client.get(url("/profiles/", {"name__in": [user.name, "Din Djarin"]}))
     result = response.json()
@@ -84,7 +84,7 @@ def test_profile_list_in_filters(client, db, profile, url, user):
     assert result["profiles"][0]["username"] == user.username
 
 
-@pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
+@parametrize("url_params__array_format", ["comma", "repeat"])
 def test_profile_list_or_filters(client, db, profile_factory, tag_factory, url):
     tag1, tag2, tag3 = tag_factory.create_batch(3)
     profile_factory.create(tags=[tag1])
@@ -112,7 +112,7 @@ def test_profile_list_negated__icontains__filters(client, db, profile, url, user
     assert len(result["profiles"]) == 0
 
 
-@pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
+@parametrize("url_params__array_format", ["comma", "repeat"])
 def test_profile_list_not_in_filters(client, db, profile, url, user):
     response = client.get(url("/profiles/", {"name__in!": [user.name, "Din Djarin"]}))
     result = response.json()
@@ -142,7 +142,7 @@ def test_profile_multipart_create(mock_save, client, db, role, user):
 
 
 @patch("django.core.files.storage.FileSystemStorage.save")
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_multipart_update(mock_save, client, db, method, profile, role, user):
     resume = SimpleUploadedFile("resume.pdf", b"", content_type="application/pdf")
     mock_save.return_value = "resume.pdf"
@@ -156,7 +156,7 @@ def test_profile_multipart_update(mock_save, client, db, method, profile, role, 
     assert result["user"]["username"] == user.username
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_fk(client, db, method, profile, role, team):
     payload = dict(role=role.pk, team=team.pk)
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
@@ -166,7 +166,7 @@ def test_profile_update_fk(client, db, method, profile, role, team):
     assert result["team"]["name"] == team.name
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_fk_invalid_role(client, db, method, profile, role):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(role=123))
     result = response.json()
@@ -174,7 +174,7 @@ def test_profile_update_fk_invalid_role(client, db, method, profile, role):
     assert result["message"] == "Invalid role"
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_fk_role_is_not_nullable(client, db, method, profile, role):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(role=None))
     result = response.json()
@@ -182,7 +182,7 @@ def test_profile_update_fk_role_is_not_nullable(client, db, method, profile, rol
     assert result["message"] == "Invalid role"
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_fk_team_is_nullable(client, db, method, profile, role, team):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(team=None))
     result = response.json()
@@ -190,7 +190,7 @@ def test_profile_update_fk_team_is_nullable(client, db, method, profile, role, t
     assert result["team"] is None
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m(client, db, method, profile, tag):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(tags=[tag.pk]))
     result = response.json()
@@ -199,7 +199,7 @@ def test_profile_update_m2m(client, db, method, profile, tag):
     assert result["tags"][0] == tag.name
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_can_be_empty(client, db, method, profile, tag):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(tags=[]))
     result = response.json()
@@ -207,7 +207,7 @@ def test_profile_update_m2m_can_be_empty(client, db, method, profile, tag):
     assert len(result["tags"]) == 0
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_lookup_field(client, db, method, profile, task):
     payload = dict(tasks=[task.custom_id])
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
@@ -217,7 +217,7 @@ def test_profile_update_m2m_lookup_field(client, db, method, profile, task):
     assert result["tasks"][0] == task.name
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_is_not_nullable(client, db, method, profile, tag):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(tags=None))
     result = response.json()
@@ -225,7 +225,7 @@ def test_profile_update_m2m_is_not_nullable(client, db, method, profile, tag):
     assert "tags accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_must_be_pks(client, db, method, profile, tag):
     payload = dict(tags=["invalid"])
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
@@ -234,7 +234,7 @@ def test_profile_update_m2m_must_be_pks(client, db, method, profile, tag):
     assert "Invalid tags" in result["message"]
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_through(client, db, method, profile, skill):
     payload = dict(skills=[dict(id=skill.pk, rating=4)])
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
@@ -246,7 +246,7 @@ def test_profile_update_m2m_through(client, db, method, profile, skill):
     assert result["skills"][0]["rating"] == 4
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_through_can_be_empty(client, db, method, profile, skill):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(skills=[]))
     result = response.json()
@@ -254,7 +254,7 @@ def test_profile_update_m2m_through_can_be_empty(client, db, method, profile, sk
     assert len(result["skills"]) == 0
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_through_is_not_nullable(client, db, method, profile, skill):
     response = client.generic(method, f"/profiles/{profile.pk}/", dict(skills=None))
     result = response.json()
@@ -262,7 +262,7 @@ def test_profile_update_m2m_through_is_not_nullable(client, db, method, profile,
     assert "skills accepts an array, got <class 'NoneType'> None" in result["message"]
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_through_must_be_dicts(client, db, method, profile, skill):
     payload = dict(skills=["invalid"])
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
@@ -271,7 +271,7 @@ def test_profile_update_m2m_through_must_be_dicts(client, db, method, profile, s
     assert "Invalid skills" == result["message"]
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_through_ids_must_be_pks(client, db, method, profile, skill):
     payload = dict(skills=[dict(id="invalid")])
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
@@ -280,7 +280,7 @@ def test_profile_update_m2m_through_ids_must_be_pks(client, db, method, profile,
     assert "Invalid skills" in result["message"]
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_profile_update_m2m_through_required_fields(client, db, method, profile, skill):
     payload = dict(skills=[dict(id=skill.pk)])
     response = client.generic(method, f"/profiles/{profile.pk}/", payload)
@@ -318,7 +318,7 @@ def test_user_detail(client, db, user):
     assert result["username"] == user.username
 
 
-@pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
+@parametrize("url_params__array_format", ["comma", "repeat"])
 def test_user_detail_fields(client, db, url, user):
     response = client.get(url(f"/users/{user.pk}/", {"fields": ["id", "username"]}))
     result = response.json()
@@ -336,7 +336,7 @@ def test_user_list(client, db, user):
     assert result["users"][0]["email"] == user.email
 
 
-@pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
+@parametrize("url_params__array_format", ["comma", "repeat"])
 def test_user_list_fields(client, db, url, user):
     response = client.get(url("/users/", {"fields": ["id", "username"]}))
     result = response.json()
@@ -403,7 +403,7 @@ def test_user_list_sort_desc(client, db, url, user_factory):
     assert result["users"][1]["username"] == "a"
 
 
-@pytest.mark.parametrize("url_params__array_format", ["comma", "repeat"])
+@parametrize("url_params__array_format", ["comma", "repeat"])
 def test_user_list_multisort(client, db, now, url, user_factory):
     date_joined = now()
     user_factory.create(username="a", date_joined=date_joined)
@@ -437,7 +437,7 @@ def test_user_unique_create_with_existing_value(client, db, user, user_factory):
     assert result["message"] == "Field username must be unique"
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_user_unique_update_with_current_value(client, db, method, user, user_factory):
     payload = dict(username=user.username)
     response = client.generic(method, f"/users/{user.pk}/", payload)
@@ -446,7 +446,7 @@ def test_user_unique_update_with_current_value(client, db, method, user, user_fa
     assert result["username"] == user.username
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_user_unique_update_with_existing_value(client, db, method, user, user_factory):
     user_factory.create(username="already_taken")
     payload = dict(username="already_taken")
@@ -456,7 +456,7 @@ def test_user_unique_update_with_existing_value(client, db, method, user, user_f
     assert result["message"] == "Field username must be unique"
 
 
-@pytest.mark.parametrize("method", ["PATCH", "PUT"])
+@parametrize("method", ["PATCH", "PUT"])
 def test_user_update(client, db, method, user):
     payload = dict(username="testtest", email="something@example.com")
     response = client.generic(method, f"/users/{user.pk}/", payload)
