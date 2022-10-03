@@ -17,10 +17,13 @@ from django.views.decorators.cache import never_cache
 from worf.casing import camel_to_snake, snake_to_camel
 from worf.conf import settings
 from worf.exceptions import (
-    HTTP_EXCEPTIONS,
+    ActionError,
     AuthenticationError,
+    DataConflict,
+    NotFound,
     PermissionsError,
     SerializerError,
+    WorfError,
 )
 from worf.renderers import render_response
 from worf.serializers import SerializeModels
@@ -83,51 +86,59 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
         return snake_to_camel(verbose_name_plural.replace(" ", "_").lower())
 
     def dispatch(self, request, *args, **kwargs):
-        method = request.method.lower()
-        handler = self.http_method_not_allowed
-
-        if method in self.http_method_names:
-            handler = getattr(self, method, self.http_method_not_allowed)
-
         try:
+            response = self.perform_dispatch(request, *args, **kwargs)
+        except ActionError as e:
+            response = self.render_error(e.message, 400)
+        except AuthenticationError as e:
+            response = self.render_error(e.message, 401)
+        except DataConflict as e:
+            response = self.render_error(e.message, 409)
+        except NotFound as e:
+            response = self.render_error(e.message, 404)
+        except SerializerError as e:
+            response = self.render_error(e.message, 400)
+        except ValidationError as e:
+            response = self.render_error(e.message, 422)
+        return response
+
+    def perform_dispatch(self, request, *args, **kwargs):
+        try:
+            handler = self.get_handler(request, *args, **kwargs)
             self.check_permissions()
             self.set_bundle_from_request(request)
-            return handler(request, *args, **kwargs)
-        except HTTP_EXCEPTIONS as e:
-            message = e.message
-            status = e.status
-        except AuthenticationError as e:
-            message = e.message
-            status = 401
+            response = handler(request, *args, **kwargs)
         except ObjectDoesNotExist as e:
             if self.model and not isinstance(e, self.model.DoesNotExist):
                 raise e
-            message = "Not Found"
-            status = 404
-        except RequestDataTooBig:
+            raise NotFound from e
+        except RequestDataTooBig as e:
             self.request._body = self.request.read(None)  # prevent further raises
-            message = f"Max upload size is {filesizeformat(settings.DATA_UPLOAD_MAX_MEMORY_SIZE)}"
-            status = 422
-        except SerializerError as e:
-            message = e.message
-            status = 400
-        except ValidationError as e:
-            message = e.message
-            status = 422
+            max_upload_size = filesizeformat(settings.DATA_UPLOAD_MAX_MEMORY_SIZE)
+            raise ValidationError(f"Max upload size is {max_upload_size}") from e
+        return response
 
+    def render_error(self, message, status):
         return self.render_to_response(dict(message=message), status)
 
     def check_permissions(self):
-        for perm in self.permissions:
-            try:
+        try:
+            for perm in self.permissions:
                 perm()(self.request, **self.kwargs)
-            except HTTP_EXCEPTIONS as e:
-                if settings.WORF_DEBUG:
-                    raise PermissionsError(
-                        f"Permission check {perm.__module__}.{perm.__name__} raised {e.__class__.__name__}. "
-                        f"You'd normally see a {e.status} here but WORF_DEBUG=True."
-                    ) from e
-                raise e
+        except WorfError as e:
+            if settings.WORF_DEBUG:
+                raise PermissionsError(
+                    f"Permission check {perm.__module__}.{perm.__name__} raised {e.__class__.__name__}. "
+                    f"You'd normally see a {e.status} here but WORF_DEBUG=True."
+                ) from e
+            raise e
+
+    def get_handler(self, request, *args, **kwargs):
+        method = request.method.lower()
+        handler = self.http_method_not_allowed
+        if method in self.http_method_names:
+            handler = getattr(self, method, self.http_method_not_allowed)
+        return handler
 
     def get_instance(self):
         return self.instance if hasattr(self, "instance") else None

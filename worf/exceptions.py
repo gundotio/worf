@@ -1,66 +1,41 @@
-class HTTPException(Exception):
-    def __init__(self, message=None):
-        super().__init__(message)
-        self.message = message or self.message
+from dataclasses import dataclass
 
 
-class HTTP400(HTTPException):
-    message = "Bad Request"
-    status = 400
+@dataclass(frozen=True)
+class WorfError(Exception):
+    message: str
 
 
-class HTTP401(HTTPException):
-    message = "Unauthorized"
-    status = 401
+@dataclass(frozen=True)
+class ActionError(WorfError):
+    message: str
 
 
-class HTTP404(HTTPException):
-    message = "Not Found"
-    status = 404
+@dataclass(frozen=True)
+class AuthenticationError(WorfError):
+    message: str = "Unauthorized"
 
 
-class HTTP409(HTTPException):
-    message = "Conflict"
-    status = 409
+@dataclass(frozen=True)
+class DataConflict(WorfError):
+    message: str = "Conflict"
 
 
-class HTTP410(HTTPException):
-    message = "Gone"
-    status = 410
+@dataclass(frozen=True)
+class NamingThingsError(WorfError, ValueError):
+    message: str
 
 
-class HTTP420(HTTPException):
-    message = "Enhance Your Calm"
-    status = 420
+@dataclass(frozen=True)
+class NotFound(WorfError):
+    message: str = "Not found"
 
 
-class HTTP422(HTTPException):
-    message = "Unprocessable Entity"
-    status = 422
+@dataclass(frozen=True)
+class PermissionsError(WorfError):
+    message: str
 
 
-HTTP_EXCEPTIONS = (HTTP400, HTTP401, HTTP404, HTTP409, HTTP410, HTTP420, HTTP422)
-
-
-class AuthenticationError(Exception):
-    def __init__(self, message):
-        super().__init__(message)
-        self.message = message
-
-
-class NamingThingsError(ValueError):
-    pass
-
-
-class PermissionsError(Exception):
-    pass
-
-
-class NotImplementedInWorfYet(NotImplementedError):
-    pass
-
-
-class SerializerError(ValueError):
-    def __init__(self, message):
-        super().__init__(message)
-        self.message = message
+@dataclass(frozen=True)
+class SerializerError(WorfError, ValueError):
+    message: str

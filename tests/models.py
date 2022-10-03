@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.timezone import now
 
 
 class Profile(models.Model):
@@ -33,6 +34,12 @@ class Profile(models.Model):
     last_active = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
 
+    is_subscribed = models.BooleanField(blank=True, null=True)
+    subscribed_at = models.DateTimeField(blank=True, null=True)
+    subscribed_by = models.ForeignKey(
+        User, blank=True, null=True, on_delete=models.SET_NULL
+    )
+
     def get_avatar_url(self):
         return self.avatar.url if self.avatar else self.get_gravatar_url()
 
@@ -41,6 +48,18 @@ class Profile(models.Model):
 
     def get_gravatar_url(self, default="identicon", size=512):
         return f"https://www.gravatar.com/avatar/{self.get_gravatar_hash()}?d={default}&s={size}"
+
+    def subscribe(self, user=None):
+        self.is_subscribed = True
+        self.subscribed_at = now()
+        self.subscribed_by = user
+        self.save()
+
+    def unsubscribe(self):
+        self.is_subscribed = False
+        self.subscribed_at = None
+        self.subscribed_by = None
+        self.save()
 
 
 class Role(models.Model):

@@ -18,7 +18,7 @@ def test_profile_not_found(client, db, profile, user):
     response = client.get(f"/profiles/{uuid4()}/")
     result = response.json()
     assert response.status_code == 404, result
-    assert result["message"] == "Not Found"
+    assert result["message"] == "Not found"
 
 
 def test_profile_delete(client, db, profile, user):
@@ -33,6 +33,14 @@ def test_profile_list(client, db, profile, user):
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 1
     assert result["profiles"][0]["username"] == user.username
+
+
+@parametrize("page", [-1, 0, 1, 2])
+def test_profile_list_pages(client, db, page):
+    response = client.get("/profiles/", dict(page=page))
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 0
 
 
 def test_profile_list_filters(client, db, profile, url, user):
@@ -115,13 +123,6 @@ def test_profile_list_negated__icontains__filters(client, db, profile, url, user
 @parametrize("url_params__array_format", ["comma", "repeat"])
 def test_profile_list_not_in_filters(client, db, profile, url, user):
     response = client.get(url("/profiles/", {"name__in!": [user.name, "Din Djarin"]}))
-    result = response.json()
-    assert response.status_code == 200, result
-    assert len(result["profiles"]) == 0
-
-
-def test_profile_list_subset_filters(client, db, profile, url, user):
-    response = client.get(url("/profiles/subset/", {"name": user.name}))
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 0
@@ -290,21 +291,21 @@ def test_profile_update_m2m_through_required_fields(client, db, method, profile,
 
 
 def test_staff_detail(admin_client, profile, user):
-    response = admin_client.get(f"/profiles/{profile.pk}/staff/")
+    response = admin_client.get(f"/staff/{profile.pk}/")
     result = response.json()
     assert response.status_code == 200, result
     assert result["username"] == user.username
 
 
 def test_staff_detail_is_not_found_for_user(user_client, profile, user):
-    response = user_client.get(f"/profiles/{profile.pk}/staff/")
+    response = user_client.get(f"/staff/{profile.pk}/")
     result = response.json()
     assert response.status_code == 404, result
-    assert result["message"] == "Not Found"
+    assert result["message"] == "Not found"
 
 
 def test_staff_detail_is_unauthorized_for_guest(client, db, profile, user):
-    response = client.get(f"/profiles/{profile.pk}/staff/")
+    response = client.get(f"/staff/{profile.pk}/")
     result = response.json()
     assert response.status_code == 401, result
     assert result["message"] == "Unauthorized"
