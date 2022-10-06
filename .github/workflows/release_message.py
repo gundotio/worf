@@ -11,7 +11,9 @@ GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID", "")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 MESSAGE_TEMPLATE = os.environ.get("MESSAGE_TEMPLATE", "")
 PROJECT_NAME = os.environ.get("PROJECT_NAME", "")
-PROJECT_URL = os.environ.get("PROJECT_URL", "")
+PROJECT_TYPE = os.environ.get("PROJECT_TYPE", "")
+TARGET_NAME = os.environ.get("TARGET_NAME", "")
+TARGET_URL = os.environ.get("TARGET_URL", "")
 
 github = requests.Session()
 github.headers = {
@@ -42,10 +44,14 @@ release_re = re.compile(
 def build_message():
     user = github.get(f"https://api.github.com/users/{GITHUB_ACTOR}").json()
 
-    actor = f"[{user['name']}]({user['html_url']})"
-    project = f"[{PROJECT_NAME}]({PROJECT_URL})"
-    run = f"[{action_status}]({action_url})"
-    version = f"[{release['version']}]({release['compare_url']})"
+    actor = user["name"]
+    actor_link = f"[{actor}]({user['html_url']})"
+    project = f"{PROJECT_NAME} {release['version']}".strip()
+    project_link = f"[{project}]({release['compare_url']})"
+    run_link = f"[{action_status}]({action_url})"
+    target = TARGET_NAME
+    target_link = f"[{target}]({TARGET_URL})"
+    verb = "released" if PROJECT_TYPE == "package" else "deployed"
 
     if MESSAGE_TEMPLATE == "images":
         images = get_images(release)
@@ -54,7 +60,7 @@ def build_message():
             return
 
         return {
-            "text": f"🚀 {user['name']} deployed {release['version']} to {PROJECT_NAME}",
+            "text": f"🚀 {actor} {verb} {project} to {target}",
             "blocks": [
                 {
                     "type": "image",
@@ -72,7 +78,7 @@ def build_message():
     return {
         "username": user["name"],
         "icon_url": user["avatar_url"],
-        "text": f"🚀 {user['name']} deployed {release['version']} to {PROJECT_NAME}",
+        "text": f"🚀 {actor} {verb} {project} to {target}",
         "blocks": [
             {
                 "type": "section",
@@ -80,7 +86,7 @@ def build_message():
                     "type": "mrkdwn",
                     "text": truncate_message(
                         transform_markdown(
-                            f"{run} {actor} deployed {version} to {project}\n{release['notes']}"
+                            f"{run_link} {actor_link} {verb} {project_link} to {target_link}\n{release['notes']}"
                         ),
                     ),
                 },
