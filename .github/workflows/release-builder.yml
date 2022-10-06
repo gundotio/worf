@@ -52,47 +52,41 @@ jobs:
     runs-on: ubuntu-latest
     needs: detect_release
 
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PROJECT_NAME: app.gun.io
+      PROJECT_URL: https://app.gun.io
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
+
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - id: notes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "::set-output name=actor_image::https://res.cloudinary.com/gun/image/fetch/c_fill,w_512,h_512,f_jpg,q_100/${{ github.server_url }}/${{ github.actor }}.png"
-          echo "::set-output name=actor_name::$(gh api users/${{ github.actor }} -q .name)"
-          echo "::set-output name=actor_url::${{ github.server_url }}/${{ github.actor }}"
-          echo "::set-output name=compare_url::${{ github.server_url }}/${{ github.repository }}/compare/v${{ needs.detect_release.outputs.previous_version }}...v${{ needs.detect_release.outputs.current_version }}"
-          echo "::set-output name=notes::$(cat CHANGELOG.md | sed -e '1,6d' | head -n 20 | perl -0pe 's/(?s)\n\n.*/\n/' | sed 's/^- /   *•*   /g' | sed -r 's/\[#(.*)\]\((.*)\)/<\2|#\1>/g' | perl -0pe 's/(?s)\n/\\n/g')"
-          echo "::set-output name=package_name::worf"
-          echo "::set-output name=project_name::pypi.org"
-          echo "::set-output name=project_url::https://pypi.org/project/worf/"
-          echo "::set-output name=run_url::${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - uses: actions/setup-python@v3
 
-      - if: always()
-        id: slack
-        uses: slackapi/slack-github-action@v1.21.0
+      - run: pip install requests
+
+      - id: build_images_message
+        run: echo "::set-output name=message::$(python .github/workflows/release_message.py)"
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
+          MESSAGE_TEMPLATE: images
+
+      - if: steps.build_images_message.outputs.message
+        id: send_images_message
+        uses: slackapi/slack-github-action@v1.21.0
         with:
           channel-id: C0306G288J0
-          payload: |
-            {
-              "username": "${{ steps.notes.outputs.actor_name }}",
-              "icon_url": "${{ steps.notes.outputs.actor_image }}",
-              "text": "🚀 ${{ steps.notes.outputs.actor_name }} released ${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }} to ${{ steps.notes.outputs.project_name }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<${{ steps.notes.outputs.run_url }}|:buffering:> <${{ steps.notes.outputs.actor_url }}|${{ steps.notes.outputs.actor_name }}> released <${{ steps.notes.outputs.compare_url }}|${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }}> to <${{ steps.notes.outputs.project_url }}|${{ steps.notes.outputs.project_name }}>\n${{ steps.notes.outputs.notes }}"
-                  }
-                }
-              ]
-            }
+          payload: ${{ steps.build_images_message.outputs.message }}
+
+      - id: build_release_message
+        run: echo "::set-output name=message::$(python .github/workflows/release_message.py)"
+
+      - id: send_release_message
+        uses: slackapi/slack-github-action@v1.21.0
+        with:
+          channel-id: C0306G288J0
+          payload: ${{ steps.build_release_message.outputs.message }}
 
       - run: script/build
 
@@ -111,25 +105,17 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
       - if: always()
-        uses: slackapi/slack-github-action@v1.21.0
+        id: rebuild_release_message
+        run: echo "::set-output name=message::$(python .github/workflows/release_message.py)"
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
+          DEPLOY_STATUS: ${{ steps.deploy.conclusion }}
+
+      - if: always()
+        uses: slackapi/slack-github-action@v1.21.0
         with:
           channel-id: C0306G288J0
-          update-ts: ${{ steps.slack.outputs.ts }}
-          payload: |
-            {
-              "text": "${{ steps.build.conclusion == 'success' && steps.release.conclusion == 'success' && '🚀' || ':cross:' }} ${{ steps.notes.outputs.actor_name }} released ${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }} to ${{ steps.notes.outputs.project_name }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<${{ steps.notes.outputs.run_url }}|${{ steps.build.conclusion == 'success' && steps.release.conclusion == 'success' && '🚀' || ':cross:' }}> <${{ steps.notes.outputs.actor_url }}|${{ steps.notes.outputs.actor_name }}> released <${{ steps.notes.outputs.compare_url }}|${{ steps.notes.outputs.package_name }} ${{ needs.detect_release.outputs.current_version }}> to <${{ steps.notes.outputs.project_url }}|${{ steps.notes.outputs.project_name }}>\n${{ steps.notes.outputs.notes }}"
-                  }
-                }
-              ]
-            }
+          payload: ${{ steps.rebuild_release_message.outputs.message }}
+          update-ts: ${{ steps.send_release_message.outputs.ts }}
 
   build_changelog:
     if: always() && needs.publish_release.result != 'failure'
@@ -140,24 +126,36 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-python@v3
+
+      - run: pip install semver
+
       - id: builder
         uses: mikepenz/release-changelog-builder-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           configuration: .github/workflows/changelog-builder.json
+          outputFile: NEXT.md
           toTag: HEAD
 
-      - id: semver
-        uses: wyrihaximus/github-action-next-semvers@v1
-        with:
-          version: ${{ steps.builder.outputs.fromTag }}
+      - id: process
+        run: |
+          changelog=$(cat NEXT.md | python .github/workflows/process_changelog.py)
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+          echo ::set-output name=changelog::$changelog
+
+      - id: next
+        run: |
+          echo "::set-output name=version::$(python .github/workflows/next_version.py ${{ steps.builder.outputs.fromTag }} ${{ inputs.release || 'patch' }})"
 
     outputs:
       has_prs: ${{ steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs }}
       previous_version: ${{ steps.builder.outputs.fromTag }}
-      next_version: ${{ steps.semver.outputs[inputs.release || 'patch'] }}
-      notes: ${{ steps.builder.outputs.changelog }}
+      next_version: ${{ steps.next.outputs.version }}
+      notes: ${{ steps.process.outputs.changelog }}
       release: ${{ inputs.release || 'patch' }}
 
   create_pr:
