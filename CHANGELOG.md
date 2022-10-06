@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.16](https://github.com/gundotio/worf/compare/v0.5.15...v0.5.16) (2022-10-06)
+
+- (Improvement) Support custom actions via ActionAPI [#115](https://github.com/gundotio/worf/pull/115)
+- Release 0.5.16 [#116](https://github.com/gundotio/worf/pull/116)
 ### [0.5.15](https://github.com/gundotio/worf/compare/v0.5.14...v0.5.15) (2022-09-19)
 
 - (Improvement) Switch through save to update_or_create [#113](https://github.com/gundotio/worf/pull/113)
