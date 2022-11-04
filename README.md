@@ -221,12 +221,13 @@ Provides the basic functionality of API views.
 | lookup_field      | str    | None                | Filter `queryset` based on a URL param, `lookup_url_kwarg` is required if this is set. |
 | lookup_url_kwarg  | str    | None                | Filter `queryset` based on a URL param, `lookup_field` is required if this is set.     |
 | payload_key       | str    | verbose_name_plural | Use in order to rename the key for the results array.                                  |
-| ordering          | list   | []                  | List of fields to default the queryset order by.                                       |
-| filter_fields     | list   | []                  | List of fields to support filtering via query params.                                  |
-| search_fields     | list   | []                  | List of fields to full text search via the `q` query param.                            |
-| sort_fields       | list   | []                  | List of fields to support sorting via the `sort` query param.                          |
-| per_page          | int    | 25                  | Sets the number of results returned for each page.                                     |
-| max_per_page      | int    | per_page            | Sets the max number of results to allow when passing the `perPage` query param.        |
+| ordering          | list   | []                  | Fields to default the queryset order by.                                               |
+| filter_fields     | list   | []                  | Fields to support filtering via query params.                                          |
+| include_fields    | dict   | {}                  | Fields to support optionally including via the `include` query param.                  |
+| search_fields     | list   | []                  | Fields to full text search via the `q` query param.                                    |
+| sort_fields       | list   | []                  | Fields to support sorting via the `sort` query param.                                  |
+| per_page          | int    | 25                  | Number of results returned for each page.                                              |
+| max_per_page      | int    | per_page            | Max number of results to allow when passing the `perPage` query param.                 |
 
 The `get_queryset` method will use `lookup_url_kwarg` and `lookup_field` to filter results.
 You _should_ not need to override `get_queryset`. Instead, set the optional variables
@@ -239,6 +240,28 @@ Parameters in the URL must be camelCase and exactly match the snake_case model f
 To allow full text search, set to a list of fields for django filter lookups.
 
 For a full list of supported lookups see https://django-url-filter.readthedocs.io.
+
+#### Include fields
+
+Include fields is a dict of fields to include when `?include=skills,team` is passed.
+
+The dict should be keyed by field names, and the values are passed through to either
+`prefetch_related` or `select_related`.
+
+```py
+class ProfileList(CreateAPI, ListAPI):
+    model = Profile
+    include_fields = {
+        "skills": Prefetch("skills"),
+        "team": "team",
+    }
+```
+
+#### Search fields
+
+Search fields is a list of fields that are used for `icontains` lookups via `?q=`.
+
+The `?search=id,name` query param can be used to filter `search_fields`.
 
 #### Pagination
 

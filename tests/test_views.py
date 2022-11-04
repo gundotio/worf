@@ -51,24 +51,6 @@ def test_profile_list_filters(client, db, profile, url, user):
     assert result["profiles"][0]["username"] == user.username
 
 
-def test_profile_list_icontains_filters(client, db, profile, url, user):
-    response = client.get(url("/profiles/", {"name__icontains": user.first_name}))
-    result = response.json()
-    assert response.status_code == 200, result
-    assert len(result["profiles"]) == 1
-    assert result["profiles"][0]["username"] == user.username
-
-
-def test_profile_list_annotation_filters(client, db, profile_factory, url):
-    profile_factory.create(user__date_joined="2020-01-01T00:00:00Z")
-    profile_factory.create(user__date_joined="2020-12-01T00:00:00Z")
-    filters = {"dateJoined__gte": "2020-06-01T00:00:00Z"}
-    response = client.get(url("/profiles/", filters))
-    result = response.json()
-    assert response.status_code == 200, result
-    assert len(result["profiles"]) == 1
-
-
 @parametrize("url_params__array_format", ["repeat"])  # comma fails on ands
 def test_profile_list_and_filters(client, db, profile_factory, tag_factory, url):
     tag1, tag2, tag3 = tag_factory.create_batch(3)
@@ -83,6 +65,24 @@ def test_profile_list_and_filters(client, db, profile_factory, tag_factory, url)
     assert len(result["profiles"]) == 1
 
 
+def test_profile_list_annotation_filters(client, db, profile_factory, url):
+    profile_factory.create(user__date_joined="2020-01-01T00:00:00Z")
+    profile_factory.create(user__date_joined="2020-12-01T00:00:00Z")
+    filters = {"dateJoined__gte": "2020-06-01T00:00:00Z"}
+    response = client.get(url("/profiles/", filters))
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+
+
+def test_profile_list_icontains_filters(client, db, profile, url, user):
+    response = client.get(url("/profiles/", {"name__icontains": user.first_name}))
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 1
+    assert result["profiles"][0]["username"] == user.username
+
+
 @parametrize("url_params__array_format", ["comma", "repeat"])
 def test_profile_list_in_filters(client, db, profile, url, user):
     response = client.get(url("/profiles/", {"name__in": [user.name, "Din Djarin"]}))
@@ -92,18 +92,16 @@ def test_profile_list_in_filters(client, db, profile, url, user):
     assert result["profiles"][0]["username"] == user.username
 
 
+@parametrize("include,expectation", [(["skills", "team"], True), ([], False)])
 @parametrize("url_params__array_format", ["comma", "repeat"])
-def test_profile_list_or_filters(client, db, profile_factory, tag_factory, url):
-    tag1, tag2, tag3 = tag_factory.create_batch(3)
-    profile_factory.create(tags=[tag1])
-    profile_factory.create(tags=[tag2])
-    profile_factory.create(tags=[tag1, tag2])
-    profile_factory.create(tags=[tag3])
-    profile_factory.create()
-    response = client.get(url("/profiles/", {"tags__in": [tag1.pk, tag2.pk]}))
+def test_profile_list_include(client, db, expectation, include, profile, url, user):
+    response = client.get(url("/profiles/", {"include": include}))
     result = response.json()
     assert response.status_code == 200, result
-    assert len(result["profiles"]) == 3
+    assert len(result["profiles"]) == 1
+    profile = result["profiles"][0]
+    assert ("skills" in profile) is expectation
+    assert ("team" in profile) is expectation
 
 
 def test_profile_list_negated_filters(client, db, profile, url, user):
@@ -126,6 +124,20 @@ def test_profile_list_not_in_filters(client, db, profile, url, user):
     result = response.json()
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 0
+
+
+@parametrize("url_params__array_format", ["comma", "repeat"])
+def test_profile_list_or_filters(client, db, profile_factory, tag_factory, url):
+    tag1, tag2, tag3 = tag_factory.create_batch(3)
+    profile_factory.create(tags=[tag1])
+    profile_factory.create(tags=[tag2])
+    profile_factory.create(tags=[tag1, tag2])
+    profile_factory.create(tags=[tag3])
+    profile_factory.create()
+    response = client.get(url("/profiles/", {"tags__in": [tag1.pk, tag2.pk]}))
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 3
 
 
 @patch("django.core.files.storage.FileSystemStorage.save")
@@ -343,10 +355,30 @@ def test_user_list_fields(client, db, url, user):
     result = response.json()
     assert response.status_code == 200, result
     assert result["users"] == [dict(id=user.pk, username=user.username)]
-    response = client.get(url("/users/", {"fields": ["id", "invalid"]}))
+    response = client.get(url("/users/", {"fields": ["id", "name"]}))
     result = response.json()
     assert response.status_code == 400, result
-    assert result == dict(message="Invalid fields: OrderedSet(['invalid'])")
+    assert result == dict(message="Invalid fields: OrderedSet(['name'])")
+
+
+@parametrize("url_params__array_format", ["comma", "repeat"])
+def test_user_list_search(client, db, url, user):
+    response = client.get(url("/users/", {"q": user.email}))
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["users"]) == 1
+    response = client.get(url("/users/", {"q": user.email, "search": ["id"]}))
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["users"]) == 0
+    response = client.get(url("/users/", {"q": user.email, "search": ["id", "email"]}))
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["users"]) == 1
+    response = client.get(url("/users/", {"q": user.email, "search": ["id", "name"]}))
+    result = response.json()
+    assert response.status_code == 400, result
+    assert result == dict(message="Invalid fields: {'name'}")
 
 
 def test_user_list_filters(client, db, url, user_factory):

@@ -164,7 +164,7 @@ class ValidateFields:
 
         if self.request.method in write_methods and key not in write_fields:
             message = f"{self.keymap[key]} is not editable"
-            if settings.WORF_DEBUG:
+            if settings.WORF_DEBUG:  # pragma: no cover
                 message += f":: {serializer}"
             raise ValidationError(message)
 
@@ -177,7 +177,7 @@ class ValidateFields:
         if key not in self.secure_fields and isinstance(self.bundle[key], str):
             self.bundle[key] = self.bundle[key].replace("\x00", "").strip()
 
-        if not hasattr(self.model, key) and not annotation:
+        if not hasattr(self.model, key) and not annotation:  # pragma: no cover
             raise ValidationError(f"{self.keymap[key]} does not exist")
 
         field = (
@@ -187,60 +187,60 @@ class ValidateFields:
         if field.blank and field.empty_strings_allowed and self.bundle[key] == "":
             return
 
-        if field.null and self.bundle[key] is None:
+        elif field.null and self.bundle[key] is None:
             return
 
-        if hasattr(self, f"validate_{key}"):
+        elif hasattr(self, f"validate_{key}"):
             self.bundle[key] = getattr(self, f"validate_{key}")(self.bundle[key])
             return
 
-        if isinstance(field, models.UUIDField):
+        elif isinstance(field, models.UUIDField):
             self.bundle[key] = self.validate_uuid(self.bundle[key])
             return
 
-        if isinstance(field, models.EmailField):
+        elif isinstance(field, models.EmailField):
             self.bundle[key] = self.validate_email(self.bundle[key])
             return
 
-        if isinstance(field, (models.CharField, models.TextField, models.SlugField)):
+        elif isinstance(field, (models.CharField, models.TextField, models.SlugField)):
             self.bundle[key] = self._validate_string(key, field.max_length)
             return
 
-        if isinstance(field, models.PositiveIntegerField):
+        elif isinstance(field, models.PositiveIntegerField):
             self.bundle[key] = self._validate_positive_int(key)
             return
 
-        if isinstance(field, (models.IntegerField, models.SmallIntegerField)):
-            # TODO check size of SmallIntegerField
+        elif isinstance(field, (models.IntegerField, models.SmallIntegerField)):
             self.bundle[key] = self._validate_int(key)
             return
 
-        if isinstance(field, models.BooleanField):
+        elif isinstance(field, models.BooleanField):
             self.bundle[key] = self._validate_boolean(key)
             return
 
-        if isinstance(field, models.DateTimeField):
+        elif isinstance(field, models.DateTimeField):
             self.bundle[key] = self._validate_datetime(key)
             return
 
-        if isinstance(field, models.DateField):
+        elif isinstance(field, models.DateField):
             self.bundle[key] = self._validate_date(key)
             return
 
-        if isinstance(field, models.ManyToManyField):
+        elif isinstance(field, models.ManyToManyField):
             self._validate_many_to_many(key)
             return
 
-        if isinstance(field, models.FileField):
+        elif isinstance(field, models.FileField):
             return  # Django will raise an exception if handled improperly
 
-        if isinstance(field, models.ForeignKey):
+        elif isinstance(field, models.ForeignKey):
             return  # Django will raise an exception if handled improperly
 
-        if isinstance(field, models.JSONField):
+        elif isinstance(field, models.JSONField):
             return  # Django will raise an exception if handled improperly
 
-        message = f"{field.get_internal_type()} has no validation method for {key}"
-        if settings.WORF_DEBUG:
-            message += f":: Received {self.bundle[key]}"
-        raise NotImplementedError(message)
+        else:  # pragma: no cover
+            message = f"{field.get_internal_type()} has no validation method for {key}"
+            if settings.WORF_DEBUG:
+                message += f":: Received {self.bundle[key]}"
+            raise NotImplementedError(message)

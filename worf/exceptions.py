@@ -37,5 +37,5 @@ class PermissionsError(WorfError):
 
 
 @dataclass(frozen=True)
-class SerializerError(WorfError, ValueError):
+class FieldError(WorfError, ValueError):
     message: str

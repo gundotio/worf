@@ -53,7 +53,7 @@ setup(
     install_requires=[
         "Django>=3.0.0,<4.2",
         "django-url-filter>=0.3.15",
-        "marshmallow>=3.14.0",
+        "marshmallow>=3.18.0",
     ],
     packages=find_packages(exclude=["tests*"]),
     python_requires=">=3.8",
