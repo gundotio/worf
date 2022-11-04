@@ -30,11 +30,9 @@ jobs:
       - id: pipfile-lock-diff
         run: |
           wget https://gist.githubusercontent.com/ddahan/215472a4aa1805160aba0a77902e40da/raw/83da35ad413b0d1bb437e2d78f5381100cd5b80e/pipenvdiff.py
-          diff=$(python pipenvdiff.py Pipfile.lock{.bak,})
-          diff="${diff//'%'/'%25'}"
-          diff="${diff//$'\n'/'%0A'}"
-          diff="${diff//$'\r'/'%0D'}"
-          echo ::set-output name=diff::$diff
+          echo 'diff<<EOF' >> $GITHUB_OUTPUT
+          python pipenvdiff.py Pipfile.lock{.bak,} >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
       - run: rm pipenvdiff.py Pipfile.lock.bak
 

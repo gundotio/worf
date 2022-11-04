@@ -70,7 +70,7 @@ jobs:
       - run: pip install requests
 
       - id: build_images_message
-        run: echo "::set-output name=message::$(python .github/workflows/release_message.py)"
+        run: echo "message=$(python .github/workflows/release_message.py)" >> $GITHUB_OUTPUT
         env:
           MESSAGE_TEMPLATE: images
 
@@ -82,7 +82,7 @@ jobs:
           payload: ${{ steps.build_images_message.outputs.message }}
 
       - id: build_release_message
-        run: echo "::set-output name=message::$(python .github/workflows/release_message.py)"
+        run: echo "message=$(python .github/workflows/release_message.py)" >> $GITHUB_OUTPUT
 
       - id: send_release_message
         uses: slackapi/slack-github-action@v1.21.0
@@ -108,7 +108,7 @@ jobs:
 
       - if: always()
         id: rebuild_release_message
-        run: echo "::set-output name=message::$(python .github/workflows/release_message.py)"
+        run: echo "message=$(python .github/workflows/release_message.py)" >> $GITHUB_OUTPUT
         env:
           DEPLOY_STATUS: ${{ steps.release.conclusion }}
 
@@ -143,15 +143,13 @@ jobs:
 
       - id: process
         run: |
-          changelog=$(cat NEXT.md | python .github/workflows/process_changelog.py)
-          changelog="${changelog//'%'/'%25'}"
-          changelog="${changelog//$'\n'/'%0A'}"
-          changelog="${changelog//$'\r'/'%0D'}"
-          echo ::set-output name=changelog::$changelog
+          echo 'changelog<<EOF' >> $GITHUB_OUTPUT
+          cat NEXT.md | python .github/workflows/process_changelog.py >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
       - id: next
         run: |
-          echo "::set-output name=version::$(python .github/workflows/next_version.py ${{ steps.builder.outputs.fromTag }} ${{ inputs.release || 'patch' }})"
+          echo "version=$(python .github/workflows/next_version.py ${{ steps.builder.outputs.fromTag }} ${{ inputs.release || 'patch' }})" >> $GITHUB_OUTPUT
 
     outputs:
       has_prs: ${{ steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs }}
