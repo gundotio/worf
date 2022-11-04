@@ -65,7 +65,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
 
       - run: pip install requests
 
@@ -76,7 +76,7 @@ jobs:
 
       - if: steps.build_images_message.outputs.message
         id: send_images_message
-        uses: slackapi/slack-github-action@v1.21.0
+        uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: C0306G288J0
           payload: ${{ steps.build_images_message.outputs.message }}
@@ -85,7 +85,7 @@ jobs:
         run: echo "message=$(python .github/workflows/release_message.py)" >> $GITHUB_OUTPUT
 
       - id: send_release_message
-        uses: slackapi/slack-github-action@v1.21.0
+        uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: C0306G288J0
           payload: ${{ steps.build_release_message.outputs.message }}
@@ -113,7 +113,7 @@ jobs:
           DEPLOY_STATUS: ${{ steps.release.conclusion }}
 
       - if: always()
-        uses: slackapi/slack-github-action@v1.21.0
+        uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: C0306G288J0
           payload: ${{ steps.rebuild_release_message.outputs.message }}
@@ -128,7 +128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
 
       - run: pip install semver
 
