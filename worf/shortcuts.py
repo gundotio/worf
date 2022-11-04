@@ -1,9 +1,16 @@
 import subprocess
 
 from worf import __version__
+from worf.casing import camel_to_snake
 
 
-def get_current_version():
+def field_list(value):
+    return [
+        ".".join(map(camel_to_snake, field.split("."))) for field in string_list(value)
+    ]
+
+
+def get_version():
     try:
         hash = (
             subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
@@ -15,5 +22,5 @@ def get_current_version():
         return __version__
 
 
-def list_param(value):
+def string_list(value):
     return value.split(",") if isinstance(value, str) else value

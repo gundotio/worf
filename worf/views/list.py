@@ -1,15 +1,15 @@
 import operator
-import warnings
 from functools import reduce
 
 from django.core.exceptions import EmptyResultSet, ImproperlyConfigured
 from django.core.paginator import EmptyPage, Paginator
-from django.db.models import F, OrderBy, Q
+from django.db.models import F, OrderBy, Prefetch, Q
 
 from worf.casing import camel_to_snake
 from worf.conf import settings
+from worf.exceptions import FieldError
 from worf.filters import apply_filterset, generate_filterset
-from worf.shortcuts import list_param
+from worf.shortcuts import field_list, string_list
 from worf.views.base import AbstractBaseAPI
 from worf.views.create import CreateAPI
 
@@ -18,6 +18,7 @@ class ListAPI(AbstractBaseAPI):
     lookup_url_kwarg = "id"  # default incase lookup_field is set
     ordering = []
     filter_fields = []
+    include_fields = {}
     search_fields = []
     sort_fields = []
     queryset = None
@@ -34,27 +35,23 @@ class ListAPI(AbstractBaseAPI):
         codepath = self.codepath
 
         if not isinstance(self.ordering, list):  # pragma: no cover
-            raise ImproperlyConfigured(f"{codepath}.ordering must be type: list")
+            raise ImproperlyConfigured(f"{codepath}.ordering must be a list")
 
         if not isinstance(self.filter_fields, list):  # pragma: no cover
-            raise ImproperlyConfigured(f"{codepath}.filter_fields must be type: list")
+            raise ImproperlyConfigured(f"{codepath}.filter_fields must be a list")
 
-        if not isinstance(self.search_fields, (dict, list)):  # pragma: no cover
-            raise ImproperlyConfigured(f"{codepath}.search_fields must be type: list")
+        if not isinstance(self.include_fields, dict):  # pragma: no cover
+            raise ImproperlyConfigured(f"{codepath}.include_fields must be a dict")
+
+        if not isinstance(self.search_fields, list):  # pragma: no cover
+            raise ImproperlyConfigured(f"{codepath}.search_fields must be a list")
 
         if not isinstance(self.sort_fields, list):  # pragma: no cover
-            raise ImproperlyConfigured(f"{codepath}.sort_fields must be type: list")
+            raise ImproperlyConfigured(f"{codepath}.sort_fields must be a list")
 
         # generate a default filterset if a custom one was not provided
         if self.filter_set is None:
             self.filter_set = generate_filterset(self.model, self.queryset)
-
-        # support deprecated search_fields and/or dict syntax (note that `and` does nothing)
-        if isinstance(self.search_fields, dict):  # pragma: no cover - deprecated
-            warnings.warn(
-                f"Passing a dict to {codepath}.search_fields is deprecated. Pass a list instead."
-            )
-            self.search_fields = self.search_fields.get("or", [])
 
     def get(self, *args, **kwargs):
         return self.render_to_response()
@@ -70,7 +67,7 @@ class ListAPI(AbstractBaseAPI):
         For more advanced search use cases, override this method and pass GET
         with any remaining params you want to use classic django filters for.
         """
-        if not self.filter_fields and not self.search_fields:
+        if not self.filter_fields and not self.search_fields:  # pragma: no cover
             return
 
         # Whatever is not q or page as a querystring param will
@@ -81,11 +78,20 @@ class ListAPI(AbstractBaseAPI):
         self.bundle.pop("p", None)
 
         if query:
-            search_icontains = (
-                Q(**{f"{search_field}__icontains": query})
-                for search_field in self.search_fields
-            )
-            self.search_query = reduce(operator.or_, search_icontains)
+            search_fields = self.search_fields
+
+            if self.bundle.get("search", []):
+                search_fields = field_list(self.bundle["search"])
+                invalid_fields = set(search_fields) - set(self.search_fields)
+                if invalid_fields:
+                    raise FieldError(f"Invalid fields: {invalid_fields}")
+
+            if search_fields:
+                search_icontains = (
+                    Q(**{f"{search_field}__icontains": query})
+                    for search_field in search_fields
+                )
+                self.search_query = reduce(operator.or_, search_icontains)
 
         if not self.filter_fields or not self.bundle:  # pragma: no cover
             return
@@ -136,6 +142,13 @@ class ListAPI(AbstractBaseAPI):
                     else queryset.filter(**{key: item})
                 )
 
+        if self.include_fields and self.bundle.get("include"):
+            for item in set(self.include_fields.keys()) & set(self.bundle["include"]):
+                if isinstance(self.include_fields[item], Prefetch):
+                    queryset = queryset.prefetch_related(self.include_fields[item])
+                elif isinstance(self.include_fields[item], str):
+                    queryset = queryset.select_related(self.include_fields[item])
+
         if ordering:
             queryset = queryset.order_by(*ordering)
 
@@ -144,7 +157,7 @@ class ListAPI(AbstractBaseAPI):
     def get_ordering(self):
         ordering = []
 
-        for sort in list_param(self.bundle.get("sort", [])):
+        for sort in string_list(self.bundle.get("sort", [])):
             field = "__".join(map(camel_to_snake, sort.lstrip("-").split(".")))
             if field not in self.sort_fields:
                 continue

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db.models import F, Value
+from django.db.models import F, Prefetch, Value
 from django.db.models.functions import Concat
 
 from tests.models import Profile
@@ -33,6 +33,10 @@ class ProfileList(CreateAPI, ListAPI):
         "tags",
         "tags__in",
     ]
+    include_fields = {
+        "skills": Prefetch("skills"),
+        "team": "team",
+    }
 
 
 class ProfileDetail(ActionAPI, DeleteAPI, UpdateAPI, DetailAPI):
@@ -75,11 +79,13 @@ class UserList(CreateAPI, ListAPI):
     )
     permissions = [PublicEndpoint]
     filter_fields = [
+        "id",
         "email",
         "date_joined__gte",
         "date_joined__lte",
     ]
     search_fields = [
+        "id",
         "email",
         "username",
     ]

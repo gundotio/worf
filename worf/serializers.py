@@ -5,13 +5,14 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FieldFile
 
 from worf import fields
-from worf.casing import camel_to_snake, snake_to_camel
+from worf.casing import snake_to_camel
 from worf.conf import settings
-from worf.exceptions import SerializerError
-from worf.shortcuts import list_param
+from worf.exceptions import FieldError
+from worf.shortcuts import field_list
 
 
 class SerializeModels:
+    include_fields = {}
     serializer = None
     staff_serializer = None
 
@@ -22,22 +23,20 @@ class SerializeModels:
             serializer = self.staff_serializer
 
         if not serializer:  # pragma: no cover
-            msg = f"{type(self).__name__}.get_serializer() did not return a serializer"
+            msg = f"{self.__class__.__name__}.get_serializer() did not return a serializer"
             raise ImproperlyConfigured(msg)
 
-        return serializer(**self.get_serializer_kwargs())
+        return serializer(**self.get_serializer_kwargs(serializer))
 
     def get_serializer_context(self):
         return {}
 
-    def get_serializer_kwargs(self):
-        return dict(
-            context=dict(request=self.request, **self.get_serializer_context()),
-            only=[
-                ".".join(map(camel_to_snake, field.split(".")))
-                for field in list_param(self.bundle.get("fields", []))
-            ],
-        )
+    def get_serializer_kwargs(self, serializer_class):
+        context = dict(request=self.request, **self.get_serializer_context())
+        only = set(field_list(self.bundle.get("fields", [])))
+        include = field_list(self.bundle.get("include", []))
+        exclude = set(self.include_fields.keys()) - set(include)
+        return dict(context=context, only=only, exclude=exclude)
 
     def load_serializer(self):
         try:
@@ -45,7 +44,7 @@ class SerializeModels:
         except ValueError as e:
             if str(e).startswith("Invalid fields"):
                 invalid_fields = str(e).partition(": ")[2].strip(".")
-                raise SerializerError(f"Invalid fields: {invalid_fields}")
+                raise FieldError(f"Invalid fields: {invalid_fields}")
             raise e  # pragma: no cover
 
     def serialize(self):
@@ -97,21 +96,15 @@ class Serializer(marshmallow.Schema):
         if self.only and kwargs.get("only"):
             invalid_fields = set(kwargs.get("only")) - self.only
             if invalid_fields:
-                raise SerializerError(f"Invalid fields: {invalid_fields}")
+                raise FieldError(f"Invalid fields: {invalid_fields}")
             only = set(kwargs.get("only"))
         elif kwargs.get("only"):
             only = kwargs.get("only")
 
-        exclude = self.exclude
-        if self.exclude and kwargs.get("exclude"):
-            exclude = self.exclude | set(kwargs.get("exclude"))
-        elif kwargs.get("exclude"):
-            exclude = kwargs.get("exclude")
-
-        return type(self)(
+        return self.__class__(
             context=kwargs.get("context", self.context),
             dump_only=kwargs.get("dump_only", self.dump_only),
-            exclude=exclude,
+            exclude=set(self.exclude or []) | set(kwargs.get("exclude") or []),
             load_only=kwargs.get("load_only", self.load_only),
             many=kwargs.get("many", self.many),
             only=only,

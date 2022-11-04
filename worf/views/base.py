@@ -20,9 +20,9 @@ from worf.exceptions import (
     ActionError,
     AuthenticationError,
     DataConflict,
+    FieldError,
     NotFound,
     PermissionsError,
-    SerializerError,
     WorfError,
 )
 from worf.renderers import render_response
@@ -94,10 +94,10 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
             response = self.render_error(e.message, 401)
         except DataConflict as e:
             response = self.render_error(e.message, 409)
+        except FieldError as e:
+            response = self.render_error(e.message, 400)
         except NotFound as e:
             response = self.render_error(e.message, 404)
-        except SerializerError as e:
-            response = self.render_error(e.message, 400)
         except ValidationError as e:
             response = self.render_error(e.message, 422)
         return response
@@ -126,7 +126,7 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
             for perm in self.permissions:
                 perm()(self.request, **self.kwargs)
         except WorfError as e:
-            if settings.WORF_DEBUG:
+            if settings.WORF_DEBUG:  # pragma: no cover
                 raise PermissionsError(
                     f"Permission check {perm.__module__}.{perm.__name__} raised {e.__class__.__name__}. "
                     f"You'd normally see a 4xx here but WORF_DEBUG=True."
