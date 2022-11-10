@@ -20,8 +20,6 @@ jobs:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9.13
 
       - run: cp Pipfile.lock{,.bak}
       - run: pip install pipenv wheel --upgrade
