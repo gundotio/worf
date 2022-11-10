@@ -44,8 +44,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9.13
       - run: pip install pipenv
       - run: pipenv run install_linters
       - run: pipenv run check
