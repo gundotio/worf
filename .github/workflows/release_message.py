@@ -31,6 +31,9 @@ action_status = dict(
 ).get(DEPLOY_STATUS or "pending")
 action_url = f"{github_url}/actions/runs/{GITHUB_RUN_ID}"
 
+image_html_re = re.compile(r'<img.*?alt="(.*?)".*?src="(.*?)".*?>')
+image_md_re = re.compile(r"!\[(.*?)\]\((.*?)\)")
+
 release_re = re.compile(
     r"""
     ^\#+\s
@@ -68,10 +71,10 @@ def build_message():
                         "type": "plain_text",
                         "text": text,
                     },
-                    "image_url": image,
+                    "image_url": url,
                     "alt_text": text,
                 }
-                for text, image in images
+                for text, url in images
             ],
         }
 
@@ -97,6 +100,10 @@ def build_message():
     }
 
 
+def find_images(text):
+    return image_html_re.findall(text) + image_md_re.findall(text)
+
+
 def get_images(release):
     images = []
 
@@ -118,10 +125,9 @@ def get_images(release):
 
         images.extend(
             [
-                (f"{pull['title']} #{pull['number']}: {text}".strip(": "), image)
-                for text, image in re.findall(
-                    r"!\[(.*?)\]\((.*?)\)", pull["body"] or ""
-                )
+                (f"{pull['title']} #{pull['number']}: {text}".strip(": "), url)
+                for text, url in find_images(pull["body"] or "")
+                if "badge" not in url
             ]
         )
 
@@ -161,7 +167,10 @@ def transform_markdown(text):
     text = re.sub(r"!?\[([^\[\]]*?)\]\(([^\(\)]*?)\)", r"<\2|\1>", text)
     # convert lists into bullets
     text = re.sub(
-        r"(?<=^) *[·•●\-\*➤]+ *(.*)", r"   *•*   \1", text, flags=re.MULTILINE
+        r"(?<=^) *[·•●\-\*➤]+\s*(.*)",
+        r" *•*  \1",
+        text,
+        flags=re.MULTILINE,
     )
     # convert headings into bold
     text = re.sub(
