@@ -6,3 +6,5 @@
 /build
 /coverage
 /dist
+reqlib-metadata/
+worf.egg-info/
