@@ -6,3 +6,5 @@
 /build
 /coverage
 /dist
+htmlcov
+worf.egg-info
