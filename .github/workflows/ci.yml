@@ -23,12 +23,18 @@ concurrency:
 
 jobs:
   test:
-    name: test
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        python: [3.8, 3.9, "3.10"]
+        python: [3.8, 3.9, "3.10", 3.11]
         django: [3.2, "4.0", 4.1]
+        exclude:
+          - python: 3.11
+            django: 3.2
+          - python: 3.11
+            django: 4.0
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -41,6 +47,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
