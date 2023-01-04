@@ -26,9 +26,6 @@ pytest-watch = "*"
 pytest-xdist = {extras = ["psutil"], version = "*"}
 twine = "*"
 
-[requires]
-python_version = "3.8"
-
 [scripts]
 install_linters = "pipenv install autoflake black flake8 isort --dev --skip-lock"
 check = "./script/check"

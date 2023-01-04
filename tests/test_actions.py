@@ -43,8 +43,8 @@ def test_invalid_arguments(user_client, profile):
     response = user_client.put(f"/profiles/{profile.pk}/subscribe/", kwargs)
     result = response.json()
     assert response.status_code == 400, result
-    message = "Invalid arguments: subscribe() got an unexpected keyword argument 'text'"
-    assert result["message"] == message
+    assert result["message"].startswith("Invalid arguments:")
+    assert result["message"].endswith("unexpected keyword argument 'text'")
 
 
 @parametrize("method", ["GET", "DELETE", "PATCH", "POST"])

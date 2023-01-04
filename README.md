@@ -63,8 +63,8 @@ INSTALLED_APPS = [
 Requirements
 ------------
 
-- Python (3.7, 3.8, 3.9)
-- Django (3.0, 3.1, 3.2)
+- Python (3.8, 3.9, 3.10)
+- Django (3.2, 4.0, 4.1)
 
 
 Roadmap
