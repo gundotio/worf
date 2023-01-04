@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.17](https://github.com/gundotio/worf/compare/v0.5.16...v0.5.17) (2023-01-04)
+
+- (Deps) Support Django 4 and Python 3.10 + drop Django <3.2 and Python 3.7 [#127](https://github.com/gundotio/worf/pull/127)
+- (Deps) Support Python 3.11 on Django 4.1 [#128](https://github.com/gundotio/worf/pull/128)
+- (Deps) Switch actions to Python 3.9.13 [#118](https://github.com/gundotio/worf/pull/118)
+- (Refactor) Switch to latest release message builder [#121](https://github.com/gundotio/worf/pull/121)
+
 ### [0.5.16](https://github.com/gundotio/worf/compare/v0.5.15...v0.5.16) (2022-10-06)
 
 - (Improvement) Support custom actions via ActionAPI [#115](https://github.com/gundotio/worf/pull/115)
