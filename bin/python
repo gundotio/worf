@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -eou pipefail
+
+$(dirname "$0")/pipenv run python "$@"
