@@ -129,7 +129,7 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
             if settings.WORF_DEBUG:
                 raise PermissionsError(
                     f"Permission check {perm.__module__}.{perm.__name__} raised {e.__class__.__name__}. "
-                    f"You'd normally see a {e.status} here but WORF_DEBUG=True."
+                    f"You'd normally see a 4xx here but WORF_DEBUG=True."
                 ) from e
             raise e
 
