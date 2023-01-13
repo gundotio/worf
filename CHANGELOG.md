@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.18](https://github.com/gundotio/worf/compare/v0.5.17...v0.5.18) (2023-01-13)
+
+- (Bugfix) Swap out reference to legacy error attr for 4xx [#130](https://github.com/gundotio/worf/pull/130)
+- (Improvement) Support include and search field params [#120](https://github.com/gundotio/worf/pull/120)
+
 ### [0.5.17](https://github.com/gundotio/worf/compare/v0.5.16...v0.5.17) (2023-01-04)
 
 - (Deps) Support Django 4 and Python 3.10 + drop Django <3.2 and Python 3.7 [#127](https://github.com/gundotio/worf/pull/127)
