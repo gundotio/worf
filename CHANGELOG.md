@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.19](https://github.com/gundotio/worf/compare/v0.5.18...v0.5.19) (2023-01-13)
+
+- (Bugfix) Prefetching for include param fields [#132](https://github.com/gundotio/worf/pull/132)
+
 ### [0.5.18](https://github.com/gundotio/worf/compare/v0.5.17...v0.5.18) (2023-01-13)
 
 - (Bugfix) Swap out reference to legacy error attr for 4xx [#130](https://github.com/gundotio/worf/pull/130)
