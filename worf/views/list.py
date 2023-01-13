@@ -143,7 +143,8 @@ class ListAPI(AbstractBaseAPI):
                 )
 
         if self.include_fields and self.bundle.get("include"):
-            for item in set(self.include_fields.keys()) & set(self.bundle["include"]):
+            include = field_list(self.bundle["include"])
+            for item in set(self.include_fields.keys()) & set(include):
                 if isinstance(self.include_fields[item], Prefetch):
                     queryset = queryset.prefetch_related(self.include_fields[item])
                 elif isinstance(self.include_fields[item], str):
