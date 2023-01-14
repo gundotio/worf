@@ -1,12 +1,11 @@
 import operator
 from functools import reduce
 
-from django.core.exceptions import EmptyResultSet, ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models import F, OrderBy, Prefetch, Q
 
 from worf.casing import camel_to_snake
-from worf.conf import settings
 from worf.exceptions import FieldError
 from worf.filters import apply_filterset, generate_filterset
 from worf.shortcuts import field_list, string_list
@@ -174,12 +173,6 @@ class ListAPI(AbstractBaseAPI):
         queryset = self.get_processed_queryset()
         request = self.request
 
-        if settings.WORF_DEBUG:  # pragma: no cover
-            try:
-                self.query = str(queryset.query)
-            except EmptyResultSet:
-                self.query = None
-
         default_per_page = getattr(self, "results_per_page", self.per_page)
         per_page = max(int(request.GET.get("perPage") or default_per_page), 1)
         max_per_page = self.max_per_page or default_per_page
@@ -208,15 +201,6 @@ class ListAPI(AbstractBaseAPI):
                 pages=self.num_pages,
                 page=self.page_num,
             )
-
-        if settings.WORF_DEBUG:  # pragma: no cover
-            payload["debug"] = {
-                "bundle": self.bundle,
-                "lookup_kwargs": getattr(self, "lookup_kwargs", {}),
-                "query": self.query,
-                "search_query": str(self.search_query),
-                "serializer": str(serializer).strip("<>"),
-            }
 
         return payload
 

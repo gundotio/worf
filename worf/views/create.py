@@ -12,10 +12,10 @@ class CreateAPI(AssignAttributes, AbstractBaseAPI):
         self.instance.refresh_from_db()
         return self.instance
 
-    def get_serializer(self):
+    def get_serializer(self, **kwargs):
         if self.create_serializer and self.request.method == "POST":
-            return self.create_serializer(**self.get_serializer_kwargs())
-        return super().get_serializer()
+            return self.create_serializer(**self.get_serializer_kwargs(**kwargs))
+        return super().get_serializer(**kwargs)
 
     def new_instance(self):
         return self.model()

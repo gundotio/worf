@@ -6,10 +6,10 @@ from worf.views.base import AbstractBaseAPI
 class UpdateAPI(AssignAttributes, FindInstance, AbstractBaseAPI):
     update_serializer = None
 
-    def get_serializer(self):
+    def get_serializer(self, **kwargs):
         if self.update_serializer and self.request.method in ("PATCH", "PUT"):
-            return self.update_serializer(**self.get_serializer_kwargs())
-        return super().get_serializer()
+            return self.update_serializer(**self.get_serializer_kwargs(**kwargs))
+        return super().get_serializer(**kwargs)
 
     def patch(self, *args, **kwargs):
         self.update(*args, **kwargs)

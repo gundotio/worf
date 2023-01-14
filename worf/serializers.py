@@ -1,7 +1,6 @@
 import marshmallow
 from marshmallow.decorators import *  # noqa: F401, F403
 
-from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FieldFile
 
 from worf import fields
@@ -16,26 +15,22 @@ class SerializeModels:
     serializer = None
     staff_serializer = None
 
-    def get_serializer(self):
+    def get_serializer(self, **kwargs):
         serializer = self.serializer
 
         if self.staff_serializer and self.request.user.is_staff:  # pragma: no cover
             serializer = self.staff_serializer
 
-        if not serializer:  # pragma: no cover
-            msg = f"{self.__class__.__name__}.get_serializer() did not return a serializer"
-            raise ImproperlyConfigured(msg)
-
-        return serializer(**self.get_serializer_kwargs())
+        return serializer and serializer(**self.get_serializer_kwargs(**kwargs))
 
     def get_serializer_context(self):
         return {}
 
-    def get_serializer_kwargs(self):
+    def get_serializer_kwargs(self, include=[], exclude=[]):
         context = dict(request=self.request, **self.get_serializer_context())
         only = set(field_list(self.bundle.get("fields", [])))
-        include = field_list(self.bundle.get("include", []))
-        exclude = set(self.include_fields.keys()) - set(include)
+        include = include or field_list(self.bundle.get("include", []))
+        exclude = exclude or set(self.include_fields.keys()) - set(include)
         return dict(context=context, only=only, exclude=exclude)
 
     def load_serializer(self):
