@@ -419,7 +419,7 @@ bundle before saving the object via `post`, `patch`, or other methods.
 Debugging
 ---------
 
-Worf exposes the parsed bundle, lookup kwargs, sql and skips some exception handling
+Worf exposes the parsed bundle, lookup kwargs and skips some exception handling
 [when in debug mode](#settings).
 
 

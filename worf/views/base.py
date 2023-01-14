@@ -48,7 +48,7 @@ class APIResponse(View):
             msg += "render_to_response, nor did its serializer method"
             raise ImproperlyConfigured(msg)
 
-        return render_response(self.request, data, status_code)
+        return render_response(self.request, data, status_code, self)
 
 
 class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):

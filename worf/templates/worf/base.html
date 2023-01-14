@@ -7,17 +7,17 @@
         <meta name="robots" content="none,noarchive"/>
       {% endblock %}
 
-      <title>{{ settings.WORF_API_NAME }}: {{ request.get_full_path }}</title>
+      <title>{{ view_name }} | {{ settings.WORF_API_NAME }}: {{ request.get_full_path }}</title>
 
       {% block style %}
-        <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
         <link href="https://unpkg.com/prism-js-fold@1.0.1/prism-js-fold.css" crossorigin="anonymous" referrerpolicy="no-referrer" rel="stylesheet">
         <style>
           body { background: #131417; color: #fff; }
           a { color: #58A6FF; }
           a:hover { text-decoration: underline; }
           code, pre { font-family: inconsolata, monaco, consolas, courier, monospace; color: #c5c8c6; }
-          nav, pre { background: #202126; }
+          details, nav, pre { background: #202126; }
+          details { box-shadow: 0 0 50px #131417 }
           strong { font-weight: 500; }
           .token a { color: #58a6ff; }
           .token.boolean { color: #fbbf24; }
@@ -32,6 +32,7 @@
       {% endblock %}
 
       {% block script %}
+        <script src="https://cdn.tailwindcss.com" referrerpolicy="no-referrer"></script>
         <script src="https://unpkg.com/prismjs@1.28.0" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://unpkg.com/prismjs@1.28.0/components/prism-json.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://unpkg.com/prismjs@1.28.0/plugins/keep-markup/prism-keep-markup.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -67,7 +68,85 @@
 
 <code class="language-json">{{ content }}</code></pre>
             </div>
-          {% endblock content %}
+          {% endblock %}
+
+          {% if settings.WORF_DEBUG %}
+            {% block toolbar %}
+              <div class="fixed max-w-sm max-h-screen bottom-0 right-0 pl-8 pt-8 overflow-auto">
+                {% if view %}
+                  <details class="m-2">
+                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                      <span class="px-1">{{ view_name }}</span>
+                    </summary>
+                    <div class="px-4 py-2">
+                      {{ view }}
+                    </div>
+                  </details>
+                {% endif %}
+
+                {% if serializer %}
+                  <details class="m-2">
+                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                      <span class="px-1">{{ serializer_name }}</span>
+                    </summary>
+                    <div class="px-4 py-2">
+                      {{ serializer }}
+                    </div>
+                  </details>
+                {% endif %}
+
+                {% if payload %}
+                  <details class="m-2">
+                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                      <span class="px-1">
+                        Payload
+                        <span class="bg-zinc-700 mx-1 px-1">{{ payload|length }}</span>
+                      </span>
+                    </summary>
+                    <div class="px-4 py-2 break-all">
+                      {{ payload }}
+                    </div>
+                  </details>
+                {% endif %}
+
+                {% if lookup_kwargs %}
+                  <details class="m-2">
+                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                      <span class="px-1">
+                        Lookups
+                        <span class="bg-zinc-700 mx-1 px-1">{{ lookup_kwargs|length }}</span>
+                      </span>
+                    </summary>
+                    <div class="px-4 py-2 break-all">
+                      {{ lookup_kwargs }}
+                    </div>
+                  </details>
+                {% endif %}
+
+                {% for name, items, count in fields %}
+                  {% if items %}
+                    <details class="m-2">
+                      <summary class="font-medium px-4 py-2 cursor-pointer">
+                        <span class="px-1">
+                          {{ name }}
+                          {% if count %}<span class="bg-zinc-700 mx-1 px-1">{{ count }}</span>{% endif %}
+                        </span>
+                      </summary>
+                      <div class="px-4 py-2">
+                        <table>
+                          {% for field, active in items %}
+                            <tr class="{% if count and not active %}opacity-50{% endif %}">
+                              <th class="text-left pr-4">{{ field }}</th>
+                            </tr>
+                          {% endfor %}
+                        </table>
+                      </div>
+                    </details>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endblock %}
+          {% endif %}
         </main>
       </div>
     {% endblock %}
