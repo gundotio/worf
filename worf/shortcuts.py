@@ -4,9 +4,10 @@ from worf import __version__
 from worf.casing import camel_to_snake
 
 
-def field_list(value):
+def field_list(value, delimiter="."):
     return [
-        ".".join(map(camel_to_snake, field.split("."))) for field in string_list(value)
+        delimiter.join(map(camel_to_snake, field.split(".")))
+        for field in string_list(value)
     ]
 
 

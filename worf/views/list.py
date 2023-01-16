@@ -70,18 +70,19 @@ class ListAPI(AbstractBaseAPI):
         if not self.filter_fields and not self.search_fields:  # pragma: no cover
             return
 
+        bundle = self.bundle.copy()
+
         # Whatever is not q or page as a querystring param will
         # be used for key-value search.
-        query = self.bundle.pop("q", "").strip()
+        query = bundle.pop("q", "").strip()
 
-        self.bundle.pop("page", None)
-        self.bundle.pop("p", None)
+        bundle.pop("page", None)
 
         if query:
             search_fields = self.search_fields
 
-            if self.bundle.get("search", []):
-                search_fields = field_list(self.bundle["search"])
+            if bundle.get("search", []):
+                search_fields = field_list(bundle["search"], delimiter="__")
                 invalid_fields = set(search_fields) - set(self.search_fields)
                 if invalid_fields:
                     raise FieldError(f"Invalid fields: {invalid_fields}")
@@ -93,10 +94,10 @@ class ListAPI(AbstractBaseAPI):
                 )
                 self.search_query = reduce(operator.or_, search_icontains)
 
-        if not self.filter_fields or not self.bundle:  # pragma: no cover
+        if not self.filter_fields or not bundle:  # pragma: no cover
             return
 
-        for key in self.bundle.keys():
+        for key in bundle.keys():
             filter_key = key[:-1] if key.endswith("!") else key
 
             if filter_key not in self.filter_fields:
