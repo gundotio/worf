@@ -1,7 +1,0 @@
-{
-    "categories": [],
-    "empty_template": "- No changes",
-    "pr_template": "- ${{TITLE}} #${{NUMBER}}",
-    "sort": {"on_property": "title", "order": "ASC"},
-    "template": "${{UNCATEGORIZED}}"
-}

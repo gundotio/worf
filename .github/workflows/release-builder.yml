@@ -57,6 +57,7 @@ jobs:
       PROJECT_NAME: worf
       PROJECT_TYPE: package
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
+      SLACK_CHANNEL: C0306G288J0
       TARGET_NAME: pypi.org
       TARGET_URL: https://pypi.org/project/worf/
 
@@ -65,30 +66,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v4
-
-      - run: pip install requests
-
-      - id: build_images_message
-        run: echo "message=$(python .github/workflows/release_message.py)" >> $GITHUB_OUTPUT
-        env:
-          MESSAGE_TEMPLATE: images
-
-      - if: steps.build_images_message.outputs.message
-        id: send_images_message
-        uses: slackapi/slack-github-action@v1.23.0
+      - id: message
+        uses: gundotio/release-builder/slack-message@main
         with:
-          channel-id: C0306G288J0
-          payload: ${{ steps.build_images_message.outputs.message }}
-
-      - id: build_release_message
-        run: echo "message=$(python .github/workflows/release_message.py)" >> $GITHUB_OUTPUT
-
-      - id: send_release_message
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          channel-id: C0306G288J0
-          payload: ${{ steps.build_release_message.outputs.message }}
+          channel-id: ${{ env.SLACK_CHANNEL }}
 
       - run: script/build
 
@@ -107,17 +88,11 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
       - if: always()
-        id: rebuild_release_message
-        run: echo "message=$(python .github/workflows/release_message.py)" >> $GITHUB_OUTPUT
-        env:
-          DEPLOY_STATUS: ${{ steps.release.conclusion }}
-
-      - if: always()
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: gundotio/release-builder/slack-message@main
         with:
-          channel-id: C0306G288J0
-          payload: ${{ steps.rebuild_release_message.outputs.message }}
-          update-ts: ${{ steps.send_release_message.outputs.ts }}
+          channel-id: ${{ steps.message.outputs.channel-id }}
+          message-id: ${{ steps.message.outputs.message-id }}
+          status: ${{ steps.release.conclusion }}
 
   build_changelog:
     if: always() && needs.publish_release.result != 'failure'
@@ -127,35 +102,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
 
-      - run: pip install semver
-
-      - id: builder
-        uses: mikepenz/release-changelog-builder-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: changelog
+        uses: gundotio/release-builder/build-changelog@main
         with:
-          configuration: .github/workflows/changelog-builder.json
-          outputFile: NEXT.md
-          toTag: HEAD
-
-      - id: process
-        run: |
-          echo 'changelog<<EOF' >> $GITHUB_OUTPUT
-          cat NEXT.md | python .github/workflows/process_changelog.py >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
-
-      - id: next
-        run: |
-          echo "version=$(python .github/workflows/next_version.py ${{ steps.builder.outputs.fromTag }} ${{ inputs.release || 'patch' }})" >> $GITHUB_OUTPUT
+          release: ${{ inputs.release || 'patch' }}
 
     outputs:
-      has_prs: ${{ steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs }}
-      previous_version: ${{ steps.builder.outputs.fromTag }}
-      next_version: ${{ steps.next.outputs.version }}
-      notes: ${{ steps.process.outputs.changelog }}
-      release: ${{ inputs.release || 'patch' }}
+      has_prs: ${{ steps.changelog.outputs.has_prs }}
+      previous_version: ${{ steps.changelog.outputs.previous_version }}
+      next_version: ${{ steps.changelog.outputs.next_version }}
+      notes: ${{ steps.changelog.outputs.notes }}
+      release: ${{ steps.changelog.outputs.release }}
 
   create_pr:
     if: always() && inputs.force_pr || needs.build_changelog.outputs.has_prs
@@ -168,33 +126,12 @@ jobs:
         with:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - id: commit
-        uses: pr-mpt/actions-commit-hash@v1
-
       - run: |
-          echo -e "# Changelog\n" > NEXT.md
-          echo -e "All notable changes to this project will be documented in this file. See [standard-version](${{ github.server_url }}/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
-          echo -e "${{ needs.build_changelog.outputs.release == 'patch' && '###' || '##' }} [${{ needs.build_changelog.outputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ needs.build_changelog.outputs.previous_version }}...v${{ needs.build_changelog.outputs.next_version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
-          echo -e "${{ needs.build_changelog.outputs.notes }}\n" >> NEXT.md
-          cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md && mv NEXT.md CHANGELOG.md
           echo '__version__ = "v${{ needs.build_changelog.outputs.next_version }}"' > worf/__init__.py
 
-      - uses: peter-evans/create-pull-request@v4
+      - uses: gundotio/release-builder/create-pull-request@main
         with:
-          title: Release ${{ needs.build_changelog.outputs.next_version }}
-          body: |
-            ## Release [${{ needs.build_changelog.outputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ needs.build_changelog.outputs.previous_version }}...${{ steps.commit.outputs.short }})
-
-            ${{ needs.build_changelog.outputs.notes }}
-
-            <details>
-              <summary>View source</summary>
-              <pre><code>${{ needs.build_changelog.outputs.notes }}</code></pre>
-            </details>
-          author: GitHub <noreply@github.com>
-          base: master
-          branch: release
-          committer: GitHub <noreply@github.com>
-          commit-message: |
-            chore(release): ${{ needs.build_changelog.outputs.next_version }}
-          delete-branch: true
+          next_version: ${{ needs.build_changelog.outputs.next_version }}
+          notes: ${{ needs.build_changelog.outputs.notes }}
+          previous_version: ${{ needs.build_changelog.outputs.previous_version }}
+          release: ${{ needs.build_changelog.outputs.release }}
