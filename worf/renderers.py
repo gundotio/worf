@@ -8,13 +8,14 @@ from worf.shortcuts import field_list
 
 def browsable_response(request, response, status_code, view):
     template = "worf/api.html"
-    serializer = view.get_serializer()
+    serializer = hasattr(view, "bundle") and view.get_serializer()
 
-    include = field_list(view.bundle.get("include", []))
-    search = field_list(view.bundle.get("search", []), delimiter="__")
+    bundle = getattr(view, "bundle", {})
+    include = field_list(bundle.get("include", []))
+    search = field_list(bundle.get("search", []), delimiter="__")
 
     filter_fields = [
-        (transform_field(field), bool(field in view.bundle))
+        (transform_field(field), bool(field in bundle))
         for field in getattr(view, "filter_fields", [])
     ]
     include_fields = [
@@ -42,11 +43,11 @@ def browsable_response(request, response, status_code, view):
             (
                 "Search",
                 sorted(search_fields),
-                len(search or search_fields) if view.bundle.get("q") else 0,
+                len(search or search_fields) if bundle.get("q") else 0,
             ),
         ],
         lookup_kwargs=getattr(view, "lookup_kwargs", {}),
-        payload=view.bundle,
+        payload=bundle,
         response=response,
         serializer=serializer,
         serializer_name=type(serializer).__name__,

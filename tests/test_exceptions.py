@@ -9,7 +9,6 @@ from worf import exceptions
     dict(e=exceptions.FieldError("test")),
     dict(e=exceptions.NamingThingsError("test")),
     dict(e=exceptions.NotFound("test")),
-    dict(e=exceptions.PermissionsError("test")),
     dict(e=exceptions.WorfError("test")),
 )
 def test_exception(e):

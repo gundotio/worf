@@ -32,10 +32,5 @@ class NotFound(WorfError):
 
 
 @dataclass(frozen=True)
-class PermissionsError(WorfError):
-    message: str
-
-
-@dataclass(frozen=True)
 class FieldError(WorfError, ValueError):
     message: str
