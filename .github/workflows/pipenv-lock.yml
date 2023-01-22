@@ -1,0 +1,23 @@
+name: Pipenv lock
+
+on:
+  workflow_dispatch: ~
+
+jobs:
+  pipenv-lock:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - uses: actions/setup-python@v4
+
+      - run: pip install --disable-pip-version-check pipenv wheel --upgrade
+      - run: pipenv lock
+
+      - run: git config --global user.name 'GitHub'
+      - run: git config --global user.email 'noreply@github.com'
+      - run: git commit -am "Pipenv lock"
+      - run: git push
