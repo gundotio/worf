@@ -22,7 +22,6 @@ from worf.exceptions import (
     DataConflict,
     FieldError,
     NotFound,
-    PermissionsError,
     WorfError,
 )
 from worf.renderers import render_response
@@ -44,9 +43,9 @@ class APIResponse(View):
             data = self.serialize()
 
         if data is None:
-            msg = f"{self.codepath} did not pass an object to "
-            msg += "render_to_response, nor did its serializer method"
-            raise ImproperlyConfigured(msg)
+            message = f"{self.codepath} did not pass an object to "
+            message += "render_to_response, nor did its serializer method"
+            raise ImproperlyConfigured(message)
 
         return render_response(self.request, data, status_code, self)
 
@@ -58,9 +57,6 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
 
     def __init__(self, *args, **kwargs):
         self.codepath = f"{self.__module__}.{self.__class__.__name__}"
-
-        if self.model is None:  # pragma: no cover
-            raise ImproperlyConfigured(f"Model is not set on {self.codepath}")
 
         if not isinstance(self.permissions, list):  # pragma: no cover
             raise ImproperlyConfigured(
@@ -127,10 +123,9 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
                 perm()(self.request, **self.kwargs)
         except WorfError as e:
             if settings.WORF_DEBUG:  # pragma: no cover
-                raise PermissionsError(
-                    f"Permission check {perm.__module__}.{perm.__name__} raised {e.__class__.__name__}. "
-                    f"You'd normally see a 4xx here but WORF_DEBUG=True."
-                ) from e
+                check = f"{perm.__module__}.{perm.__name__}"
+                error = e.__class__.__name__
+                raise type(e)(f"{e.message}: Permission {check} raised {error}") from e
             raise e
 
     def get_handler(self, request, *args, **kwargs):
