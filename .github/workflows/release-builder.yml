@@ -129,7 +129,7 @@ jobs:
       - run: |
           echo '__version__ = "v${{ needs.build_changelog.outputs.next_version }}"' > worf/__init__.py
 
-      - uses: gundotio/release-builder/create-pull-request@main
+      - uses: gundotio/release-builder/pull-request@main
         with:
           next_version: ${{ needs.build_changelog.outputs.next_version }}
           notes: ${{ needs.build_changelog.outputs.notes }}
