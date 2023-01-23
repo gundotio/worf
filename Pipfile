@@ -15,6 +15,10 @@ build = "*"
 coverage = "*"
 factory-boy = "*"
 flake8 = "*"
+flake8-bandit = "*"
+flake8-bugbear = "*"
+flake8-docstrings = "*"
+flake8-pyproject = "*"
 flake8-quotes = "*"
 isort = "*"
 pytest = "*"
@@ -27,6 +31,5 @@ pytest-xdist = {extras = ["psutil"], version = "*"}
 twine = "*"
 
 [scripts]
-install_linters = "pipenv install autoflake black flake8 isort --dev --skip-lock"
 check = "./script/check"
 lint = "./script/lint"

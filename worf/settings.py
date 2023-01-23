@@ -1,6 +1,6 @@
 from django.conf import settings
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = getattr(settings, "DATA_UPLOAD_MAX_MEMORY_SIZE")
+DATA_UPLOAD_MAX_MEMORY_SIZE = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
 
 WORF_API_NAME = getattr(settings, "WORF_API_NAME", "Worf API")
 WORF_API_ROOT = getattr(settings, "WORF_API_ROOT", "/api/")

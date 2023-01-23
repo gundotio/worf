@@ -44,7 +44,7 @@ class Profile(models.Model):
         return self.avatar.url if self.avatar else self.get_gravatar_url()
 
     def get_gravatar_hash(self):
-        return md5(self.user.email.lower().encode()).hexdigest()
+        return md5(self.user.email.lower().encode()).hexdigest()  # noqa: S324
 
     def get_gravatar_url(self, default="identicon", size=512):
         return f"https://www.gravatar.com/avatar/{self.get_gravatar_hash()}?d={default}&s={size}"
