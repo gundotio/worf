@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.21](https://github.com/gundotio/worf/compare/v0.5.20...v0.5.21) (2023-01-23)
+
+- (Improvement) Flake8 improvements [#137](https://github.com/gundotio/worf/pull/137)
+- (Improvement) Switch out PermissionsError for reraise with extended message [#136](https://github.com/gundotio/worf/pull/136)
+
 ### [0.5.20](https://github.com/gundotio/worf/compare/v0.5.19...v0.5.20) (2023-01-16)
 
 - (Improvement) Debug toolbar [#134](https://github.com/gundotio/worf/pull/134)
