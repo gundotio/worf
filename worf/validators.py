@@ -142,7 +142,7 @@ class ValidateFields:
             raise ValidationError(f"{value} is not a valid email address")
         return email
 
-    def validate_bundle(self, key):
+    def validate_bundle(self, key):  # noqa: C901
         """
         Handle basic type validation and coercion.
 

@@ -39,12 +39,14 @@ def profile_view_fixture(db, now, profile_factory, rf):
 
 def test_strip_fields(profile_view):
     profile_view.set_bundle(dict(slug="te\x00st "))
-    profile_view.validate_bundle("slug") == "test"
+    profile_view.validate_bundle("slug")
+    assert profile_view.bundle["slug"] == "test"
 
     profile_view.secure_fields = ["slug"]
 
     profile_view.set_bundle(dict(slug="te\x00st "))
-    profile_view.validate_bundle("slug") == "te\x00st "
+    profile_view.validate_bundle("slug")
+    assert profile_view.bundle["slug"] == "te\x00st "
 
 
 def test_validate_bundle(profile_view):

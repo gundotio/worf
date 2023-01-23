@@ -1,6 +1,44 @@
 [tool.black]
 line-length = 88
 
+[tool.flake8]
+ignore = [
+    "B001",
+    "B006",
+    "B028",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D203",
+    "D202",
+    "D205",
+    "D212",
+    "D213",
+    "D400",
+    "D401",
+    "D404",
+    "E203",
+    "E501",
+    "N818",
+    "S101",
+    "S105",
+    "S106",
+    "S107",
+    "S110",
+    "S311",
+    "W503",
+]
+inline-quotes = "double"
+per-file-ignores = [
+    "__init__.py:F403",
+]
+max-complexity = 12
+
 [tool.isort]
 combine_as_imports = true
 known_django = "django"
