@@ -51,6 +51,8 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       PROJECT_NAME: worf
       PROJECT_TYPE: package
+      RELEASE_FAILURE_ICON: ${{ vars.RELEASE_BUILDER_FAILURE_ICON }}
+      RELEASE_PENDING_ICON: ${{ vars.RELEASE_BUILDER_PENDING_ICON }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
       SLACK_CHANNEL: C0306G288J0
       TARGET_NAME: pypi.org
