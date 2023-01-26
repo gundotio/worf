@@ -7,11 +7,6 @@ on:
 
   workflow_dispatch:
     inputs:
-      release:
-        description: Next release
-        default: patch
-        options: [major, minor, patch]
-        type: choice
       force_publish:
         description: Force publish
         type: boolean
@@ -105,8 +100,6 @@ jobs:
 
       - id: changelog
         uses: gundotio/release-builder/build-changelog@main
-        with:
-          release: ${{ inputs.release || 'patch' }}
 
     outputs:
       has_prs: ${{ steps.changelog.outputs.has_prs }}
