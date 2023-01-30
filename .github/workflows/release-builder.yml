@@ -64,7 +64,7 @@ jobs:
           fetch-depth: 0
 
       - id: message
-        uses: gundotio/release-builder/slack-message@main
+        uses: gundotio/release-builder/slack-message@v1
         with:
           channel-id: ${{ env.SLACK_CHANNEL }}
 
@@ -85,7 +85,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
       - if: always()
-        uses: gundotio/release-builder/slack-message@main
+        uses: gundotio/release-builder/slack-message@v1
         with:
           channel-id: ${{ steps.message.outputs.channel-id }}
           message-id: ${{ steps.message.outputs.message-id }}
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - id: changelog
-        uses: gundotio/release-builder/build-changelog@main
+        uses: gundotio/release-builder/build-changelog@v1
 
     outputs:
       has_prs: ${{ steps.changelog.outputs.has_prs }}
@@ -124,7 +124,7 @@ jobs:
       - run: |
           echo '__version__ = "v${{ needs.build_changelog.outputs.next_version }}"' > worf/__init__.py
 
-      - uses: gundotio/release-builder/pull-request@main
+      - uses: gundotio/release-builder/pull-request@v1
         with:
           next_version: ${{ needs.build_changelog.outputs.next_version }}
           notes: ${{ needs.build_changelog.outputs.notes }}
