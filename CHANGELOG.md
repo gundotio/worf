@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.22](https://github.com/gundotio/worf/compare/v0.5.21...v0.5.22) (2023-01-31)
+
+- (Deps) Package updates [#139](https://github.com/gundotio/worf/pull/139)
+- (Improvement) Support Django 4.x for real and drop Python 3.8 [#140](https://github.com/gundotio/worf/pull/140)
+
 ### [0.5.21](https://github.com/gundotio/worf/compare/v0.5.20...v0.5.21) (2023-01-23)
 
 - (Improvement) Flake8 improvements [#137](https://github.com/gundotio/worf/pull/137)
