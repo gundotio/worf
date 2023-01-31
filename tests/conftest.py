@@ -37,7 +37,6 @@ def pytest_configure():
         ],
         TIME_ZONE="UTC",
         USE_I18N=False,
-        USE_L10N=False,
         USE_TZ=True,
         WORF_API_NAME="Test API",
         WORF_DEBUG=False,
