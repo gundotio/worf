@@ -42,7 +42,6 @@ setup(
         "Framework :: Django",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -52,10 +51,10 @@ setup(
     include_package_data=True,
     install_requires=[
         "Django>=3.0.0,<4.2",
-        "django-url-filter>=0.3.15",
+        "dj-url-filter>=0.4.2",
         "marshmallow>=3.18.0",
     ],
     packages=find_packages(exclude=["tests*"]),
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     zip_safe=False,
 )
