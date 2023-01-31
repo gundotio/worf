@@ -11,7 +11,7 @@ build() {
   if [ -d dist ]; then
     rm dist/* || rmdir dist
   fi
-  ./bin/pipenv run python3 -m build
+  ./bin/python -m build
 }
 
 if [ "$(ls -l dist/ | wc -l)" -ne 3 ]; then
@@ -20,9 +20,8 @@ elif [ ! -z ${1+x} ] && [ $1 == "--build" ]; then
   build  # Build on explict build command
 fi
 
-
 if [ ! -z ${1+x} ] && [ $1 == "--release" ]; then
-  ./bin/pipenv run python3 -m twine upload dist/* -u __token__ -p $TWINE_PASSWORD
+  ./bin/python -m twine upload dist/* -u __token__ -p $TWINE_PASSWORD
 elif [ ! -z ${1+x} ] && [ $1 == "--dry-run" ]; then
-  ./bin/pipenv run python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p $TWINE_PASSWORD
+  ./bin/python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p $TWINE_PASSWORD
 fi
