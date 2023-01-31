@@ -10,12 +10,9 @@ case ${1-default} in
     build)                  script/build;;
     console)                script/console;;
     coverage)               open htmlcov/index.html;;
-    lint)                   pipenv run lint;;
+    lint)                   poetry run script/lint;;
     nuke)                   worf stop && docker image rm worf;;
     package)                script/package --build;;
-    publish)                TWINE_PASSWORD=$PYPI_PASSWORD script/package --release;;
-    publish:test)           TWINE_PASSWORD=$TESTPYPI_PASSWORD script/package --dry-run;;
-    release)                standard-version --release-as ${2:-patch} && script/release;;
     restart)                worf stop && worf start;;
     ship)                   worf package && worf publish;;
     start)                  script/start;;

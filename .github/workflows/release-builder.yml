@@ -121,8 +121,9 @@ jobs:
         with:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - run: |
-          echo '__version__ = "v${{ needs.build_changelog.outputs.next_version }}"' > worf/__init__.py
+      - run: pipx install poetry
+      - run: poetry version ${{ needs.build_changelog.outputs.next_version }}
+      - run: echo '__version__ = "${{ needs.build_changelog.outputs.next_version }}"' > worf/__init__.py
 
       - uses: gundotio/release-builder/pull-request@v1
         with:

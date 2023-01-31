@@ -6,11 +6,11 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-RUN pip3 install pipenv==2020.11.15
+RUN pip3 install poetry
 
-COPY Pipfile Pipfile
-COPY Pipfile.lock Pipfile.lock
-COPY setup.py setup.py
+COPY poetry.lock poetry.lock
+COPY pyproject.toml pyproject.toml
+COPY README.md README.md
 COPY worf/ worf/
 
-RUN pipenv install --dev --deploy --python 3.10.9
+RUN poetry install
