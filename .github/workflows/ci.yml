@@ -42,7 +42,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: pip install pipenv
       - run: pipenv install --dev --python ${{ matrix.python }}
-      - run: pipenv install django~=${{ matrix.django }} --skip-lock
+      - run: pipenv run pip install django~=${{ matrix.django }}.0
       - run: pipenv run pytest --cov
 
   lint:
