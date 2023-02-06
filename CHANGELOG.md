@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.23](https://github.com/gundotio/worf/compare/v0.5.22...v0.5.23) (2023-02-06)
+
+- (Deps) Package updates [#143](https://github.com/gundotio/worf/pull/143) [#147](https://github.com/gundotio/worf/pull/147)
+- (Improvement) Swap out pipenv and setuptools for poetry [#142](https://github.com/gundotio/worf/pull/142)
+
 ### [0.5.22](https://github.com/gundotio/worf/compare/v0.5.21...v0.5.22) (2023-01-31)
 
 - (Deps) Package updates [#139](https://github.com/gundotio/worf/pull/139)
