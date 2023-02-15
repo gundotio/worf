@@ -1,20 +1,14 @@
-from worf.exceptions import ActionError
+from worf.exceptions import ActionError, MethodNotAllowed, NotFound
 from worf.lookups import FindInstance
 from worf.views.base import AbstractBaseAPI
 
 
 class ActionAPI(FindInstance, AbstractBaseAPI):
+    action = None
     actions = []
 
-    def dispatch(self, request, *args, **kwargs):
-        if "action" in kwargs and request.method != "PUT":
-            return self.http_method_not_allowed(request, *args, **kwargs)
-        return super().dispatch(request, *args, **kwargs)
-
     def perform_action(self, request, *args, **kwargs):
-        action = kwargs["action"].replace("-", "_")
-        if action not in self.actions:
-            raise ActionError(f"Invalid action: {kwargs['action']}")
+        action = kwargs.get("action", self.action or "").replace("-", "_")
         instance = self.get_instance()
         if hasattr(self, action):
             return getattr(self, action)(request, **self.bundle, user=request.user)
@@ -26,8 +20,18 @@ class ActionAPI(FindInstance, AbstractBaseAPI):
             getattr(instance, action)(**self.bundle)
         return instance
 
+    def perform_dispatch(self, request, *args, **kwargs):
+        action = kwargs.get("action", self.action or "").replace("-", "_")
+        if not action:
+            return super().perform_dispatch(request, *args, **kwargs)
+        if action not in self.actions:  # pragma: no cover
+            raise NotFound
+        if request.method != "PUT":
+            raise MethodNotAllowed(allowed_methods=["PUT"])
+        return super().perform_dispatch(request, *args, **kwargs)
+
     def put(self, request, *args, **kwargs):
-        if "action" in kwargs:
+        if "action" in kwargs or self.action is not None:
             self.perform_action(request, *args, **kwargs)
             return self.render_to_response()
         return super().put(request, *args, **kwargs)

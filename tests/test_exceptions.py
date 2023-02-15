@@ -7,6 +7,7 @@ from worf import exceptions
     dict(e=exceptions.AuthenticationError("test")),
     dict(e=exceptions.DataConflict("test")),
     dict(e=exceptions.FieldError("test")),
+    dict(e=exceptions.MethodNotAllowed("test")),
     dict(e=exceptions.NamingThingsError("test")),
     dict(e=exceptions.NotFound("test")),
     dict(e=exceptions.WorfError("test")),

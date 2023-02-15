@@ -32,10 +32,10 @@ def test_action_view_func(user_client, profile, user):
 
 
 def test_invalid_action(user_client, profile):
-    response = user_client.put(f"/profiles/{profile.pk}/invalid-action/")
+    response = user_client.put(f"/profiles/{profile.pk}/destroy/")
     result = response.json()
-    assert response.status_code == 400, result
-    assert result["message"] == "Invalid action: invalid-action"
+    assert response.status_code == 404, result
+    assert result["message"] == "Not found"
 
 
 def test_invalid_arguments(user_client, profile):

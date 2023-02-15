@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -19,6 +19,12 @@ class AuthenticationError(WorfError):
 @dataclass(frozen=True)
 class DataConflict(WorfError):
     message: str = "Conflict"
+
+
+@dataclass(frozen=True)
+class MethodNotAllowed(WorfError):
+    message: str = "Method not allowed"
+    allowed_methods: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

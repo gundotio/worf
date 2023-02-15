@@ -6,7 +6,7 @@ from worf.conf import settings
 from worf.shortcuts import field_list
 
 
-def browsable_response(request, response, status_code, view):
+def browsable_response(request, response, status_code, view, **kwargs):
     template = "worf/api.html"
     serializer = hasattr(view, "bundle") and view.get_serializer()
 
@@ -56,14 +56,14 @@ def browsable_response(request, response, status_code, view):
         view_name=type(view).__name__,
     )
 
-    response = TemplateResponse(request, template, context=context)
+    response = TemplateResponse(request, template, context=context, **kwargs)
     response.status_code = status_code
     response.render()
 
     return response
 
 
-def render_response(request, data, status_code, view):
+def render_response(request, data, status_code, view, **kwargs):
     is_browsable = (
         settings.WORF_BROWSABLE_API
         and "text/html" in request.headers.get("Accept", "")
@@ -71,15 +71,17 @@ def render_response(request, data, status_code, view):
     )
 
     response = (
-        JsonResponse(data, json_dumps_params=dict(indent=2 if is_browsable else 0))
+        JsonResponse(
+            data, json_dumps_params=dict(indent=2 if is_browsable else 0), **kwargs
+        )
         if data != ""
-        else HttpResponse()
+        else HttpResponse(**kwargs)
     )
 
     response.status_code = status_code
 
     if is_browsable:
-        response = browsable_response(request, response, status_code, view)
+        response = browsable_response(request, response, status_code, view, **kwargs)
 
     return response
 

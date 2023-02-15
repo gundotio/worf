@@ -21,6 +21,7 @@ from worf.exceptions import (
     AuthenticationError,
     DataConflict,
     FieldError,
+    MethodNotAllowed,
     NotFound,
     WorfError,
 )
@@ -38,7 +39,7 @@ class APIResponse(View):
     def serialize(self):
         raise NotImplementedError
 
-    def render_to_response(self, data=None, status_code=200):
+    def render_to_response(self, data=None, status_code=200, **kwargs):
         if data is None:
             data = self.serialize()
 
@@ -47,7 +48,7 @@ class APIResponse(View):
             message += "render_to_response, nor did its serializer method"
             raise ImproperlyConfigured(message)
 
-        return render_response(self.request, data, status_code, self)
+        return render_response(self.request, data, status_code, self, **kwargs)
 
 
 class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
@@ -92,6 +93,9 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
             response = self.render_error(e.message, 409)
         except FieldError as e:
             response = self.render_error(e.message, 400)
+        except MethodNotAllowed as e:
+            headers = headers = {"Allow": ", ".join(e.allowed_methods)}
+            response = self.render_error(e.message, 405, headers=headers)
         except NotFound as e:
             response = self.render_error(e.message, 404)
         except ValidationError as e:
@@ -114,8 +118,8 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
             raise ValidationError(f"Max upload size is {max_upload_size}") from e
         return response
 
-    def render_error(self, message, status):
-        return self.render_to_response(dict(message=message), status)
+    def render_error(self, message, status, **kwargs):
+        return self.render_to_response(dict(message=message), status, **kwargs)
 
     def check_permissions(self):
         try:
