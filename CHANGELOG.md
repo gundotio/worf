@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.24](https://github.com/gundotio/worf/compare/v0.5.23...v0.5.24) (2023-03-07)
+
+- (Deps) Package updates [#150](https://github.com/gundotio/worf/pull/150)
+- (Improvement) Serialize missing field values to null [#152](https://github.com/gundotio/worf/pull/152)
+- (PyPI) Python/Django classifiers + topics [#149](https://github.com/gundotio/worf/pull/149)
+
 ### [0.5.23](https://github.com/gundotio/worf/compare/v0.5.22...v0.5.23) (2023-02-06)
 
 - (Deps) Package updates [#143](https://github.com/gundotio/worf/pull/143) [#147](https://github.com/gundotio/worf/pull/147)
