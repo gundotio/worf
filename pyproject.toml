@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "worf"
-version = "0.5.23"
+version = "0.5.24"
 homepage = "https://github.com/gundotio/worf"
 description = "Wade's own REST Framework: A more Djangonic approach to REST APIs"
 authors = ["Wade Williams <wade@wadewilliams.com>", "Steve Lacey <steve@steve.ly>"]
