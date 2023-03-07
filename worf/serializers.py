@@ -1,5 +1,6 @@
 import marshmallow
 from marshmallow.decorators import *  # noqa: F401, F403
+from marshmallow.utils import missing  # noqa: F401
 
 from django.db.models.fields.files import FieldFile
 

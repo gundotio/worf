@@ -1,37 +1,36 @@
-from tests.serializers import (
-    ProfileSerializer,
-    RoleSerializer,
-    SkillSerializer,
-    TagSerializer,
-    TaskSerializer,
-    TeamSerializer,
-    UserSerializer,
-)
+import marshmallow
+
+import tests.serializers
+import worf.serializers
+
+
+def test_missing():
+    assert worf.serializers.missing == marshmallow.missing
 
 
 def test_profile_serializer():
-    assert f"{ProfileSerializer()}"
+    assert f"{tests.serializers.ProfileSerializer()}"
 
 
 def test_role_serializer():
-    assert f"{RoleSerializer()}"
+    assert f"{tests.serializers.RoleSerializer()}"
 
 
 def test_skill_serializer():
-    assert f"{SkillSerializer()}"
+    assert f"{tests.serializers.SkillSerializer()}"
 
 
 def test_tag_serializer():
-    assert f"{TagSerializer()}"
+    assert f"{tests.serializers.TagSerializer()}"
 
 
 def test_task_serializer():
-    assert f"{TaskSerializer()}"
+    assert f"{tests.serializers.TaskSerializer()}"
 
 
 def test_team_serializer():
-    assert f"{TeamSerializer()}"
+    assert f"{tests.serializers.TeamSerializer()}"
 
 
 def test_user_serializer():
-    assert f"{UserSerializer()}"
+    assert f"{tests.serializers.UserSerializer()}"
