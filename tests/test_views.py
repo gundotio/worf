@@ -5,6 +5,7 @@ from uuid import uuid4
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from tests import parametrize
+from tests.factories import ProfileFactory
 
 
 def test_profile_detail(client, db, profile, user):
@@ -33,6 +34,19 @@ def test_profile_list(client, db, profile, user):
     assert response.status_code == 200, result
     assert len(result["profiles"]) == 1
     assert result["profiles"][0]["username"] == user.username
+
+
+def test_profile_list_default_model_ordering(client, db):
+    ProfileFactory.create_batch(3)
+    response = client.get("/profiles/")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert len(result["profiles"]) == 3
+    assert (
+        result["profiles"][0]["createdAt"]
+        > result["profiles"][1]["createdAt"]
+        > result["profiles"][2]["createdAt"]
+    )
 
 
 @parametrize("page", [-1, 0, 1, 2])

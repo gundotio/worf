@@ -32,13 +32,15 @@ class Profile(models.Model):
     resume = models.FileField(upload_to="resumes/", blank=True)
 
     last_active = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     is_subscribed = models.BooleanField(blank=True, null=True)
     subscribed_at = models.DateTimeField(blank=True, null=True)
     subscribed_by = models.ForeignKey(
         User, blank=True, null=True, on_delete=models.SET_NULL
     )
+
+    ordering = ["-created_at"]
 
     def get_avatar_url(self):
         return self.avatar.url if self.avatar else self.get_gravatar_url()

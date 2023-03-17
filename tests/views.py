@@ -18,7 +18,6 @@ class ProfileList(CreateAPI, ListAPI):
         name=Concat("first_name", Value(" "), "last_name"),
         date_joined=F("user__date_joined"),
     )
-    ordering = ["pk"]
     serializer = ProfileSerializer
     permissions = [PublicEndpoint]
     search_fields = []

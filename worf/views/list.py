@@ -164,7 +164,7 @@ class ListAPI(AbstractBaseAPI):
                 continue
             ordering.append(self.get_sort_field(field, descending=sort[0] == "-"))
 
-        return ordering or self.ordering
+        return ordering or self.ordering or self.model.ordering
 
     def get_sort_field(self, field, descending=False):
         return OrderBy(F(field), descending=descending)

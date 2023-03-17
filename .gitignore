@@ -7,3 +7,5 @@
 /coverage
 /dist
 /worf.egg-info
+__pycache__
+.idea
