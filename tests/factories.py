@@ -8,6 +8,19 @@ from django.contrib.auth.models import User
 from tests.models import Profile, RatedSkill, Role, Skill, Tag, Task, Team
 
 
+def random_skill_name():
+    skills = [
+        "Python",
+        "C++",
+        "Bash",
+        "Django",
+        "Docker",
+        "JavaScript",
+        "Vue.js",
+    ]
+    return random.choice(skills)
+
+
 class ProfileFactory(DjangoModelFactory):
     user = factory.SubFactory("tests.factories.UserFactory")
     role = factory.SubFactory("tests.factories.RoleFactory")
@@ -39,7 +52,7 @@ class RoleFactory(DjangoModelFactory):
 
 
 class SkillFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda i: f"Skill {i}")
+    name = factory.Sequence(lambda i: f"{random_skill_name()} {i}")
 
     class Meta:
         model = Skill
