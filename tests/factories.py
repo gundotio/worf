@@ -1,9 +1,11 @@
+import random
+
 import factory
 from factory.django import DjangoModelFactory
 
 from django.contrib.auth.models import User
 
-from tests.models import Profile, Role, Skill, Tag, Task, Team
+from tests.models import Profile, RatedSkill, Role, Skill, Tag, Task, Team
 
 
 class ProfileFactory(DjangoModelFactory):
@@ -18,6 +20,15 @@ class ProfileFactory(DjangoModelFactory):
 
     class Meta:
         model = Profile
+
+
+class RatedSkillFactory(DjangoModelFactory):
+    profile = factory.SubFactory("tests.factories.ProfileFactory")
+    skill = factory.SubFactory("tests.factories.SkillFactory")
+    rating = factory.LazyAttribute(lambda i: random.randrange(1, 6))
+
+    class Meta:
+        model = RatedSkill
 
 
 class RoleFactory(DjangoModelFactory):

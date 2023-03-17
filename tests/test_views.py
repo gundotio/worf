@@ -5,6 +5,7 @@ from uuid import uuid4
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from tests import parametrize
+from tests.factories import RatedSkillFactory
 
 
 def test_profile_detail(client, db, profile, user):
@@ -321,6 +322,15 @@ def test_staff_detail_is_unauthorized_for_guest(client, db, profile, user):
     result = response.json()
     assert response.status_code == 401, result
     assert result["message"] == "Unauthorized"
+
+
+def test_model_ordering_is_used_by_default(admin_client, db, profile):
+    RatedSkillFactory.create_batch(3, profile=profile)
+    response = admin_client.get(f"/staff/{profile.pk}/")
+    assert response.status_code == 200
+    result = response.json()
+    skill_names = [skill["name"] for skill in result["skills"]]
+    assert skill_names == sorted(skill_names)
 
 
 def test_user_detail(client, db, user):
