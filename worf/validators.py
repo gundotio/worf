@@ -148,7 +148,7 @@ class ValidateFields:
             field
             for field in model._meta.fields
             if not (field.blank or not field.empty_strings_allowed)
-            and (not field.auto_created or not isinstance(field.default, NOT_PROVIDED))
+            and not isinstance(field.default, NOT_PROVIDED)
         ]
 
         for field in required_fields:
