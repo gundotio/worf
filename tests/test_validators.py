@@ -4,16 +4,23 @@ import pytest
 
 from django.core.exceptions import ValidationError
 
+from tests.models import Profile
+
 uuid = uuid4()
 email = "something@example.com"
 phone = "(555) 555-5555"
 
 
+@pytest.fixture(name="profile_instance")
+def profile_instance_fixture(db, profile_factory, rf):
+    profile = profile_factory.create(id=1, email=email, phone=phone)
+    return profile
+
+
 @pytest.fixture(name="profile_view")
-def profile_view_fixture(db, now, profile_factory, rf):
+def profile_view_fixture(db, now, profile_instance, rf):
     from tests.views import ProfileDetail
 
-    profile_factory.create(email=email, phone=phone)
     view = ProfileDetail()
     view.set_bundle(
         dict(
@@ -128,3 +135,8 @@ def test_validate_custom_field_passes(profile_view):
 def test_validate_custom_field_raises_error(profile_view):
     with pytest.raises(ValidationError):
         profile_view.validate_phone("invalid number")
+
+
+def test_validate_required_fields(profile_view, profile_instance):
+    with pytest.raises(ValidationError):
+        profile_view.validate_required_fields(Profile, profile_instance)

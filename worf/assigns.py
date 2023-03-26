@@ -95,6 +95,8 @@ class AssignAttributes:
     def validate(self):
         instance = self.get_instance()
 
+        self.validate_required_fields(self.model, instance)
+
         for key in self.bundle.keys():
             self.validate_bundle(key)
 
