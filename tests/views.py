@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db.models import F, Prefetch, Value
+from django.db.models import F, Prefetch, Value, Model
 from django.db.models.functions import Concat
 
 from tests.models import Profile
-from tests.serializers import ProfileSerializer, UserSerializer
+from tests.serializers import ProfileSerializer, UserSerializer, DetachedModelSerializer
 from worf.exceptions import AuthenticationError
 from worf.permissions import Authenticated, PublicEndpoint, Staff
 from worf.views import ActionAPI, CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
@@ -110,3 +110,14 @@ class UserSelf(DetailAPI):
         if not self.request.user.is_authenticated:
             raise AuthenticationError("Log in with your username and password")
         return self.request.user
+
+
+class ViewWithoutModel(DetailAPI):
+    model = Model
+    serializer = None
+
+    def get_instance(self):
+        return None
+
+    def get(self, *args, **kwargs):
+        return self.render_to_response(data={"field_name": "field_value"})

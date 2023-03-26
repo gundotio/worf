@@ -507,3 +507,10 @@ def test_user_update(client, db, method, user):
     assert response.status_code == 200, result
     assert result["username"] == "testtest"
     assert result["email"] == "something@example.com"
+
+
+def test_when_using_a_view_without_model_must_return_expected_result(client):
+    response = client.get("/without-model/")
+    assert response
+    assert response.status_code == 200, response
+    assert response.json() == {"field_name": "field_value"}

@@ -102,3 +102,7 @@ class TaskSerializer(Serializer):
 class TeamSerializer(Serializer):
     class Meta:
         fields = ["id", "name"]
+
+
+class DetachedModelSerializer(Serializer):
+    name = fields.String()

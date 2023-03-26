@@ -10,4 +10,5 @@ urlpatterns = [
     path("user/", views.UserSelf.as_view()),
     path("users/", views.UserList.as_view()),
     path("users/<int:id>/", views.UserDetail.as_view()),
+    path("without-model/", views.ViewWithoutModel.as_view())
 ]
