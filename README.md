@@ -196,6 +196,11 @@ The basics come from `ValidateFields` which `AbstractBaseAPI` inherits from, it
 performs some coercion on `self.bundle`, potentially resulting in a different
 bundle than what was originally passed to the view.
 
+If a model field has `blank=False`, which is the default setting, or
+`empty_strings_allowed=False` and does not have a default function, the field is
+considered a required field and a blank string or None value will result in a
+validation exception being raised.
+
 
 Views
 -----
