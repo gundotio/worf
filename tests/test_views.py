@@ -145,7 +145,7 @@ def test_profile_list_or_filters(client, db, profile_factory, tag_factory, url):
 def test_profile_multipart_create(mock_save, client, db, role, user):
     avatar = SimpleUploadedFile("avatar.jpg", b"", content_type="image/jpeg")
     mock_save.return_value = "avatar.jpg"
-    payload = dict(avatar=avatar, role=role.pk, user=user.pk)
+    payload = dict(avatar=avatar, role=role.pk, user=user.pk, phone="555-555-5555")
     response = client.post("/profiles/", payload)
     result = response.json()
     assert response.status_code == 201, result
@@ -473,7 +473,7 @@ def test_user_self(client, user_client, user):
 
 def test_user_unique_create_with_existing_value(client, db, user, user_factory):
     user_factory.create(username="already_taken")
-    payload = dict(username="already_taken")
+    payload = dict(username="already_taken", password="12345")
     response = client.post("/users/", payload)
     result = response.json()
     assert response.status_code == 422, result

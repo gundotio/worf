@@ -4,6 +4,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from tests.models import Profile, RatedSkill, Role, Skill, Tag, Task, Team
 
@@ -25,6 +26,7 @@ class ProfileFactory(DjangoModelFactory):
     user = factory.SubFactory("tests.factories.UserFactory")
     role = factory.SubFactory("tests.factories.RoleFactory")
     team = None
+    phone = factory.Sequence(lambda i: f"555-{i}-5555")
 
     @factory.post_generation
     def tags(self, create, extracted, **kwargs):
@@ -80,10 +82,13 @@ class TeamFactory(DjangoModelFactory):
 
 
 class UserFactory(DjangoModelFactory):
+    id = factory.Sequence(lambda i: i)
     username = factory.Sequence(lambda i: f"user-{i}")
     email = factory.Sequence(lambda i: f"user-{i}@example.com")
     first_name = "Boba"
     last_name = factory.Sequence(lambda i: f"Fett {i}")
+    password = "Password123"
+    last_login = timezone.now()
 
     class Meta:
         model = User
