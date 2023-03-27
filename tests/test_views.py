@@ -578,7 +578,7 @@ def test_when_using_a_list_view_without_model_with_custom_queryset_must_return_e
     assert response
     assert response.status_code == 200, response
     assert response.json() == {
-        "pagination": {"count": 1, "page": 1, "pages": 1 },
+        "pagination": {"count": 1, "page": 1, "pages": 1},
         "data": [{"id": str(task_id), "name": task_name}]
     }
 
