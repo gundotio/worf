@@ -571,7 +571,6 @@ def test_when_using_a_list_view_without_model_must_return_expected_result(client
 def test_when_using_a_list_view_without_model_with_custom_queryset_must_return_expected_result(
     client, db, task):
 
-    task_id = task.custom_id
     task_name = task.name
 
     response = client.get("/custom-tasks/")
@@ -579,7 +578,7 @@ def test_when_using_a_list_view_without_model_with_custom_queryset_must_return_e
     assert response.status_code == 200, response
     assert response.json() == {
         "pagination": {"count": 1, "page": 1, "pages": 1},
-        "data": [{"id": str(task_id), "name": task_name}]
+        "data": [{"name": task_name}]
     }
 
 

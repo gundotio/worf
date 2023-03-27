@@ -127,7 +127,7 @@ class ViewWithoutModelListOverridingHandler(WithoutModel, ListAPI):
 
 
 class CustomTaskAPI(WithoutModel, ListAPI):
-    serializer = TaskSerializer
+    serializer = DetachedModelSerializer
 
     def get_queryset(self):
         return Task.objects.all()
