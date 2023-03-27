@@ -10,7 +10,8 @@ urlpatterns = [
     path("user/", views.UserSelf.as_view()),
     path("users/", views.UserList.as_view()),
     path("users/<int:id>/", views.UserDetail.as_view()),
+    path("without-model-overriding-handler/", views.ViewWithoutModelListOverridingHandler.as_view()),
+    path("without-model/<uuid:task_id>", views.ViewWithoutModelDetail.as_view()),
     path("without-model/", views.ViewWithoutModelList.as_view()),
-    path("without-model/detail", views.ViewWithoutModelDetail.as_view()),
-    path("without-model-queryset/", views.ViewWithoutModelListWithQuerySet.as_view()),
+    path("custom-tasks/", views.CustomTaskAPI.as_view()),
 ]

@@ -3,11 +3,11 @@ from django.core.exceptions import ValidationError
 from django.db.models import F, Prefetch, Value, Model
 from django.db.models.functions import Concat
 
-from tests.models import Profile
-from tests.serializers import ProfileSerializer, UserSerializer, DetachedModelSerializer
+from tests.models import Profile, Task
+from tests.serializers import ProfileSerializer, UserSerializer, DetachedModelSerializer, TaskSerializer
 from worf.exceptions import AuthenticationError
 from worf.permissions import Authenticated, PublicEndpoint, Staff
-from worf.views import ActionAPI, CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
+from worf.views import ActionAPI, CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI, WithoutModel
 
 
 class ProfileList(CreateAPI, ListAPI):
@@ -112,18 +112,22 @@ class UserSelf(DetailAPI):
         return self.request.user
 
 
-class ViewWithoutModelDetail(DetailAPI):
-    model = None
-
-    def get(self, *args, **kwargs):
-        return self.render_to_response(data={"field_name": "field_value"})
+class ViewWithoutModelDetail(WithoutModel, DeleteAPI, UpdateAPI, DetailAPI):
+    pass
 
 
-class ViewWithoutModelList(ListAPI):
+class ViewWithoutModelList(WithoutModel, CreateAPI, ListAPI):
+    pass
+
+
+class ViewWithoutModelListOverridingHandler(WithoutModel, ListAPI):
 
     def get(self, *args, **kwargs):
         return self.render_to_response(data={"data": [{"field_name": "field_value"}]})
 
 
-class ViewWithoutModelListWithQuerySet(ListAPI):
-    pass
+class CustomTaskAPI(WithoutModel, ListAPI):
+    serializer = TaskSerializer
+
+    def get_queryset(self):
+        return Task.objects.all()

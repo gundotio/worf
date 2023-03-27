@@ -4,11 +4,14 @@ from django.db.utils import IntegrityError
 
 
 class AssignAttributes:
+
+    def get_model_attr(self, key):
+        return getattr(self.model, key)
+
     def save(self, instance, bundle):
         items = [
-            (key, getattr(self.model, key), value) for key, value in bundle.items()
+            (key, self.get_model_attr(key), value) for key, value in bundle.items()
         ]
-
         for key, attr, value in items:
             if isinstance(value, models.Model):
                 setattr(instance, key, value)

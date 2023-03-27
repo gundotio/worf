@@ -511,21 +511,75 @@ def test_user_update(client, db, method, user):
     assert result["email"] == "something@example.com"
 
 
-def test_when_using_a_detail_view_without_model_must_return_expected_result(client):
-    response = client.get("/without-model/detail")
+def test_when_getting_details_of_a_view_without_model_must_return_empty_result(
+        client, db):
+
+    response = client.get(f"/without-model/{uuid4()}")
     assert response
     assert response.status_code == 200, response
-    assert response.json() == {"field_name": "field_value"}
+    assert response.json() == {}
+
+
+@parametrize("method", ["PATCH", "PUT"])
+def test_when_changing_details_of_a_view_without_model_must_return_expected_result(client, db, method):
+    payload = dict(field="value")
+    response = client.generic(method, f"/without-model/{uuid4()}", payload)
+    result = response.json()
+    assert response.status_code == 200, result
+    assert result == {}
+
+
+def test_when_deleting_details_of_a_view_without_model_must_return_expected_result(client, db, task):
+    response = client.delete(f"/without-model/{task.custom_id}")
+    assert response.status_code == 204, response.content
+    assert response.content == b""
+
+
+def test_when_posting_to_a_view_without_model_must_return_empty_response(client, db):
+
+    response = client.post("/without-model/", dict(name="Task Name"))
+    assert response.status_code == 201
+    assert response.json() == {}
+
+
+def test_when_using_a_list_view_without_model_but_with_queryset_must_return_expected_result(
+        client, db, task):
+
+    task_id = task.custom_id
+    task_name = task.name
+
+    response = client.get("/without-model/")
+    assert response
+    assert response.status_code == 200, response
+    assert response.json() == {
+        'pagination': {
+            'count': 0,
+            'page': 1,
+            'pages': 1
+        },
+        'data': []
+    }
 
 
 def test_when_using_a_list_view_without_model_must_return_expected_result(client):
-    with pytest.raises(AttributeError):
-        response = client.get("/without-model/")
+    response = client.get("/without-model-overriding-handler/")
+    assert response
+    assert response.status_code == 200, response
+    assert response.json() == {"data": [{"field_name": "field_value"}]}
 
 
-def test_when_using_a_list_view_without_model_but_with_queryset_must_return_expected_result(client):
-    with pytest.raises(AttributeError):
-        response = client.get("/without-model-queryset/")
+def test_when_using_a_list_view_without_model_with_custom_queryset_must_return_expected_result(
+    client, db, task):
 
+    task_id = task.custom_id
+    task_name = task.name
+
+    response = client.get("/custom-tasks/")
+    assert response
+    assert response.status_code == 200, response
+    assert response.json() == {
+        "pagination": {"count": 1, "page": 1, "pages": 1 },
+        "data": [{"id": str(task_id), "name": task_name}]
+    }
 
 

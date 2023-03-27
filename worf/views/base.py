@@ -13,6 +13,7 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import never_cache
+from django.db import models
 
 from worf.casing import camel_to_snake, snake_to_camel
 from worf.conf import settings
@@ -25,8 +26,39 @@ from worf.exceptions import (
     WorfError,
 )
 from worf.renderers import render_response
-from worf.serializers import SerializeModels
+from worf.serializers import SerializeModels, Serializer
 from worf.validators import ValidateFields
+
+
+class NoModel(models.Model):
+    """A dummy model to pass through all the code that is deeply coupled with DJango models
+    TODO remove inheritance with django model to avoid any side effect
+    """
+
+    def refresh_from_db(self):
+        warnings.warn("Trying to 'refresh' a detached model")
+
+    def delete(self):
+        warnings.warn("Trying to 'delete' a detached model")
+
+
+class WithoutModel:
+
+    model = NoModel
+    payload_key = "data"
+    serializer = Serializer
+
+    def validate(self):
+        warnings.warn("APIs without models have no validation")
+
+    def save(self, instance, bundle):
+        warnings.warn("When using an API without model you MUST implement save method")
+
+    def get_queryset(self):
+        return NoModel.objects.none()
+
+    def get_instance(self):
+        return NoModel()
 
 
 @method_decorator(never_cache, name="dispatch")

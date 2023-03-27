@@ -31,6 +31,7 @@ Table of contents
   - [UpdateAPI](#updateapi)
   - [ActionAPI](#actionapi)
   - [DeleteAPI](#deleteapi)
+  - [WithoutModel](#withoutmodel)
 - [Browsable API](#browsable-api)
 - [Bundle loading](#bundle-loading)
 - [Debugging](#debugging)
@@ -359,6 +360,35 @@ class BookDetailAPI(DeleteAPI, DetailAPI):
 ```
 
 Deletes return a 204 no content response, no serializer is required.
+
+
+### WithoutModel
+
+If you want to build an API without any model, you just need to extend the `WithoutModel` class
+and then one of the classes above - like [ListAPI](#listapi) - or overwrite one of the handles - 
+like `get` or `post`.
+
+```python
+
+class CustomInfoAPI(WithoutModel, ListAPI):
+  
+    def get(self, request, *args, **kwargs):
+      return self.render_to_response(data={"field": value})
+
+```
+
+You can also overwrite the `get_queryset` method and define the `Serializer` class
+
+```python
+
+class CustomInfoAPI(WithoutModel, ListAPI):
+  
+    serializer = MyCustomSerializer
+    
+    def get_queryset(self):
+       return MyModel.objects.filter(...)
+
+```
 
 
 Browsable API
