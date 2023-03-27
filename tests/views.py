@@ -112,12 +112,18 @@ class UserSelf(DetailAPI):
         return self.request.user
 
 
-class ViewWithoutModel(DetailAPI):
-    model = Model
-    serializer = None
-
-    def get_instance(self):
-        return None
+class ViewWithoutModelDetail(DetailAPI):
+    model = None
 
     def get(self, *args, **kwargs):
         return self.render_to_response(data={"field_name": "field_value"})
+
+
+class ViewWithoutModelList(ListAPI):
+
+    def get(self, *args, **kwargs):
+        return self.render_to_response(data={"data": [{"field_name": "field_value"}]})
+
+
+class ViewWithoutModelListWithQuerySet(ListAPI):
+    pass

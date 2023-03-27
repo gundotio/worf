@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 from unittest.mock import patch
 from uuid import uuid4
@@ -509,8 +511,21 @@ def test_user_update(client, db, method, user):
     assert result["email"] == "something@example.com"
 
 
-def test_when_using_a_view_without_model_must_return_expected_result(client):
-    response = client.get("/without-model/")
+def test_when_using_a_detail_view_without_model_must_return_expected_result(client):
+    response = client.get("/without-model/detail")
     assert response
     assert response.status_code == 200, response
     assert response.json() == {"field_name": "field_value"}
+
+
+def test_when_using_a_list_view_without_model_must_return_expected_result(client):
+    with pytest.raises(AttributeError):
+        response = client.get("/without-model/")
+
+
+def test_when_using_a_list_view_without_model_but_with_queryset_must_return_expected_result(client):
+    with pytest.raises(AttributeError):
+        response = client.get("/without-model-queryset/")
+
+
+
