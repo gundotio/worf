@@ -63,7 +63,8 @@
         <main>
           {% block content %}
             <nav class="bg-gray font-mono break-all my-4 px-4 py-2">
-              <strong>{{ request.method }}</strong> {{ request.get_full_path }}
+              <strong>{{ request.method }}</strong>
+              <span id="path">{{ request.get_full_path }}</span>
             </nav>
 
             <div class="my-4">
@@ -153,6 +154,33 @@
           {% endif %}
         </main>
       </div>
+      <script>
+        const path = document.getElementById('path')
+        const parts = path.innerText.split('/')
+        const links = document.createElement('span')
+
+        for (let i = 1; i < parts.length; i++) {
+          const part = parts[i]
+
+          links.appendChild(document.createTextNode('/'))
+
+          if (!part.length) {
+            continue;
+          }
+
+          const a = document.createElement('a');
+          const text = document.createTextNode(part)
+          const url = parts.slice(0, i + 1).join('/')
+          a.setAttribute('class', 'text-white')
+          a.setAttribute('href', parts[i + 1] !== undefined ? url + '/' : url);
+          a.setAttribute('rel', 'nofollow');
+          a.appendChild(text)
+
+          links.appendChild(a)
+        }
+
+        path.parentNode.replaceChild(links, path);
+      </script>
     {% endblock %}
   </body>
 </html>
