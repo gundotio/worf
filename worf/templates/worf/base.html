@@ -62,7 +62,7 @@
             </nav>
 
             <div class="my-4">
-              <pre class="w-full p-4 overflow-auto"><strong>HTTP {{ response.status_code }} {{ response.status_text }}</strong>{% for key, value in response.headers.items %}
+              <pre class="w-full p-4 overflow-auto" tabindex="-1"><strong>HTTP {{ response.status_code }} {{ response.status_text }}</strong>{% for key, value in response.headers.items %}
 <strong>{{ key }}:</strong> {{ value }}{% endfor %}
 
 <code class="language-json">{{ content }}</code></pre>
