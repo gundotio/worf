@@ -10,23 +10,22 @@
       <title>{{ view_name }} | {{ settings.WORF_API_NAME }}: {{ request.get_full_path }}</title>
 
       {% block style %}
-        <style>
-          body { background: #131417; color: #fff; }
-          a { color: #58A6FF; }
-          a:hover { text-decoration: underline; }
-          code, pre { font-family: inconsolata, monaco, consolas, courier, monospace; color: #c5c8c6; }
-          details, nav, pre { background: #202126; }
+        <style type="text/tailwindcss">
+          body { @apply bg-black text-white; }
+          :focus { @apply outline-none; }
+          :focus-visible { @apply ring-2 ring-white; }
+          a { @apply text-blue hover:underline; }
           details { box-shadow: 0 0 50px #131417 }
-          strong { font-weight: 500; }
-          .token a { color: #58a6ff; }
-          .token.boolean { color: #fbbf24; }
-          .token.keyword { color: #96cbfe; }
-          .token.number { color: #ff73fd; }
-          .token.operator { color: #ededed; }
-          .token.property { color: #fff; }
-          .token.string  { color: #69f5ab; white-space: normal; word-break: break-all; }
-          .token.url { color: #96cbfe; }
-          .token.variable { color: #c6c5fe; }
+          strong { @apply font-semibold; }
+          .token a { @apply text-[#58a6ff]; }
+          .token.boolean { @apply text-[#fbbf24]; }
+          .token.keyword { @apply text-[#96cbfe]; }
+          .token.number { @apply text-[#ff73fd]; }
+          .token.operator { @apply text-[#ededed]; }
+          .token.property { @apply text-white; }
+          .token.string  { @apply break-all text-[#69f5ab] whitespace-normal; }
+          .token.url { @apply text-[#96cbfe]; }
+          .token.variable { @apply text-[#c6c5fe]; }
         </style>
       {% endblock %}
 
@@ -36,17 +35,23 @@
         <script src="https://unpkg.com/prismjs@1.29.0/components/prism-json.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://unpkg.com/prismjs@1.29.0/plugins/keep-markup/prism-keep-markup.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://unpkg.com/prismjs@1.29.0/plugins/autolinker/prism-autolinker.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+          tailwind.config = (colors => ({ theme: { extend: { colors } } }))({
+            black: { DEFAULT: "#131417" },
+            blue: { DEFAULT: "#58a6ff" },
+            gray: { DEFAULT: "#202126" },
+          })
+        </script>
       {% endblock %}
     {% endblock %}
   </head>
-
   <body>
     {% block body %}
       {% block nav %}
-        <nav class="p-4">
+        <nav class="bg-gray">
           <div class="max-w-5xl mx-auto">
             {% block branding %}
-              <a href="{{ settings.WORF_API_ROOT }}" class="font-medium text-lg text-white" rel="nofollow">
+              <a href="{{ settings.WORF_API_ROOT }}" class="inline-flex p-4 font-semibold text-lg ring-inset text-white" rel="nofollow">
                 {{ settings.WORF_API_NAME }}
               </a>
             {% endblock %}
@@ -57,12 +62,12 @@
       <div class="max-w-5xl mx-auto">
         <main>
           {% block content %}
-            <nav class="font-mono break-all my-4 px-4 py-2">
+            <nav class="bg-gray font-mono break-all my-4 px-4 py-2">
               <strong>{{ request.method }}</strong> {{ request.get_full_path }}
             </nav>
 
             <div class="my-4">
-              <pre class="w-full p-4 overflow-auto" tabindex="-1"><strong>HTTP {{ response.status_code }} {{ response.status_text }}</strong>{% for key, value in response.headers.items %}
+              <pre class="bg-gray w-full p-4 text-gray-300 overflow-auto" tabindex="-1"><strong>HTTP {{ response.status_code }} {{ response.status_text }}</strong>{% for key, value in response.headers.items %}
 <strong>{{ key }}:</strong> {{ value }}{% endfor %}
 
 <code class="language-json">{{ content }}</code></pre>
@@ -73,8 +78,8 @@
             {% block toolbar %}
               <div class="fixed max-w-sm max-h-screen bottom-0 right-0 pl-8 pt-8 overflow-auto">
                 {% if view %}
-                  <details class="m-2">
-                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                  <details class="bg-gray m-2">
+                    <summary class="font-semibold px-4 py-2 cursor-pointer ring-inset">
                       <span class="px-1">{{ view_name }}</span>
                     </summary>
                     <div class="px-4 py-2">
@@ -84,8 +89,8 @@
                 {% endif %}
 
                 {% if serializer %}
-                  <details class="m-2">
-                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                  <details class="bg-gray m-2">
+                    <summary class="font-semibold px-4 py-2 cursor-pointer ring-inset">
                       <span class="px-1">{{ serializer_name }}</span>
                     </summary>
                     <div class="px-4 py-2">
@@ -95,8 +100,8 @@
                 {% endif %}
 
                 {% if payload %}
-                  <details class="m-2">
-                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                  <details class="bg-gray m-2">
+                    <summary class="font-semibold px-4 py-2 cursor-pointer ring-inset">
                       <span class="px-1">
                         Payload
                         <span class="bg-zinc-700 mx-1 px-1">{{ payload|length }}</span>
@@ -109,8 +114,8 @@
                 {% endif %}
 
                 {% if lookup_kwargs %}
-                  <details class="m-2">
-                    <summary class="font-medium px-4 py-2 cursor-pointer">
+                  <details class="bg-gray m-2">
+                    <summary class="font-semibold px-4 py-2 cursor-pointer ring-inset">
                       <span class="px-1">
                         Lookups
                         <span class="bg-zinc-700 mx-1 px-1">{{ lookup_kwargs|length }}</span>
@@ -124,8 +129,8 @@
 
                 {% for name, items, count in fields %}
                   {% if items %}
-                    <details class="m-2">
-                      <summary class="font-medium px-4 py-2 cursor-pointer">
+                    <details class="bg-gray m-2">
+                      <summary class="font-semibold px-4 py-2 cursor-pointer ring-inset">
                         <span class="px-1">
                           {{ name }}
                           {% if count %}<span class="bg-zinc-700 mx-1 px-1">{{ count }}</span>{% endif %}
