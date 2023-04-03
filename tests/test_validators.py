@@ -137,7 +137,11 @@ def test_validate_custom_field_raises_error(profile_view):
         profile_view.validate_phone("invalid number")
 
 
-def test_validate_required_fields(profile_view, profile_instance):
+def test_validate_required_fields_passes(profile_view, profile_instance):
+    profile_view.validate_required_fields(Profile, profile_instance)
+
+
+def test_validate_required_fields_raises_error(profile_view, profile_instance):
     no_phone_bundle = {**profile_view.bundle, "phone": None}
     profile_view.bundle = no_phone_bundle
     profile_instance.phone = None
