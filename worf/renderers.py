@@ -71,7 +71,11 @@ def render_response(request, data, status_code, view):
     )
 
     response = (
-        JsonResponse(data, json_dumps_params=dict(indent=2 if is_browsable else 0))
+        JsonResponse(
+            data,
+            safe=not isinstance(data, str),
+            json_dumps_params=dict(indent=2 if is_browsable else 0),
+        )
         if data != ""
         else HttpResponse()
     )

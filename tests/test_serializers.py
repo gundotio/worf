@@ -34,3 +34,11 @@ def test_team_serializer():
 
 def test_user_serializer():
     assert f"{tests.serializers.UserSerializer()}"
+
+
+def test_compute_serializer():
+    assert f"{tests.serializers.ComputeSerializer()}"
+
+
+def test_compute_output_serializer():
+    assert f"{tests.serializers.ComputeOutputSerializer()}"

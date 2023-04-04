@@ -102,3 +102,11 @@ class TaskSerializer(Serializer):
 class TeamSerializer(Serializer):
     class Meta:
         fields = ["id", "name"]
+
+
+class ComputeSerializer(Serializer):
+    value = fields.Integer(required=True)
+
+
+class ComputeOutputSerializer(Serializer):
+    result = fields.Integer(required=True)

@@ -1,6 +1,7 @@
 import json
 import warnings
 from io import BytesIO
+from typing import Optional
 from urllib.parse import parse_qs
 
 from django.core.exceptions import (
@@ -25,7 +26,7 @@ from worf.exceptions import (
     WorfError,
 )
 from worf.renderers import render_response
-from worf.serializers import SerializeModels
+from worf.serializers import SerializeModels, Serializer
 from worf.validators import ValidateFields
 
 
@@ -39,13 +40,16 @@ class APIResponse(View):
         raise NotImplementedError
 
     def render_to_response(self, data=None, status_code=200):
-        if data is None:
-            data = self.serialize()
+        if data and self.response_serializer:
+            data = self.serialize_response(data)
+        else:
+            if data is None:
+                data = self.serialize()
 
-        if data is None:
-            message = f"{self.codepath} did not pass an object to "
-            message += "render_to_response, nor did its serializer method"
-            raise ImproperlyConfigured(message)
+            if data is None:
+                message = f"{self.codepath} did not pass an object to "
+                message += "render_to_response, nor did its serializer method"
+                raise ImproperlyConfigured(message)
 
         return render_response(self.request, data, status_code, self)
 
@@ -54,6 +58,7 @@ class AbstractBaseAPI(SerializeModels, ValidateFields, APIResponse):
     model = None
     permissions = []
     payload_key = None
+    response_serializer: Optional[Serializer] = None
 
     def __init__(self, *args, **kwargs):
         self.codepath = f"{self.__module__}.{self.__class__.__name__}"

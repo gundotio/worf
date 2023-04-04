@@ -507,3 +507,18 @@ def test_user_update(client, db, method, user):
     assert response.status_code == 200, result
     assert result["username"] == "testtest"
     assert result["email"] == "something@example.com"
+
+
+@parametrize(
+    "method, value, status, expected",
+    [("POST", 5, 200, 25), ("POST", 6, 200, 36), ("POST", "a", 422, None)],
+)
+def test_compute(client, db, method, value, status, expected):
+    response = client.generic(method, "/compute/", {"value": value})
+    result = response.json()
+    assert response.status_code == status, result
+    if expected:
+        assert result["result"] == expected
+
+    # Verify that output serializers exclude fields not in its schema
+    assert result.get("extra") is None

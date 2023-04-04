@@ -4,7 +4,12 @@ from django.db.models import F, Prefetch, Value
 from django.db.models.functions import Concat
 
 from tests.models import Profile
-from tests.serializers import ProfileSerializer, UserSerializer
+from tests.serializers import (
+    ComputeOutputSerializer,
+    ComputeSerializer,
+    ProfileSerializer,
+    UserSerializer,
+)
 from worf.exceptions import AuthenticationError
 from worf.permissions import Authenticated, PublicEndpoint, Staff
 from worf.views import ActionAPI, CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
@@ -110,3 +115,24 @@ class UserSelf(DetailAPI):
         if not self.request.user.is_authenticated:
             raise AuthenticationError("Log in with your username and password")
         return self.request.user
+
+
+class ComputeView(UpdateAPI):
+    serializer = ComputeSerializer()
+    response_serializer = ComputeOutputSerializer()
+    permissions = [PublicEndpoint]
+
+    def post(self, *args, **kwargs):
+        """
+        Test view to test that serializer can validate request input
+        and response_serializer can validate and serialize request output properly.
+        This view doesn't deal with models and databases, it just receives a request,
+        perform some computation and gives results.
+        This test POST endpoint receives a value and returns value ** 2
+        """
+        errors = self.serializer.validate(self.bundle)
+        if errors:
+            raise ValidationError("Invalid request payload")
+        return self.render_to_response(
+            data={"result": self.bundle["value"] ** 2, "extra": "dummy"}
+        )

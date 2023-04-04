@@ -2,6 +2,7 @@ import marshmallow
 from marshmallow.decorators import *  # noqa: F401, F403
 from marshmallow.utils import missing  # noqa: F401
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models.fields.files import FieldFile
 
 from worf import fields
@@ -45,6 +46,17 @@ class SerializeModels:
 
     def serialize(self):
         return self.load_serializer().dump(self.get_instance())
+
+    def serialize_response(self, data) -> str:
+        """
+        Serialize the response if response_serializer is specified in view
+        :param data: object to be serialized by response_serializer
+        """
+        if self.response_serializer:
+            return self.response_serializer.dump(data)
+        raise ImproperlyConfigured(
+            "Response serializer is needed to serialize response data"
+        )
 
 
 class SerializerOptions(marshmallow.SchemaOpts):

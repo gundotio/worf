@@ -180,6 +180,25 @@ WORF_SERIALIZER_DEFAULT_OPTIONS = {
 }
 ```
 
+Besides `serializer` attribute, `response_serializer` can be used to validate
+and serialize API responses. The example below shows 2 serializers, one for request payload
+and one for response payload.
+
+```python
+class ComputeSerializer(Serializer):
+    value = fields.Integer(required=True)
+
+
+class ComputeOutputSerializer(Serializer):
+    result = fields.Integer(required=True)
+
+class ComputeView(UpdateAPI):
+    serializer = ComputeSerializer()
+    response_serializer = ComputeOutputSerializer()
+    permissions = [PublicEndpoint]
+```
+
+
 Permissions
 -----------
 
