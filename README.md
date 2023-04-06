@@ -140,6 +140,11 @@ path("api/", include([
 ])),
 ```
 
+### Handling Model-less Querysets
+Worf now supports handling custom querysets without relying on a model. If you need to provide your own queryset or response without using a model, you can set the model attribute to None or False. The AnnotatedModelFilterSet and generate_filterset function have been updated to handle these cases properly.
+
+To use this feature, you should make sure your view class returns a queryset by overriding the get_queryset() method or returning a response via the get() method.
+
 Serializers
 -----------
 
