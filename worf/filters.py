@@ -9,6 +9,9 @@ from django.http import QueryDict
 
 class AnnotatedModelFilterSet(ModelFilterSet):
     def get_filters(self):
+        if self.Meta.model is None or self.Meta.model is False:
+            return {}
+
         filters = super().get_filters()
 
         if self.queryset is not None:
@@ -44,6 +47,13 @@ class AnnotatedModelFilterSet(ModelFilterSet):
 
 
 def generate_filterset(model, queryset):
+    if model is None or model is False:
+        return type(
+            f"EmptyFilterSet",
+            (AnnotatedModelFilterSet,),
+            dict(Meta=type("Meta", (), dict(model=None, queryset=queryset))),
+        )
+
     return type(
         f"{model.__name__}FilterSet",
         (AnnotatedModelFilterSet,),
