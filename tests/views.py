@@ -8,6 +8,11 @@ from tests.serializers import ProfileSerializer, UserSerializer
 from worf.exceptions import AuthenticationError
 from worf.permissions import Authenticated, PublicEndpoint, Staff
 from worf.views import ActionAPI, CreateAPI, DeleteAPI, DetailAPI, ListAPI, UpdateAPI
+from worf.views.schema import SchemaView
+
+
+class OpenApi(SchemaView):
+    pass
 
 
 class ProfileList(CreateAPI, ListAPI):

@@ -1,8 +1,11 @@
+import json
+import os
 from datetime import timedelta
 from unittest.mock import patch
 from uuid import uuid4
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import JsonResponse
 
 from tests import parametrize
 from tests.factories import RatedSkillFactory
@@ -507,3 +510,13 @@ def test_user_update(client, db, method, user):
     assert response.status_code == 200, result
     assert result["username"] == "testtest"
     assert result["email"] == "something@example.com"
+
+
+def test_schema(client):
+    response = client.get("/schema/")
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    schema_path = os.path.join(dir_path, "expected_data", "schema.json")
+    with open(schema_path) as f:
+        expected_api_docs = json.load(f)
+    assert response.json() == json.loads(JsonResponse(expected_api_docs).content)
+    assert response.status_code == 200, response.content

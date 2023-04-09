@@ -36,6 +36,7 @@ dj-url-filter = "^0.4.4"
 django = ">=3.0.0,<4.2"
 marshmallow = "^3.18"
 python = "^3.9"
+apispec = "^6.3.0"
 
 [tool.poetry.group.dev.dependencies]
 build = "^0.10.0"

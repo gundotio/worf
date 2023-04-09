@@ -416,6 +416,39 @@ be changed during processing. You may also append or remove attributes to the
 bundle before saving the object via `post`, `patch`, or other methods.
 
 
+Generate OpenAPI docs
+--------
+Worf exposes a customizable view to automatically generate OpenAPI docs. 
+To use it, add the following to your `urls.py`:
+```py
+# urls.py
+path("schema/", views.OpenApi().as_json),
+```
+Also, you need to define a new view:
+```py
+# views.py
+class OpenApi(SchemaView):
+    pass
+```
+You may customize the view by overriding the following attributes of the SchemaView:
+```py
+# views.py
+from django.urls import path
+
+
+class OpenApi(SchemaView):
+    generator = SchemaGenerator(
+        title="Your custom API title",
+        base_url="http://localhost:8080",
+    )
+
+    urlpatterns = [
+        path("profiles/", views.ProfileList.as_view()),
+        path("profiles/<uuid:id>/", views.ProfileDetail.as_view()),
+    ]
+```
+You can visit the `{url}/schema/` to see the generated docs in JSON format.
+
 Debugging
 ---------
 

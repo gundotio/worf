@@ -1,0 +1,619 @@
+{
+  "servers": [
+    {
+      "url": "http://localhost"
+    }
+  ],
+  "paths": {
+    "/profiles/": {
+      "post": {
+        "tags": [
+          "profiles"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Profile"
+                  }
+                }
+              }
+            },
+            "description": "post profiles"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "profiles"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Profile"
+                  }
+                }
+              }
+            },
+            "description": "get profiles"
+          }
+        }
+      }
+    },
+    "/profiles/{id}/": {
+      "get": {
+        "tags": [
+          "profiles"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "get profiles[id]"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "put": {
+        "tags": [
+          "profiles"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "put profiles[id]"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "profiles"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "patch profiles[id]"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "profiles"
+        ],
+        "responses": {
+          "200": {
+            "description": "delete profiles[id]"
+          }
+        }
+      }
+    },
+    "/profiles/{id}/{action}/": {
+      "get": {
+        "tags": [
+          "profiles"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "get profiles[id][action]"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "in": "path",
+          "name": "action",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "put": {
+        "tags": [
+          "profiles"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "put profiles[id][action]"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "profiles"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "patch profiles[id][action]"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "profiles"
+        ],
+        "responses": {
+          "200": {
+            "description": "delete profiles[id][action]"
+          }
+        }
+      }
+    },
+    "/staff/{id}/": {
+      "get": {
+        "tags": [
+          "staff"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "get staff[id]"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "put": {
+        "tags": [
+          "staff"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "put staff[id]"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "staff"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "patch staff[id]"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "staff"
+        ],
+        "responses": {
+          "200": {
+            "description": "delete staff[id]"
+          }
+        }
+      }
+    },
+    "/user/": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "get user"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "responses": {
+          "200": {
+            "description": "delete user"
+          }
+        }
+      }
+    },
+    "/users/": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            },
+            "description": "post users"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            },
+            "description": "get users"
+          }
+        }
+      }
+    },
+    "/users/{id}/": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "get users[id]"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "put users[id]"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "patch users[id]"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "description": "delete users[id]"
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Your API title",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.2",
+  "components": {
+    "schemas": {
+      "RoleSerializer": {
+        "type": "object",
+        "properties": {
+          "id": {},
+          "name": {}
+        }
+      },
+      "SkillSerializer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rating": {}
+        }
+      },
+      "TeamSerializer": {
+        "type": "object",
+        "properties": {
+          "id": {},
+          "name": {}
+        }
+      },
+      "UserSerializer": {
+        "type": "object",
+        "properties": {
+          "id": {},
+          "username": {},
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "dateJoined": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "email": {}
+        }
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": {},
+          "username": {
+            "type": "string",
+            "readOnly": true
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {},
+          "avatar": {},
+          "boolean": {},
+          "integer": {},
+          "json": {},
+          "positiveInteger": {},
+          "slug": {},
+          "smallInteger": {},
+          "recoveryEmail": {},
+          "resume": {},
+          "role": {
+            "$ref": "#/components/schemas/RoleSerializer"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillSerializer"
+            }
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamSerializer"
+          },
+          "tags": {
+            "type": "array",
+            "items": {}
+          },
+          "tasks": {
+            "type": "array",
+            "items": {}
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserSerializer"
+          },
+          "lastActive": {},
+          "createdAt": {}
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {},
+          "username": {},
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "dateJoined": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "email": {}
+        }
+      }
+    }
+  }
+}
