@@ -24,6 +24,7 @@ class ActionAPI(FindInstance, AbstractBaseAPI):
             if "unexpected keyword argument 'user'" not in str(e):
                 raise ActionError(f"Invalid arguments: {e}")
             getattr(instance, action)(**self.bundle)
+        instance.refresh_from_db()
         return instance
 
     def put(self, request, *args, **kwargs):
