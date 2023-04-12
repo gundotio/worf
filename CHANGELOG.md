@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.25](https://github.com/gundotio/worf/compare/v0.5.24...v0.5.25) (2023-04-12)
+
+- (Deps) Package updates [#159](https://github.com/gundotio/worf/pull/159)
+- (Improvement) Add test for default model ordering [#157](https://github.com/gundotio/worf/pull/157)
+
 ### [0.5.24](https://github.com/gundotio/worf/compare/v0.5.23...v0.5.24) (2023-03-07)
 
 - (Deps) Package updates [#150](https://github.com/gundotio/worf/pull/150)
