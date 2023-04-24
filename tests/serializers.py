@@ -49,6 +49,7 @@ class ProfileSerializer(Serializer):
             "user",
             "last_active",
             "created_at",
+            "start_time",
         ]
         writable = [
             "id",
@@ -71,6 +72,7 @@ class ProfileSerializer(Serializer):
             "user",
             "last_active",
             "created_at",
+            "start_time",
         ]
 
 

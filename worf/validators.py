@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, time
 from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import models
-from django.utils.dateparse import parse_datetime
+from django.utils.dateparse import parse_datetime, parse_time
 
 from worf.conf import settings
 
@@ -57,6 +57,20 @@ class ValidateFields:
         if not isinstance(coerced, datetime):
             raise ValidationError(
                 f"Field {self.keymap[key]} accepts a iso datetime string, got {value}, coerced to {coerced}"
+            )
+
+        return coerced
+
+    def _validate_time(self, key):
+        value = self.bundle[key]
+        coerced = None
+
+        if isinstance(value, str):
+            coerced = parse_time(value)
+
+        if not isinstance(coerced, time):
+            raise ValidationError(
+                f"Field {self.keymap[key]} accepts a iso time string, got {value}, coerced to {coerced}"
             )
 
         return coerced
@@ -224,6 +238,10 @@ class ValidateFields:
 
         elif isinstance(field, models.DateField):
             self.bundle[key] = self._validate_date(key)
+            return
+
+        elif isinstance(field, models.TimeField):
+            self.bundle[key] = self._validate_time(key)
             return
 
         elif isinstance(field, models.ManyToManyField):
