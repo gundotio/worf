@@ -33,6 +33,7 @@ class Profile(models.Model):
 
     last_active = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
+    start_time = models.TimeField(blank=True, null=True)
 
     is_subscribed = models.BooleanField(blank=True, null=True)
     subscribed_at = models.DateTimeField(blank=True, null=True)

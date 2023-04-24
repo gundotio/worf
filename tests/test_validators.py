@@ -30,6 +30,7 @@ def profile_view_fixture(db, now, profile_factory, rf):
             recovery_phone=phone,
             last_active=now().date().isoformat(),
             created_at=now().isoformat(),
+            start_time=now().time().isoformat(),
         )
     )
     view.request = rf.patch(f"/{uuid}/")
@@ -61,6 +62,7 @@ def test_validate_bundle(profile_view):
     profile_view.validate_bundle("small_integer")
     profile_view.validate_bundle("recovery_email")
     profile_view.validate_bundle("last_active")
+    profile_view.validate_bundle("start_time")
     profile_view.validate_bundle("created_at")
 
 
