@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.26](https://github.com/gundotio/worf/compare/v0.5.25...v0.5.26) (2023-04-26)
+
+- (Feature) Add time validation so we support time fields because time is time [#167](https://github.com/gundotio/worf/pull/167)
+
 ### [0.5.25](https://github.com/gundotio/worf/compare/v0.5.24...v0.5.25) (2023-04-12)
 
 - (Deps) Package updates [#159](https://github.com/gundotio/worf/pull/159)
