@@ -17,13 +17,14 @@ class ActionAPI(FindInstance, AbstractBaseAPI):
             raise ActionError(f"Invalid action: {kwargs['action']}")
         instance = self.get_instance()
         if hasattr(self, action):
-            return getattr(self, action)(request, **self.bundle, user=request.user)
-        try:
-            getattr(instance, action)(**self.bundle, user=request.user)
-        except TypeError as e:
-            if "unexpected keyword argument 'user'" not in str(e):
-                raise ActionError(f"Invalid arguments: {e}")
-            getattr(instance, action)(**self.bundle)
+            getattr(self, action)(request, **self.bundle, user=request.user)
+        else:
+            try:
+                getattr(instance, action)(**self.bundle, user=request.user)
+            except TypeError as e:
+                if "unexpected keyword argument 'user'" not in str(e):
+                    raise ActionError(f"Invalid arguments: {e}")
+                getattr(instance, action)(**self.bundle)
         instance.refresh_from_db()
         return instance
 
