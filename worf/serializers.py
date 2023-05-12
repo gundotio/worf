@@ -16,6 +16,17 @@ class SerializeModels:
     serializer = None
     staff_serializer = None
 
+    def get_include_fields(self):
+        return self.include_fields
+
+    def get_processed_includes(self):
+        include_fields = self.get_include_fields()
+
+        if isinstance(include_fields, list):
+            include_fields = {field: None for field in include_fields}
+
+        return include_fields
+
     def get_serializer(self, **kwargs):
         serializer = self.serializer
 
@@ -31,7 +42,7 @@ class SerializeModels:
         context = dict(request=self.request, **self.get_serializer_context())
         only = set(field_list(self.bundle.get("fields", [])))
         include = include or field_list(self.bundle.get("include", []))
-        exclude = exclude or set(self.include_fields.keys()) - set(include)
+        exclude = exclude or set(self.get_processed_includes().keys()) - set(include)
         return dict(context=context, only=only, exclude=exclude)
 
     def load_serializer(self):

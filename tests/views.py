@@ -84,6 +84,9 @@ class UserList(CreateAPI, ListAPI):
         "date_joined__gte",
         "date_joined__lte",
     ]
+    include_fields = [
+        "date_joined",
+    ]
     search_fields = [
         "id",
         "email",
