@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.27](https://github.com/gundotio/worf/compare/v0.5.26...v0.5.27) (2023-05-12)
+
+- (Bugfix) Refresh from db via view actions [#171](https://github.com/gundotio/worf/pull/171)
+- (Deps) Package updates [#166](https://github.com/gundotio/worf/pull/166)
+- (Improvement) Support passing include fields as a list [#170](https://github.com/gundotio/worf/pull/170)
+- Release 0.5.27 [#169](https://github.com/gundotio/worf/pull/169)
+
 ### [0.5.26](https://github.com/gundotio/worf/compare/v0.5.25...v0.5.26) (2023-04-26)
 
 - (Feature) Add time validation so we support time fields because time is time [#167](https://github.com/gundotio/worf/pull/167)
