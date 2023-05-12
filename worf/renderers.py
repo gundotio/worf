@@ -20,7 +20,7 @@ def browsable_response(request, response, status_code, view):
     ]
     include_fields = [
         (transform_field(field, "."), bool(field in include or not include))
-        for field in getattr(view, "include_fields", {}).keys()
+        for field in getattr(view, "get_processed_includes", lambda: {})().keys()
     ]
     search_fields = [
         (transform_field(field, "."), bool(field in search or not search))

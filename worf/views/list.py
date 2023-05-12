@@ -17,7 +17,7 @@ class ListAPI(AbstractBaseAPI):
     lookup_url_kwarg = "id"  # default incase lookup_field is set
     ordering = []
     filter_fields = []
-    include_fields = {}
+    include_fields = []
     search_fields = []
     sort_fields = []
     queryset = None
@@ -39,8 +39,8 @@ class ListAPI(AbstractBaseAPI):
         if not isinstance(self.filter_fields, list):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.filter_fields must be a list")
 
-        if not isinstance(self.include_fields, dict):  # pragma: no cover
-            raise ImproperlyConfigured(f"{codepath}.include_fields must be a dict")
+        if not isinstance(self.include_fields, (dict, list)):  # pragma: no cover
+            raise ImproperlyConfigured(f"{codepath}.include_fields must be a dict/list")
 
         if not isinstance(self.search_fields, list):  # pragma: no cover
             raise ImproperlyConfigured(f"{codepath}.search_fields must be a list")
@@ -142,13 +142,14 @@ class ListAPI(AbstractBaseAPI):
                     else queryset.filter(**{key: item})
                 )
 
-        if self.include_fields and self.bundle.get("include"):
+        include_fields = self.get_processed_includes()
+        if include_fields and self.bundle.get("include"):
             include = field_list(self.bundle["include"])
-            for item in set(self.include_fields.keys()) & set(include):
-                if isinstance(self.include_fields[item], Prefetch):
-                    queryset = queryset.prefetch_related(self.include_fields[item])
-                elif isinstance(self.include_fields[item], str):
-                    queryset = queryset.select_related(self.include_fields[item])
+            for item in set(include_fields.keys()) & set(include):
+                if isinstance(include_fields[item], Prefetch):
+                    queryset = queryset.prefetch_related(include_fields[item])
+                elif isinstance(include_fields[item], str):
+                    queryset = queryset.select_related(include_fields[item])
 
         if ordering:
             queryset = queryset.order_by(*ordering)
