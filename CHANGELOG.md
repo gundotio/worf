@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.28](https://github.com/gundotio/worf/compare/v0.5.27...v0.5.28) (2023-08-02)
+
+- (Bugfix) Fixes only and exclude nested props [#174](https://github.com/gundotio/worf/pull/174)
+
 ### [0.5.27](https://github.com/gundotio/worf/compare/v0.5.26...v0.5.27) (2023-05-12)
 
 - (Deps) Package updates [#166](https://github.com/gundotio/worf/pull/166)
