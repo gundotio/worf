@@ -62,6 +62,18 @@ class ProfileDetail(ActionAPI, DeleteAPI, UpdateAPI, DetailAPI):
         return "+5555555555"
 
 
+class ProfileDetailTrimmed(ActionAPI, DeleteAPI, UpdateAPI, DetailAPI):
+    model = Profile
+    serializer = ProfileSerializer(only=["user.id"])
+    permissions = [PublicEndpoint]
+
+
+class ProfileDetailNoID(ActionAPI, DeleteAPI, UpdateAPI, DetailAPI):
+    model = Profile
+    serializer = ProfileSerializer(exclude=["user.id"])
+    permissions = [PublicEndpoint]
+
+
 class StaffDetail(ProfileDetail):
     permissions = [Authenticated, Staff]
 
