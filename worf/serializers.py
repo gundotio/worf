@@ -96,10 +96,12 @@ class Serializer(marshmallow.Schema):
     }
 
     def __init__(self, only=(), *args, **kwargs):
+        self.raw_only = only
+        self.raw_exclude = kwargs.get("exclude", None)
         super().__init__(only=only or None, *args, **kwargs)
 
     def __call__(self, **kwargs):
-        only = self.only
+        only = self.raw_only
         if self.only and kwargs.get("only"):
             invalid_fields = set(kwargs.get("only")) - self.only
             if invalid_fields:
@@ -111,7 +113,7 @@ class Serializer(marshmallow.Schema):
         return self.__class__(
             context=kwargs.get("context", self.context),
             dump_only=kwargs.get("dump_only", self.dump_only),
-            exclude=set(self.exclude or []) | set(kwargs.get("exclude") or []),
+            exclude=set(self.raw_exclude or []) | set(kwargs.get("exclude") or []),
             load_only=kwargs.get("load_only", self.load_only),
             many=kwargs.get("many", self.many),
             only=only,
