@@ -19,8 +19,7 @@ def test_profile_detail_trimmed(client, db, profile, user):
     response = client.get(f"/profiles/trimmed/{profile.pk}/")
     result = response.json()
     assert response.status_code == 200, result
-    assert "username" not in result
-    assert result["user"]["id"] == user.id
+    assert result == dict(user=dict(id=user.id))
 
 
 def test_profile_detail_no_id(client, db, profile, user):
