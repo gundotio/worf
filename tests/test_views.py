@@ -15,6 +15,21 @@ def test_profile_detail(client, db, profile, user):
     assert result["username"] == user.username
 
 
+def test_profile_detail_trimmed(client, db, profile, user):
+    response = client.get(f"/profiles/trimmed/{profile.pk}/")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert "username" not in result
+    assert result["user"]["id"] == user.id
+
+
+def test_profile_detail_no_id(client, db, profile, user):
+    response = client.get(f"/profiles/no-id/{profile.pk}/")
+    result = response.json()
+    assert response.status_code == 200, result
+    assert "id" not in result["user"]
+
+
 def test_profile_not_found(client, db, profile, user):
     response = client.get(f"/profiles/{uuid4()}/")
     result = response.json()

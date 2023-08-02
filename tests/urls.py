@@ -5,6 +5,8 @@ from tests import views
 urlpatterns = [
     path("profiles/", views.ProfileList.as_view()),
     path("profiles/<uuid:id>/", views.ProfileDetail.as_view()),
+    path("profiles/trimmed/<uuid:id>/", views.ProfileDetailTrimmed.as_view()),
+    path("profiles/no-id/<uuid:id>/", views.ProfileDetailNoID.as_view()),
     path("profiles/<uuid:id>/<str:action>/", views.ProfileDetail.as_view()),
     path("staff/<uuid:id>/", views.StaffDetail.as_view()),
     path("user/", views.UserSelf.as_view()),
