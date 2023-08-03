@@ -54,7 +54,7 @@ jobs:
       RELEASE_FAILURE_ICON: ${{ vars.RELEASE_BUILDER_FAILURE_ICON }}
       RELEASE_PENDING_ICON: ${{ vars.RELEASE_BUILDER_PENDING_ICON }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_SIX_BOT_TOKEN }}
-      SLACK_CHANNEL: C0306G288J0
+      SLACK_CHANNEL: ${{ vars.SLACK_CHANNEL }}
       TARGET_NAME: pypi.org
       TARGET_URL: https://pypi.org/project/worf/
 
