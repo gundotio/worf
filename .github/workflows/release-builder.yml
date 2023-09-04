@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -59,7 +59,7 @@ jobs:
       TARGET_URL: https://pypi.org/project/worf/
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -98,7 +98,7 @@ jobs:
     needs: publish_release
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - id: changelog
         uses: gundotio/release-builder/build-changelog@v1
@@ -117,7 +117,7 @@ jobs:
     needs: build_changelog
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
