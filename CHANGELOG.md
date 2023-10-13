@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.30](https://github.com/gundotio/worf/compare/v0.5.29...v0.5.30) (2023-10-13)
+
+- (Feature) Add support for decimal fields [#179](https://github.com/gundotio/worf/pull/179)
+
 ### [0.5.29](https://github.com/gundotio/worf/compare/v0.5.28...v0.5.29) (2023-08-03)
 
 - (Maintenance) Updated slack channel [#176](https://github.com/gundotio/worf/pull/176)
