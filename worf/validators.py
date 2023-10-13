@@ -118,6 +118,19 @@ class ValidateFields:
             )
 
         return integer
+    
+    def _validate_decimal(self, key):
+        value = self.bundle[key]
+        
+        if value is None or value == "":
+            return None
+
+        try:
+            decimal = float(value)
+        except (TypeError, ValueError):
+            raise ValidationError(f"Field {self.keymap[key]} accepts an decimal")
+
+        return decimal
 
     ############################################################################
     # Public methods for use downstream
@@ -226,6 +239,10 @@ class ValidateFields:
 
         elif isinstance(field, (models.IntegerField, models.SmallIntegerField)):
             self.bundle[key] = self._validate_int(key)
+            return
+        
+        elif isinstance(field, (models.DecimalField)):
+            self.bundle[key] = self._validate_decimal(key)
             return
 
         elif isinstance(field, models.BooleanField):

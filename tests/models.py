@@ -15,6 +15,7 @@ class Profile(models.Model):
 
     boolean = models.BooleanField(blank=True, null=True)
     integer = models.IntegerField(blank=True, null=True)
+    decimal = models.DecimalField(blank=True, decimal_places=2, max_digits=5, null=True)
     json = models.JSONField(blank=True, null=True)
     positive_integer = models.PositiveIntegerField(blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)

@@ -22,6 +22,7 @@ def profile_view_fixture(db, now, profile_factory, rf):
             phone=phone,
             boolean=True,
             integer=123,
+            decimal=0.35,
             json=dict(something=True),
             positive_integer=123,
             slug="something",
@@ -56,6 +57,7 @@ def test_validate_bundle(profile_view):
     profile_view.validate_bundle("phone")
     profile_view.validate_bundle("boolean")
     profile_view.validate_bundle("integer")
+    profile_view.validate_bundle("decimal")
     profile_view.validate_bundle("json")
     profile_view.validate_bundle("positive_integer")
     profile_view.validate_bundle("slug")
