@@ -96,6 +96,15 @@ def test_validate_bundle_raises_invalid_fields(profile_view):
     assert "invalid_field is not editable" in str(e.value)
 
 
+def test_validate_bundle_raises_invalid_decimal(profile_view):
+    profile_view.set_bundle(dict(decimal="money"))
+
+    with pytest.raises(ValidationError) as e:
+        profile_view.validate_bundle("decimal")
+
+    assert "Field decimal accepts a decimal" in str(e.value)
+
+
 def test_validate_bundle_raises_read_only_fields(profile_view):
     with pytest.raises(ValidationError) as e:
         profile_view.validate_bundle("recovery_phone")
