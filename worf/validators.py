@@ -1,4 +1,5 @@
 from datetime import datetime, time
+from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
 from django.core.exceptions import ValidationError
@@ -118,17 +119,17 @@ class ValidateFields:
             )
 
         return integer
-    
+
     def _validate_decimal(self, key):
         value = self.bundle[key]
-        
+
         if value is None or value == "":
             return None
 
         try:
-            decimal = float(value)
-        except (TypeError, ValueError):
-            raise ValidationError(f"Field {self.keymap[key]} accepts an decimal")
+            decimal = Decimal(value)
+        except InvalidOperation:
+            raise ValidationError(f"Field {self.keymap[key]} accepts a decimal")
 
         return decimal
 
@@ -240,7 +241,7 @@ class ValidateFields:
         elif isinstance(field, (models.IntegerField, models.SmallIntegerField)):
             self.bundle[key] = self._validate_int(key)
             return
-        
+
         elif isinstance(field, (models.DecimalField)):
             self.bundle[key] = self._validate_decimal(key)
             return
